@@ -1,0 +1,20 @@
+{
+  "name": "sv-voting-mvp",
+  "version": "0.1.0",
+  "description": "Voting MVP for Swarm",
+  "main": "index.js",
+  "repository": "git@github.com/swarmfund/sv-voting-mvp",
+  "author": "Max Kaye (SecureVote)",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "ethereumjs-testrpc": "^4.1.3",
+    "sodium": "^2.0.1",
+    "truffle": "^3.4.11"
+  },
+  "devDependencies": {
+    "web3-typescript-typings": "^0.6.2"
+  },
+  "scripts": {
+    "solc": "cd contract && truffle compile"
+  }
+}
