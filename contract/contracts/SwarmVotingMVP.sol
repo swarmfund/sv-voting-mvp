@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.17;
 
 //
 // Swarm Voting MVP
@@ -51,7 +51,7 @@ contract SwarmVotingMVP {
     //// ** Events
     event CreatedBallot(address creator, uint256 start, uint256 end, byte[64] encPubkey);
     event FailedVote(address voter, string reason);
-    event SuccessfulVote(address voter, bytes ballot);
+    event SuccessfulVote(address voter, bytes32 ballot);
     event SeckeyRevealed(byte[32] secretKey);
 
 
@@ -109,8 +109,8 @@ contract SwarmVotingMVP {
 
     // Finalize ballot, allow no further interactions
     // TODO : Do we want to lock the ballot? Any reason?
-    function finalizeBallot() onlyOwner public {
-        require(now > endTime);
-        require(seckeyRevealed);
-    }
+//    function finalizeBallot() onlyOwner public {
+//        require(now > endTime);
+//        require(seckeyRevealed);
+//    }
 }
