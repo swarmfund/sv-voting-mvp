@@ -30,7 +30,21 @@ It works similarly to React + Redux, though handles side effects very elegantly.
 We're using it because it guarantees no runtime errors and its strictness helps write code that runs correctly the first time.
 
 * `yarn web` to run Elm live-reloading dev
-* `yarn build-web` to build SPA in `_dist`
+* `yarn build-web` to build SPA in `_dist` (TODO)
+
+### Elm-Format
+
+`elm-format` is a program that automatically formats elm files according to a standard set of rules.
+You should set it up for your editor and Elm code should be formatted with this tool before committing.
+
+Docs: https://github.com/avh4/elm-format - instructions are listed here for most popular editors.
+
+### Elm-Mdl
+
+We use `elm-mdl` (material design light) for UI components.
+
+* Docs: http://package.elm-lang.org/packages/debois/elm-mdl/8.1.0/Material
+* Live example site + docs: http://debois.github.io/elm-mdl/
 
 ## Audit Suite
 
