@@ -14,11 +14,12 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(ChangePage))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 
-type alias BallotOption =   
-    { title: String
-    , description: String
-    , params: String
+type alias BallotOption =
+    { title : String
+    , description : String
+    , params : String
     }
+
 
 voteOptions : List BallotOption
 voteOptions =
@@ -35,7 +36,7 @@ castVoteView model =
         optionList =
             List.map optionListItem voteOptions
 
-        optionListItem {title, description, params} =
+        optionListItem { title, description, params } =
             Lists.li []
                 [ Lists.content [] [ text "checkbox" ]
                 , Lists.content2 []
@@ -43,7 +44,7 @@ castVoteView model =
                     , p [] [ text description ]
                     ]
                 ]
-    in 
+    in
         fullPageSlide 657980946
             model
             []
