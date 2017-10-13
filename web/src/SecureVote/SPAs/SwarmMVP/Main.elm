@@ -12,15 +12,22 @@ import SecureVote.SPAs.SwarmMVP.Update exposing (update)
 import SecureVote.SPAs.SwarmMVP.Views.RootV exposing (rootView)
 
 
--- Load Google Mdl CSS. You'll likely want to do that not in code as we
--- do here, but rather in your master .html file. See the documentation
--- for the `Material` module for details.
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        []
+
+
+initCmds : Cmd Msg
+initCmds =
+    Cmd.batch
+        []
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( initModel, Cmd.none )
+        { init = ( initModel, initCmds )
         , view = rootView
         , subscriptions = always Sub.none
         , update = update

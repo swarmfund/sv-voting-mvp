@@ -12,6 +12,7 @@ type alias Model =
     , elevations : Dict Int Bool
     , fields : Dict String String
     , route : Route
+    , history : List Route
     }
 
 
@@ -23,4 +24,5 @@ initModel =
     , elevations = Dict.empty
     , fields = Dict.empty
     , route = SwmAddressR
+    , history = []
     }

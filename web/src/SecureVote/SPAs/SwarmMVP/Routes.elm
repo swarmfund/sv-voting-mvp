@@ -5,3 +5,4 @@ type Route
     = SwmAddressR
     | SwmVoteR
     | SwmSubmitR
+    | NotFoundR
