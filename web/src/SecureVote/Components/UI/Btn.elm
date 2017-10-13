@@ -21,6 +21,8 @@ type BtnProps
     | Flat
     | Icon
     | Click Msg
+    | Disabled
+    | BtnNop -- doesn't do anything
     | Opt (Button.Property Msg)
     | Attr (Html.Attribute Msg)
 
@@ -47,6 +49,12 @@ btn id model props inner =
 
                 Click msg ->
                     ( [], [ Options.onClick msg ] )
+
+                Disabled ->
+                    ( [], [ Button.disabled ] )
+
+                BtnNop ->
+                    ( [], [] )
 
                 Opt opt ->
                     ( [], [ opt ] )
