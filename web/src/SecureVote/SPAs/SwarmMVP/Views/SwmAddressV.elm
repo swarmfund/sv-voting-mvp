@@ -37,6 +37,7 @@ swmAddressV model =
             [ Card.text [ cs "center tc" ]
                 [ Options.styled span [ display2, Color.text Color.black, cs "db pa2" ] [ text "Swarm Liquidity Vote" ]
                 , Options.styled span [ headline, cs "black db pa2 mv3" ] [ text "Please enter your Swarm address below" ]
+                , Options.styled span [ body1, cs "black db pa2 mv3" ] [ text "Example address: 0x9062C0A6Dbd6108336BcBe4593a3D1cE05512069" ]
                 , div [ class "center" ]
                     [ div [ class "flex flex-column items-center" ]
                         [ div [ class "flex flex-column items-start" ]
