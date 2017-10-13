@@ -38,9 +38,8 @@ swmAddressV model =
                     , Textf.value <| Dict.get swmAddrId model.fields ? ""
                     ]
                     []
-                , div [ class "mt3" ]
-                    [ btn 954898522 model [ SecBtn, Attr (class "ph2"), Click (ChangePage SwmVoteR) ] [ text "Skip" ]
-                    , btn 894823489 model [ PriBtn, Attr (class "ph2"), Click (ChangePage SwmVoteR) ] [ text "Continue" ]
+                , div [ class "mv3" ]
+                    [ btn 894823489 model [ PriBtn, Attr (class "ph2"), Click (ChangePage SwmVoteR) ] [ text "Continue" ]
                     ]
                 ]
             ]
