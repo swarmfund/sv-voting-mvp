@@ -14,13 +14,17 @@ import Material.Typography exposing (display1, display2, display3, headline, tit
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import Maybe.Extra exposing ((?))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmVoteR))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
 import SecureVote.SPAs.SwarmMVP.Views.SwmAddressV exposing (swmAddressV)
 
 
 rootView : Model -> Html Msg
 rootView model =
-    div [] [ secView model ]
+    slideHost model
+        [ ( SwmAddressR, swmAddressV model )
+        , ( SwmVoteR, h1 [] [ text "Slide #2!" ] )
+        ]
+        |> Material.Scheme.top
 
 
 secView : Model -> Html Msg
@@ -58,3 +62,27 @@ secView model =
         --            [ text "Reset" ]
         ]
         |> Material.Scheme.top
+
+
+slideHost : Model -> List ( Route, Html Msg ) -> Html Msg
+slideHost model slideParis =
+    let
+        currSlide =
+            model.route
+
+        slideOutCs route =
+            if route == List.head model.history ? NotFoundR then
+                "slide-out"
+            else
+                ""
+
+        drawSlide ( route, slide ) =
+            if route == currSlide then
+                div [ class "w-100 slider slide-in" ] [ slide ]
+            else
+                div [ class <| "w-100 slider " ++ slideOutCs route ] [ slide ]
+
+        slides =
+            List.map drawSlide slideParis
+    in
+        div [ class "w-100" ] slides

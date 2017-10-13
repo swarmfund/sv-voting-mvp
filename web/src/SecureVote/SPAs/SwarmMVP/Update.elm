@@ -26,7 +26,7 @@ update msg model =
             { model | fields = Dict.insert fieldName value model.fields } ! []
 
         ChangePage route ->
-            { model | route = route } ! []
+            { model | route = route, history = model.route :: model.history } ! []
 
         -- Boilerplate: Mdl action handler.
         Mdl msg_ ->
