@@ -26,7 +26,7 @@ fullPageSlide id model attrs innerHtmls =
             , css "width" "auto"
             , Color.background (Color.color Color.Grey Color.S50)
             , if Dict.get id model.elevations ? False then
-                Elevation.e4
+                Elevation.e16
               else
                 Elevation.e2
             , Options.onMouseEnter (SetElevation id True)
