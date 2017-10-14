@@ -37,3 +37,12 @@
         visibility: hidden;
     }
 }
+
+
+#sv-background {
+    background-color: #ffaf03;
+}
+
+#birds-container {
+    opacity: .4;
+}
