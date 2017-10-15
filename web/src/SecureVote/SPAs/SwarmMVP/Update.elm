@@ -9,16 +9,6 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Increase ->
-            ( { model | count = model.count + 1 }
-            , Cmd.none
-            )
-
-        Reset ->
-            ( { model | count = 0 }
-            , Cmd.none
-            )
-
         SetElevation id isOn ->
             { model | elevations = Dict.insert id isOn model.elevations } ! []
 
