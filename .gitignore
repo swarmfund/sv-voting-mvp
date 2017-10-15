@@ -76,3 +76,4 @@ web/elm-dev.js
 
 # smart contract stuff
 contract/build
+/web/sv-swarm.js
