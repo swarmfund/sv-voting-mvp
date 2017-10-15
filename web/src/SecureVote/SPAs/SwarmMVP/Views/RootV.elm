@@ -27,7 +27,6 @@ rootView model =
         , ( SwmVoteR, castVoteView model )
         , ( SwmSubmitR, votingView model )
         ]
-        |> Material.Scheme.topWithScheme Color.Amber Color.LightBlue
 
 
 slideHost : Model -> List ( Route, Html Msg ) -> Html Msg
