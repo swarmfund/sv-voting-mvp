@@ -2,6 +2,7 @@ module SecureVote.SPAs.SwarmMVP.Model exposing (..)
 
 import Dict exposing (Dict)
 import Material
+import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmAddressR))
 
 
@@ -11,6 +12,7 @@ type alias Model =
     , fields : Dict String String
     , route : Route
     , history : List Route
+    , candidateTx : CandidateEthTx
     }
 
 
@@ -21,4 +23,5 @@ initModel =
     , fields = Dict.empty
     , route = SwmAddressR
     , history = []
+    , candidateTx = nullCandidateEthTx
     }
