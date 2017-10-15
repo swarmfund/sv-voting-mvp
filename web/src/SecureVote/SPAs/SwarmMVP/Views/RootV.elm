@@ -45,8 +45,10 @@ slideHost model slideParis =
         drawSlide ( route, slide ) =
             if route == currSlide then
                 div [ class "w-100 slider slide-in" ] [ slide ]
-            else
+            else if List.member route model.history then
                 div [ class <| "w-100 slider " ++ slideOutCs route ] [ slide ]
+            else
+                div [] []
 
         slides =
             List.map drawSlide slideParis
