@@ -29,7 +29,7 @@
     "build-web": "",
     "_open_browser": "open http://localhost:8000/web/src/SecureVote/SPAs/SwarmMVP/Main.elm",
     "_reactor": "elm-reactor",
-    "_live": "elm-live ./web/src/SecureVote/SPAs/SwarmMVP/Main.elm --output=./web/elm-dev.js --dir=./web --open --debug",
+    "_live": "elm-live ./web/src/SecureVote/SPAs/SwarmMVP/Main.elm --output=./web/sv-swarm.js --dir=./web --open --debug",
     "----- FULL SYSTEM COMMANDS": "",
     "dry-run": "run-p _sc_testrpc_deploy"
   }
