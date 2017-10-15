@@ -18,6 +18,29 @@ update msg model =
         ChangePage route ->
             { model | route = route, history = model.route :: model.history } ! []
 
+        MultiMsg msgs ->
+            multiUpdate msgs model []
+
+        SetCandidateTx f ->
+            { model | candidateTx = f model.candidateTx } ! []
+
         -- Boilerplate: Mdl action handler.
         Mdl msg_ ->
             Material.update Mdl msg_ model
+
+
+multiUpdate : List Msg -> Model -> List (Cmd Msg) -> ( Model, Cmd Msg )
+multiUpdate msgs model cmds =
+    case msgs of
+        msg :: msgs_ ->
+            let
+                ( model_, cmd ) =
+                    update msg model
+
+                cmds_ =
+                    cmds ++ [ cmd ]
+            in
+                multiUpdate msgs_ model_ cmds_
+
+        [] ->
+            ( model, Cmd.batch cmds )

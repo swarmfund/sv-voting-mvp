@@ -9,13 +9,14 @@ import Material.Options as Options exposing (css, cs)
 import Material.Textfield as Textf
 import Material.Typography exposing (body1, display1, display2, display3, headline, title)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(ChangePage))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(Mdl, SetField))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmVoteR))
 import Maybe.Extra exposing (isNothing, (?))
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress, isValidEthAddress, setSwmAddress, swmAddrId)
+import SecureVote.Eth.Models as SvEthM
 import Tuple exposing (second)
 
 
@@ -30,6 +31,12 @@ swmAddressV model =
                 Disabled
             else
                 BtnNop
+
+        msgs =
+            MultiMsg
+                [ ChangePage SwmVoteR
+                , SetCandidateTx (SvEthM.setCandTxFrom <| getSwmAddress model ? "")
+                ]
     in
         fullPageSlide 384938493
             model
@@ -55,7 +62,7 @@ swmAddressV model =
                             ]
                         ]
                     , div [ class "mv3" ]
-                        [ btn 894823489 model [ PriBtn, Attr (class "ph2"), Click (ChangePage SwmVoteR), btnDisabled ] [ text "Continue" ]
+                        [ btn 894823489 model [ PriBtn, Attr (class "ph2"), Click (msgs), btnDisabled ] [ text "Continue" ]
                         ]
                     ]
                 ]
