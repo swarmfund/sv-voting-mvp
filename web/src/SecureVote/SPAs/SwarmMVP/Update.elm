@@ -21,6 +21,9 @@ update msg model =
         SetDialog view ->
             { model | dialogHtml = view } ! []
 
+        SetBallotRange id value ->
+            { model | ballotRange = Dict.insert id (round value) model.ballotRange } ! []
+
         MultiMsg msgs ->
             multiUpdate msgs model []
 
@@ -49,7 +52,7 @@ multiUpdate msgs model cmds =
                 cmds_ =
                     cmds ++ [ cmd ]
             in
-                multiUpdate msgs_ model_ cmds_
+            multiUpdate msgs_ model_ cmds_
 
         [] ->
             ( model, Cmd.batch cmds )
