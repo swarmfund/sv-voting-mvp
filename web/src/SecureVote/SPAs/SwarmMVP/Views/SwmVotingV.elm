@@ -1,6 +1,6 @@
 module SecureVote.SPAs.SwarmMVP.Views.SwmVotingV exposing (..)
 
-import Html exposing (Html, div, text, span)
+import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class, style)
 import Material.Card as Card
 import Material.Color as Color
@@ -9,8 +9,18 @@ import Material.Typography exposing (display2, headline)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(ChangePage))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(ChangePage, SetDialog))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
+
+
+dialogView1 : Html Msg
+dialogView1 =
+    div [] [ text "Hello World 1" ]
+
+
+dialogView2 : Html Msg
+dialogView2 =
+    div [] [ text "Hello World 2" ]
 
 
 votingView : Model -> Html Msg
@@ -31,8 +41,8 @@ votingView model =
             , div [] [ text "\"from\": 0xbc64..., \"gas\": 0x289442}" ]
             , div [ class "mv4" ]
                 [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Click (ChangePage SwmSubmitR) ] [ text "Cast using MEW" ]
-                , btn 785784536 model [ SecBtn, Attr (class "ph3"), Click (ChangePage SwmSubmitR) ] [ text "Cast using GETH" ]
+                , btn 785784536 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog dialogView1) ] [ text "Cast using GETH" ]
                 ]
-            , btn 987572349 model [ PriBtn, Attr (class "mv3"), Click (ChangePage SwmSubmitR) ] [ text "Verify Ballot" ]
+            , btn 987572349 model [ PriBtn, Attr (class "mv3"), OpenDialog, Click (SetDialog dialogView2) ] [ text "Verify Ballot" ]
             ]
         ]
