@@ -16,6 +16,7 @@ type alias Model =
     , route : Route
     , history : List Route
     , candidateTx : CandidateEthTx
+    , ethNode : String
     }
 
 
@@ -27,5 +28,6 @@ initModel =
     , fields = Dict.empty
     , route = SwmAddressR
     , history = []
-    , candidateTx = nullCandidateEthTx
+    , candidateTx = { nullCandidateEthTx | to = Just "SWARM VOTING SMART CONTRACT ADDRESS" }
+    , ethNode = "https://mainnet.infura.io"
     }

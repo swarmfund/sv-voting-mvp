@@ -9,10 +9,13 @@ type alias CandidateEthTx =
     }
 
 
-setCandTxFrom : String -> CandidateEthTx -> CandidateEthTx
-setCandTxFrom from tx =
-    { tx | from = Just from }
-
-
 nullCandidateEthTx =
     CandidateEthTx Nothing 0 Nothing Nothing
+
+
+type alias MinEthTx =
+    { from : String
+    , to : String
+    , data : String
+    , value : String
+    }
