@@ -5,7 +5,7 @@ import Html.Attributes exposing (class)
 import Material.Card as Card
 import Material.Color as Color
 import Material.List as Lists
-import Material.Options as Options exposing (cs)
+import Material.Options as Options exposing (cs, css)
 import Material.Typography exposing (display2, headline)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
@@ -38,29 +38,28 @@ castVoteView model =
 
         optionListItem { title, description, params } =
             Lists.li []
-                Card.view
-                [ css "width" "256px"
-                ]
-                [ Card.title
-                    [ css "background" "url('assets/pomegranate.jpg') center / cover"
-                    , css "height" "256px"
-                    , css "padding" "0" -- Clear default padding to encompass scrim
+                [ Card.view
+                    [ css "width" "256px"
                     ]
-                    [ Card.head
-                        [ white
-                        , Options.scrim 0.75
-                        , css "padding" "16px" -- Restore default padding inside scrim
-                        , css "width" "100%"
+                    [ Card.title
+                        [ css "background" "url('assets/pomegranate.jpg') center / cover"
+                        , css "height" "256px"
+                        , css "padding" "0" -- Clear default padding to encompass scrim
                         ]
-                        [ text "Grenadine" ]
-                    ]
-                , Card.text []
-                    [ text "Non-alcoholic syrup used for both its tart and sweet flavour as well as its deep red color." ]
-                ]
-                [ Lists.content [] [ text "checkbox" ]
-                , Lists.content2 []
-                    [ text title
-                    , p [] [ text description ]
+                        [ Card.head
+                            [ Options.scrim 0.75
+                            , css "padding" "16px" -- Restore default padding inside scrim
+                            , css "width" "100%"
+                            ]
+                            [ text "Grenadine" ]
+                        ]
+                    , Card.text []
+                        [ Lists.content [] [ text "checkbox" ]
+                        , Lists.content2 []
+                            [ text title
+                            , p [] [ text description ]
+                            ]
+                        ]
                     ]
                 ]
     in
