@@ -11,5 +11,3 @@ require('./js/birds');
 const Elm = require('./src/SecureVote/SPAs/SwarmMVP/Main.elm');
 const app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen'));
 
-
-

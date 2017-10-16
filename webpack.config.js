@@ -6,7 +6,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 var HTMLWebpackPlugin = require('html-webpack-plugin');
 
 
-var TARGET_ENV = process.env.npm_lifecycle_event === 'prod' ? 'production' : 'development';
+var TARGET_ENV = process.env.npm_lifecycle_event === 'build-web' ? 'production' : 'development';
 var filename = (TARGET_ENV == 'production') ? '[name]-[hash].js' : '[name].js';
 
 const _dist = '_dist';
@@ -28,11 +28,6 @@ const common = {
     module: {
         rules: [
             {
-                test: /\.elm$/,
-                exclude: [/elm-stuff/, /node_modules/],
-                loader:  'elm-webpack-loader?verbose=true&warn=true',
-            },
-            {
                 test:    /\.html$/,
                 exclude: /node_modules/,
                 loader:  'file-loader?name=[name].[ext]',
@@ -53,7 +48,7 @@ const common = {
                 exclude: [
                     /elm-stuff/, /node_modules/
                 ],
-                loaders: ["style-loader", "css-loader"]
+                loaders: ["css-loader"]
             }
         ]
     },
@@ -76,7 +71,8 @@ if (TARGET_ENV === 'development') {
             // Suggested for hot-loading
             new webpack.NamedModulesPlugin(),
             // Prevents compilation errors causing the hot loader to lose state
-            new webpack.NoEmitOnErrorsPlugin()
+            new webpack.NoEmitOnErrorsPlugin(),
+            new webpack.HotModuleReplacementPlugin()
         ],
         module: {
             rules: [
@@ -86,15 +82,8 @@ if (TARGET_ENV === 'development') {
                         /elm-stuff/, /node_modules/
                     ],
                     use: [
-                        {
-                            loader: "elm-hot-loader"
-                        }, {
-                            loader: "elm-webpack-loader",
-                            // add Elm's debug overlay to output
-                            options: {
-                                debug: true
-                            }
-                        }
+                        "elm-hot-loader",
+                        "elm-webpack-loader?verbose=true&warn=true&debug=true&maxInstances=2"
                     ]
                 }
             ]
@@ -108,6 +97,7 @@ if (TARGET_ENV === 'development') {
             historyApiFallback: true
         }
     });
+    console.log(JSON.stringify(module.exports, null, 2))
 }
 
 if (TARGET_ENV === 'production') {
