@@ -42,7 +42,7 @@
     "_sc_deploy": "cd contract && truffle deploy",
     "----- WEB / ELM COMMANDS": "",
     "elm-live": "yarn _live",
-    "web": "webpack-dev-server --port 3000",
+    "web": "webpack-dev-server --port 3000 --open",
     "build-web": "webpack",
     "_open_browser": "open http://localhost:8000/web/src/SecureVote/SPAs/SwarmMVP/Main.elm",
     "_reactor": "elm-reactor",
