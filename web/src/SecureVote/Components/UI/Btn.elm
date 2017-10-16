@@ -4,11 +4,12 @@ import Dict
 import Html exposing (Attribute, Html, div, h1, h2, h3, p, span, text)
 import Html.Attributes exposing (class, style)
 import Material.Button as Button
-import Material.Options as Options exposing (css, cs)
-import Material.Scheme
 import Material.Card as Card
 import Material.Color as Color
+import Material.Dialog as Dialog
 import Material.Elevation as Elevation
+import Material.Options as Options exposing (cs, css)
+import Material.Scheme
 import Material.Textfield as Textf
 import Material.Typography exposing (display1, display2, display3, headline, title)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
@@ -22,6 +23,8 @@ type BtnProps
     | Icon
     | Click Msg
     | Disabled
+    | OpenDialog
+    | CloseDialog
     | BtnNop -- doesn't do anything
     | Opt (Button.Property Msg)
     | Attr (Html.Attribute Msg)
@@ -56,6 +59,12 @@ btn id model props inner =
                 BtnNop ->
                     ( [], [] )
 
+                OpenDialog ->
+                    ( [], [ Dialog.openOn "click" ] )
+
+                CloseDialog ->
+                    ( [], [ Dialog.closeOn "click" ] )
+
                 Opt opt ->
                     ( [], [ opt ] )
 
@@ -67,9 +76,9 @@ btn id model props inner =
                 ( newAttrs, newOpts ) =
                     btnPropToAttr btnProp
             in
-                ( attrs ++ newAttrs, opts ++ newOpts )
+            ( attrs ++ newAttrs, opts ++ newOpts )
 
         ( attrs, opts ) =
             List.foldl f ( [ class "dib" ], [] ) props
     in
-        div attrs [ Button.render Mdl [ id ] model.mdl opts inner ]
+    div attrs [ Button.render Mdl [ id ] model.mdl opts inner ]
