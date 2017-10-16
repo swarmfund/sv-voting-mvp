@@ -65,6 +65,7 @@ typings/
 
 # Output of 'webpack'
 _dist/*
+_dist
 
 # Yarn Integrity file
 .yarn-integrity

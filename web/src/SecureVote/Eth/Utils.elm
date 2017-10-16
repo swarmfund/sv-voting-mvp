@@ -3,7 +3,7 @@ module SecureVote.Eth.Utils exposing (..)
 import Char
 import Hex
 import Keccak exposing (ethereum_keccak_256)
-import Maybe.Extra exposing (combine, (?))
+import Maybe.Extra exposing ((?), combine)
 import Regex exposing (Regex, contains, regex)
 import SecureVote.Eth.Models exposing (CandidateEthTx, MinEthTx)
 
@@ -28,7 +28,7 @@ processCandidateTx candTx =
         data =
             candTx.data
     in
-        Maybe.map4 MinEthTx from to data (intToHexEth value)
+    Maybe.map4 MinEthTx from to data (intToHexEth value)
 
 
 hexRegex : Regex
@@ -68,12 +68,12 @@ toHex ints =
                     else
                         midHex
             in
-                if i < 0 || i > 255 then
-                    Nothing
-                else
-                    Just finHex
+            if i < 0 || i > 255 then
+                Nothing
+            else
+                Just finHex
     in
-        (combine <| List.map intToHex ints) |> Maybe.map String.concat
+    (combine <| List.map intToHex ints) |> Maybe.map String.concat
 
 
 toHexEth : List Int -> Maybe String
@@ -93,10 +93,10 @@ intToHexEth input =
             else
                 outHex_
     in
-        if input < 0 then
-            Nothing
-        else
-            Just <| "0x" ++ outHex
+    if input < 0 then
+        Nothing
+    else
+        Just <| "0x" ++ outHex
 
 
 toChecksumAddress : String -> Maybe String
@@ -119,6 +119,6 @@ toChecksumAddress addr =
             Maybe.map (csdChar aChar) (Result.toMaybe <| Hex.fromString <| String.fromChar hChar)
 
         convertedCase =
-            hashM |> Maybe.andThen (\hash -> combine <| List.map2 (checksumCaseR) (String.toList hash) (String.toList noPrefix))
+            hashM |> Maybe.andThen (\hash -> combine <| List.map2 checksumCaseR (String.toList hash) (String.toList noPrefix))
     in
-        convertedCase |> Maybe.map ((++) "0x" << String.fromList)
+    convertedCase |> Maybe.map ((++) "0x" << String.fromList)

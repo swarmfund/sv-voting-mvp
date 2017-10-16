@@ -49,7 +49,7 @@ multiUpdate msgs model cmds =
                 cmds_ =
                     cmds ++ [ cmd ]
             in
-                multiUpdate msgs_ model_ cmds_
+            multiUpdate msgs_ model_ cmds_
 
         [] ->
             ( model, Cmd.batch cmds )

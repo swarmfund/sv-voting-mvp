@@ -58,9 +58,9 @@ candTxText candTx =
         minTx =
             processCandidateTx candTx
     in
-        case minTx of
-            Nothing ->
-                "Error generating Tx details"
+    case minTx of
+        Nothing ->
+            "Error generating Tx details"
 
-            Just rec ->
-                encode 2 <| minEthTxEncoder rec
+        Just rec ->
+            encode 2 <| minEthTxEncoder rec
