@@ -1,6 +1,6 @@
 module SecureVote.SPAs.SwarmMVP.Views.SwmCastVoteV exposing (..)
 
-import Html exposing (Html, div, span, text, p)
+import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (class)
 import Material.Card as Card
 import Material.Color as Color
@@ -38,6 +38,25 @@ castVoteView model =
 
         optionListItem { title, description, params } =
             Lists.li []
+                Card.view
+                [ css "width" "256px"
+                ]
+                [ Card.title
+                    [ css "background" "url('assets/pomegranate.jpg') center / cover"
+                    , css "height" "256px"
+                    , css "padding" "0" -- Clear default padding to encompass scrim
+                    ]
+                    [ Card.head
+                        [ white
+                        , Options.scrim 0.75
+                        , css "padding" "16px" -- Restore default padding inside scrim
+                        , css "width" "100%"
+                        ]
+                        [ text "Grenadine" ]
+                    ]
+                , Card.text []
+                    [ text "Non-alcoholic syrup used for both its tart and sweet flavour as well as its deep red color." ]
+                ]
                 [ Lists.content [] [ text "checkbox" ]
                 , Lists.content2 []
                     [ text title
@@ -45,13 +64,13 @@ castVoteView model =
                     ]
                 ]
     in
-        fullPageSlide 657980946
-            model
-            []
-            [ Card.text [ cs "center tc" ]
-                [ Options.styled span [ display2, Color.text Color.black, cs "db pa2" ] [ text "Swarm Liquidity Vote" ]
-                , Options.styled span [ headline, cs "black dib ba pa3 ma3" ] [ text "Swarm Token Balance: 34,228" ]
-                , Lists.ul [ cs "mw7 center" ] optionList
-                , btn 894823489 model [ PriBtn, Attr (class "mv3"), Click (ChangePage SwmSubmitR) ] [ text "Continue" ]
-                ]
+    fullPageSlide 657980946
+        model
+        []
+        [ Card.text [ cs "center tc" ]
+            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2" ] [ text "Swarm Liquidity Vote" ]
+            , Options.styled span [ headline, cs "black dib ba pa3 ma3" ] [ text "Swarm Token Balance: 34,228" ]
+            , Lists.ul [ cs "mw7 center" ] optionList
+            , btn 894823489 model [ PriBtn, Attr (class "mv3"), Click (ChangePage SwmSubmitR) ] [ text "Continue" ]
             ]
+        ]
