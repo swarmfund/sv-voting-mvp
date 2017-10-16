@@ -57,7 +57,8 @@ castVoteView model =
                         [ Slider.value <| toFloat <| Dict.get id model.ballotRange ? 0
                         , Slider.min -3
                         , Slider.max 3
-                        , Slider.onChange (SetBallotRange id)
+                        , Slider.step 1
+                        , Slider.onChange <| SetBallotRange id
                         ]
                     , div [ class "dib" ] [ text title ]
                     ]
