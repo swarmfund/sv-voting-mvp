@@ -4,7 +4,7 @@ import Char
 import Dict
 import Hex
 import Keccak exposing (ethereum_keccak_256)
-import Maybe.Extra exposing (combine, (?))
+import Maybe.Extra exposing ((?), combine)
 import Regex exposing (Regex, contains, regex)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(SetField))

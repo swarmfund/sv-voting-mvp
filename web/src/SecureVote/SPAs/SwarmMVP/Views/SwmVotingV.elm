@@ -41,8 +41,8 @@ votingView model =
                     [ text "Ballot Details:" ]
                 , div [] [ text "You selected: Option 1" ]
                 ]
-            , Options.styled div [ headline, cs "black" ] [ text "Ballot Transaction:" ]
-            , div [ class "mw7 ph3 overflow-visible center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
+            , Options.styled span [ headline, cs "black db" ] [ text "Ballot Transaction:" ]
+            , pre [ class "mw6" ] [ text <| candTxText model.candidateTx ]
             , div [ class "mv4" ]
                 [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Click (ChangePage SwmSubmitR) ] [ text "Cast using MEW" ]
                 , btn 785784536 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog dialogView1) ] [ text "Cast using GETH" ]
@@ -58,9 +58,9 @@ candTxText candTx =
         minTx =
             processCandidateTx candTx
     in
-        case minTx of
-            Nothing ->
-                "Error generating Tx details"
+    case minTx of
+        Nothing ->
+            "Error generating Tx details"
 
-            Just rec ->
-                encode 2 <| minEthTxEncoder rec
+        Just rec ->
+            encode 2 <| minEthTxEncoder rec
