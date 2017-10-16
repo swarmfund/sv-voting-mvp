@@ -13,5 +13,7 @@ type Msg
     | SetDialog (Html Msg)
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)
     | MultiMsg (List Msg)
+    | SetEthNode String
+    | UpdateTokenBalance
       -- Elm Mdl
     | Mdl (Material.Msg Msg)

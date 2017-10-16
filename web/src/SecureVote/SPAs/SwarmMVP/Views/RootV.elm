@@ -54,4 +54,4 @@ slideHost model slideParis extraHtml =
         slides =
             List.map drawSlide slideParis
     in
-    div [ class "w-100" ] (slides ++ extraHtml)
+        div [ class "w-100" ] (slides ++ extraHtml)

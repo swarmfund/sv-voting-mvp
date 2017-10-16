@@ -27,6 +27,12 @@ update msg model =
         SetCandidateTx f ->
             { model | candidateTx = f model.candidateTx } ! []
 
+        SetEthNode addr ->
+            { model | ethNode = addr } ! []
+
+        UpdateTokenBalance ->
+            model ! []
+
         -- Boilerplate: Mdl action handler.
         Mdl msg_ ->
             Material.update Mdl msg_ model
@@ -43,7 +49,7 @@ multiUpdate msgs model cmds =
                 cmds_ =
                     cmds ++ [ cmd ]
             in
-            multiUpdate msgs_ model_ cmds_
+                multiUpdate msgs_ model_ cmds_
 
         [] ->
             ( model, Cmd.batch cmds )
