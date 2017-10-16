@@ -26,13 +26,6 @@
 
     <script src="js/vendor/GPUComputationRenderer.js"></script>
 
-    <!--
-    TODO: If you're reading this, you may wish to improve this example by
-        - Create a better shading for the birds?
-
-    -->
-
-
     <!-- shader for bird's position -->
     <script id="fragmentShaderPosition" type="x-shader/x-fragment">
 
@@ -305,19 +298,9 @@
     </script>
 
 
-    <script src="js/birds.js"></script>
+    <!--<script src="js/birds.js"></script>-->
 </div>
 
 <div id="sv-fullscreen" class="w-100 h-100 top-0 left-0 absolute z-999"></div>
-<script type="text/javascript" src="./sv-swarm.js"></script>
-<script type="text/javascript">
-    try { Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen')); }
-    catch (e) {
-        if (e.name == "ReferenceError") {
-            // we are on the production version
-            console.log("Production version")
-        }
-    }
-</script>
 </body>
 </html>

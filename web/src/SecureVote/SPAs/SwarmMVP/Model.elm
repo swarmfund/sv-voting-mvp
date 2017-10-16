@@ -17,6 +17,7 @@ type alias Model =
     , history : List Route
     , candidateTx : CandidateEthTx
     , ethNode : String
+    , swarmErc20Address : String
     }
 
 
@@ -30,4 +31,5 @@ initModel =
     , history = []
     , candidateTx = { nullCandidateEthTx | to = Just "SWARM VOTING SMART CONTRACT ADDRESS" }
     , ethNode = "https://mainnet.infura.io"
+    , swarmErc20Address = "0xa74476443119A942dE498590Fe1f2454d7D4aC0d"
     }
