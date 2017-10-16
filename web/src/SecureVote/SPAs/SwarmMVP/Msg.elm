@@ -11,6 +11,7 @@ type Msg
     | SetField String String
     | ChangePage Route
     | SetDialog (Html Msg)
+    | SetBallotRange Int Float
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)
     | MultiMsg (List Msg)
     | SetEthNode String

@@ -1,5 +1,6 @@
 module SecureVote.SPAs.SwarmMVP.Views.SwmCastVoteV exposing (..)
 
+import Dict
 import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (class)
 import Material.Card as Card
@@ -9,19 +10,24 @@ import Material.List as Lists
 import Material.Options as Options exposing (cs, css)
 import Material.Slider as Slider
 import Material.Typography exposing (display2, headline)
+import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(ChangePage, SetDialog))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(ChangePage, SetBallotRange, SetDialog))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 
 type alias BallotOption =
-    { title : String
+    { id : Int
+    , title : String
     , description : String
     , params : String
-    , btnId : Int
     }
+
+
+reallyLongDescription =
+    "Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long DescriptionReally long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long DescriptionReally long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description "
 
 
 dialogView : String -> Html Msg
@@ -31,10 +37,10 @@ dialogView content =
 
 voteOptions : List BallotOption
 voteOptions =
-    [ BallotOption "Option 1" "Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long DescriptionReally long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long DescriptionReally long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description " "" 865456735673
-    , BallotOption "Option 2" "Description 2" "" 7456345623
-    , BallotOption "Option 3" "Description 3" "" 7246474573
-    , BallotOption "Option 4" "Description 4" "" 4573465672
+    [ BallotOption 6345734567 "Option 1" reallyLongDescription ""
+    , BallotOption 5785678565 "Option 2" "Description 2" ""
+    , BallotOption 2345678654 "Option 3" "Description 3" ""
+    , BallotOption 7896797555 "Option 4" "Description 4" ""
     ]
 
 
@@ -44,20 +50,19 @@ castVoteView model =
         optionList =
             List.map optionListItem voteOptions
 
-        optionListItem { title, description, params, btnId } =
+        optionListItem { id, title, description, params } =
             Lists.li []
                 [ Lists.content []
                     [ Slider.view
-                        [ Slider.value 0
+                        [ Slider.value <| toFloat <| Dict.get id model.ballotRange ? 0
                         , Slider.min -3
                         , Slider.max 3
-
-                        --, Slider.onChange SliderMsg
+                        , Slider.onChange (SetBallotRange id)
                         ]
                     , div [ class "dib" ] [ text title ]
                     ]
                 , Lists.content2 []
-                    [ btn btnId model [ SecBtn, Click (SetDialog (dialogView description)), OpenDialog ] [ text "Show Details" ]
+                    [ btn (id + 1) model [ SecBtn, Click (SetDialog (dialogView description)), OpenDialog ] [ text "Show Details" ]
                     ]
                 ]
     in

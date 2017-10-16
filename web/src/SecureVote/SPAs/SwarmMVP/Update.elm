@@ -21,6 +21,9 @@ update msg model =
         SetDialog view ->
             { model | dialogHtml = view } ! []
 
+        SetBallotRange id value ->
+            { model | ballotRange = Dict.insert id (round value) model.ballotRange } ! []
+
         MultiMsg msgs ->
             multiUpdate msgs model []
 
