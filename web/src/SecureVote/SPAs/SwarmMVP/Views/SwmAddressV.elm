@@ -13,7 +13,7 @@ import SecureVote.Eth.Utils exposing (isValidEthAddress, setCandTxFrom)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Models as SvEthM
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress, isValidEthAddress, setSwmAddress, swmAddrId)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress, setSwmAddress, swmAddrId)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmVoteR))
