@@ -10,7 +10,7 @@ type alias CandidateEthTx =
 
 
 nullCandidateEthTx =
-    CandidateEthTx Nothing 0 Nothing Nothing
+    CandidateEthTx Nothing 0 Nothing (Just "")
 
 
 type alias MinEthTx =
