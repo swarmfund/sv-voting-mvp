@@ -4,7 +4,6 @@
 require('./index.html');
 
 var Elm = require('./src/SecureVote/SPAs/SwarmMVP/Main.elm');
-// var mountNode = document.getElementById('main');
+var app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen'));
 
-// .embed() can take an optional second argument. This would be an object describing the data we need to start a program, i.e. a userID or some token
-// var app = Elm.Main.embed(mountNode);
+var SECURE_VOTE_PRODUCTION = true;
