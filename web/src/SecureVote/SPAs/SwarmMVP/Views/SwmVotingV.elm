@@ -7,7 +7,6 @@ import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs)
 import Material.Typography exposing (display2, headline)
-import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
