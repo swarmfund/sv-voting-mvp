@@ -4,7 +4,7 @@ import Html exposing (Attribute, Html, div, h1, h2, h3, p, span, text)
 import Html.Attributes exposing (class, style)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Dialog exposing (dialog)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageForward), Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
 import SecureVote.SPAs.SwarmMVP.Views.SwmAddressV exposing (swmAddressV)
@@ -30,15 +30,34 @@ slideHost model slideParis extraHtml =
 
         slideOutCs route =
             if route == List.head model.history ? NotFoundR then
-                "slide-out"
+                if model.lastPageDirection == PageForward then
+                    "slide-out"
+                else
+                    "slide-out-back"
+            else if Just route == model.lastRoute then
+                "slide-out-back"
             else
                 ""
 
+        slideInCs =
+            if model.lastPageDirection == PageForward then
+                "slide-in"
+            else
+                "slide-in-back"
+
+        joinCs =
+            String.join " "
+
+        commonCs =
+            "w-100 slider"
+
         drawSlide ( route, slide ) =
             if route == currSlide then
-                div [ class "w-100 slider slide-in" ] [ slide ]
+                div [ class <| joinCs [ commonCs, slideInCs ] ] [ slide ]
             else if List.member route model.history then
-                div [ class <| "w-100 slider " ++ slideOutCs route ] [ slide ]
+                div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
+            else if model.lastRoute == Just route then
+                div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
             else
                 div [] []
 

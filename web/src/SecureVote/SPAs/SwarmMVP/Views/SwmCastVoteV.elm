@@ -1,6 +1,5 @@
 module SecureVote.SPAs.SwarmMVP.Views.SwmCastVoteV exposing (..)
 
-import Decimal
 import Dict
 import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (class, style)
@@ -15,7 +14,7 @@ import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Utils exposing (decimalTo18dps, formatBalance, rawTokenBalance18DpsToBalance, stripTrailingZeros)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(ChangePage, SetBallotRange, SetDialog))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetBallotRange, SetDialog))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 
@@ -82,7 +81,7 @@ castVoteView model =
                     , div [ class "ml3 dib" ] [ text title ]
                     ]
                 , Lists.content2 []
-                    [ btn (id + 1) model [ SecBtn, Click (SetDialog (dialogView description)), OpenDialog ] [ text "Show Details" ]
+                    [ btn (id + 1) model [ SecBtn, Click (SetDialog "Option Details" (dialogView description)), OpenDialog ] [ text "Show Details" ]
                     ]
                 ]
     in
@@ -93,6 +92,6 @@ castVoteView model =
             [ Options.styled span [ display2, Color.text Color.black, cs "db pa2" ] [ text "Swarm Liquidity Vote" ]
             , Options.styled span [ headline, cs "black dib ba pa3 ma3" ] [ text <| "SWM Balance: " ++ swmBalanceStr ]
             , Lists.ul [ cs "mw7 center" ] optionList
-            , btn 894823489 model [ PriBtn, Attr (class "mv3"), Click (ChangePage SwmSubmitR) ] [ text "Continue" ]
+            , btn 894823489 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmSubmitR) ] [ text "Continue" ]
             ]
         ]

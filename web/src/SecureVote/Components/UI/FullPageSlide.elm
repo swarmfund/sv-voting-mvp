@@ -11,7 +11,7 @@ import Material.Options as Options exposing (cs, css)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(ChangeToPreviousPage, SetElevation))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoBack, SetElevation))
 
 
 -- TODO Refactor out SetElevation into SecureVote components (ala elm-mdl)
@@ -19,6 +19,21 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(ChangeToPreviousPage, SetEleva
 
 fullPageSlide : Int -> Model -> List (Attribute Msg) -> List (Card.Block Msg) -> Html Msg
 fullPageSlide id model attrs innerHtmls =
+    let
+        backOpts =
+            [ Icon, Attr (class "fl sv-button-large"), Click PageGoBack ]
+                ++ (if List.length model.history == 0 then
+                        [ Disabled ]
+                    else
+                        [ BtnNop ]
+                   )
+
+        settingsOpts =
+            [ Icon, Attr (class "sv-button-large") ]
+
+        infoOpts =
+            [ Icon, Attr (class "sv-button-large") ]
+    in
     div [ class "dt w-100 mv5" ]
         [ div
             [ class "dtc w-10" ]
@@ -36,8 +51,11 @@ fullPageSlide id model attrs innerHtmls =
             , Elevation.transition 125
             ]
             ([ Card.actions []
-                [ btn 885338576 model [ Icon, Attr (class "fl sv-button-large"), Click ChangeToPreviousPage ] [ Icon.view "arrow_back" [ Icon.size48 ] ]
-                , btn 345647875 model [ Icon, Attr (class "fr sv-button-large") ] [ Icon.view "menu" [ Icon.size48 ] ]
+                [ btn 885338576 model backOpts [ Icon.view "arrow_back" [ Icon.size24 ] ]
+                , div [ class "fr dib" ]
+                    [ btn 130572984 model infoOpts [ Icon.view "info_outline" [ Icon.size24 ] ]
+                    , btn 345647875 model settingsOpts [ Icon.view "settings" [ Icon.size24 ] ]
+                    ]
                 ]
              ]
                 ++ innerHtmls

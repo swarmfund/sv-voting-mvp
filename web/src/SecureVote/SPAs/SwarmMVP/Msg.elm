@@ -12,9 +12,9 @@ type
     -- UI Maintenance msgs
     = SetElevation Int Bool
     | SetField String String
-    | ChangePage Route
-    | ChangeToPreviousPage
-    | SetDialog (Html Msg)
+    | PageGoForward Route
+    | PageGoBack
+    | SetDialog String (Html Msg)
     | SetBallotRange Int Float
       -- Eth related msgs
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)
