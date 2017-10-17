@@ -2,10 +2,9 @@ module SecureVote.SPAs.SwarmMVP.Views.SwmCastVoteV exposing (..)
 
 import Dict
 import Html exposing (Html, div, p, span, text)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, style)
 import Material.Card as Card
 import Material.Color as Color
-import Material.Elevation as Elevation
 import Material.List as Lists
 import Material.Options as Options exposing (cs, css)
 import Material.Slider as Slider
@@ -26,6 +25,7 @@ type alias BallotOption =
     }
 
 
+reallyLongDescription : String
 reallyLongDescription =
     "Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long DescriptionReally long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long DescriptionReally long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description "
 
@@ -53,14 +53,28 @@ castVoteView model =
         optionListItem { id, title, description, params } =
             Lists.li []
                 [ Lists.content []
-                    [ Slider.view
-                        [ Slider.value <| toFloat <| Dict.get id model.ballotRange ? 0
-                        , Slider.min -3
-                        , Slider.max 3
-                        , Slider.step 1
-                        , Slider.onChange <| SetBallotRange id
+                    [ div []
+                        [ div [] [ text <| "Your vote is: " ++ toString (Dict.get id model.ballotRange ? 0) ]
+                        , span
+                            [ class "f3 relative"
+                            , style [ ( "top", "3px" ), ( "left", "20px" ) ]
+                            ]
+                            [ text "👎" ]
+                        , Slider.view
+                            [ Slider.value <| toFloat <| Dict.get id model.ballotRange ? 0
+                            , Slider.min -3
+                            , Slider.max 3
+                            , Slider.step 1
+                            , Slider.onChange <| SetBallotRange id
+                            , cs "inline-flex w5"
+                            ]
+                        , span
+                            [ class "f3 relative"
+                            , style [ ( "top", "3px" ), ( "right", "20px" ) ]
+                            ]
+                            [ text "❤️" ]
                         ]
-                    , div [ class "dib" ] [ text title ]
+                    , div [ class "ml3 dib" ] [ text title ]
                     ]
                 , Lists.content2 []
                     [ btn (id + 1) model [ SecBtn, Click (SetDialog (dialogView description)), OpenDialog ] [ text "Show Details" ]
