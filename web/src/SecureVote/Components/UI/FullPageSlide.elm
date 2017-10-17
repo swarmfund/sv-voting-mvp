@@ -6,10 +6,12 @@ import Html.Attributes exposing (class)
 import Material.Card as Card
 import Material.Color as Color
 import Material.Elevation as Elevation
+import Material.Icon as Icon
 import Material.Options as Options exposing (cs, css)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(SetElevation))
 import Maybe.Extra exposing ((?))
+import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
+import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(ChangeToPreviousPage, SetElevation))
 
 
 -- TODO Refactor out SetElevation into SecureVote components (ala elm-mdl)
@@ -33,7 +35,13 @@ fullPageSlide id model attrs innerHtmls =
             , Options.onMouseLeave (SetElevation id False)
             , Elevation.transition 125
             ]
-            innerHtmls
+            ([ Card.actions []
+                [ btn 885338576 model [ Icon, Attr (class "fl sv-button-large"), Click ChangeToPreviousPage ] [ Icon.view "arrow_back" [ Icon.size48 ] ]
+                , btn 345647875 model [ Icon, Attr (class "fr sv-button-large") ] [ Icon.view "menu" [ Icon.size48 ] ]
+                ]
+             ]
+                ++ innerHtmls
+            )
         , div
             [ class "dtc w-10" ]
             []

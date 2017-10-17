@@ -10,6 +10,7 @@ type Msg
     = SetElevation Int Bool
     | SetField String String
     | ChangePage Route
+    | ChangeToPreviousPage
     | SetDialog (Html Msg)
     | SetBallotRange Int Float
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)

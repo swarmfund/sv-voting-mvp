@@ -2,7 +2,8 @@ module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 
 import Dict
 import Material
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import Maybe.Extra exposing ((?))
+import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 
 
@@ -17,6 +18,9 @@ update msg model =
 
         ChangePage route ->
             { model | route = route, history = model.route :: model.history } ! []
+
+        ChangeToPreviousPage ->
+            { model | route = List.head model.history ? initModel.route, history = List.tail model.history ? [] } ! []
 
         SetDialog view ->
             { model | dialogHtml = view } ! []
