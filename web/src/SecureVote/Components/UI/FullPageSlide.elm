@@ -7,9 +7,9 @@ import Material.Card as Card
 import Material.Color as Color
 import Material.Elevation as Elevation
 import Material.Options as Options exposing (cs, css)
+import Maybe.Extra exposing ((?))
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(SetElevation))
-import Maybe.Extra exposing ((?))
 
 
 -- TODO Refactor out SetElevation into SecureVote components (ala elm-mdl)
