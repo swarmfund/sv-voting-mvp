@@ -22,7 +22,7 @@ fullPageSlide id model attrs innerHtmls =
     let
         backOpts =
             [ Icon, Attr (class "fl sv-button-large"), Click PageGoBack ]
-                ++ (if model.lastRoute == Nothing then
+                ++ (if List.length model.history == 0 then
                         [ Disabled ]
                     else
                         [ BtnNop ]
@@ -51,10 +51,10 @@ fullPageSlide id model attrs innerHtmls =
             , Elevation.transition 125
             ]
             ([ Card.actions []
-                [ btn 885338576 model backOpts [ Icon.view "arrow_back" [ Icon.size48 ] ]
+                [ btn 885338576 model backOpts [ Icon.view "arrow_back" [ Icon.size24 ] ]
                 , div [ class "fr dib" ]
-                    [ btn 130572984 model infoOpts [ Icon.view "info_outline" [ Icon.size48 ] ]
-                    , btn 345647875 model settingsOpts [ Icon.view "settings" [ Icon.size48 ] ]
+                    [ btn 130572984 model infoOpts [ Icon.view "info_outline" [ Icon.size24 ] ]
+                    , btn 345647875 model settingsOpts [ Icon.view "settings" [ Icon.size24 ] ]
                     ]
                 ]
              ]

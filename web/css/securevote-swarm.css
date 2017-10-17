@@ -126,8 +126,3 @@
     width: 48px;
     height: 48px;
 }
-
-.sv-button-large button i.material-icons {
-    /*-webkit-transform:  scale(0.5, 0.5); !*translate(-24px,-12px)*!*/
-    transform: translate(-75%, -50%) scale(0.5, 0.5);
-}
