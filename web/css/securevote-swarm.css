@@ -50,3 +50,13 @@
 .mdl-slider {
     min-height: 20px;
 }
+
+.sv-button-large button {
+    width: 48px;
+    height: 48px;
+}
+
+.sv-button-large button i.material-icons {
+    -webkit-transform: translate(-24px,-12px);
+    transform: translate(-24px,-12px);
+}

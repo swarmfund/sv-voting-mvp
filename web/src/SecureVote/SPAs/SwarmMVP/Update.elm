@@ -5,7 +5,7 @@ import Material
 import Maybe.Extra exposing ((?))
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
 
 
@@ -20,6 +20,9 @@ update msg model =
 
         ChangePage route ->
             { model | route = route, history = model.route :: model.history } ! []
+
+        ChangeToPreviousPage ->
+            { model | route = List.head model.history ? initModel.route, history = List.tail model.history ? [] } ! []
 
         SetDialog view ->
             { model | dialogHtml = view } ! []
