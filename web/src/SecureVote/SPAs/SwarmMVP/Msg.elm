@@ -16,5 +16,10 @@ type Msg
     | MultiMsg (List Msg)
     | SetEthNode String
     | UpdateTokenBalance
+    | PortWeb3 Web3Msg
       -- Elm Mdl
     | Mdl (Material.Msg Msg)
+
+
+type Web3Msg
+    = SetProvider
