@@ -1,11 +1,12 @@
 module SecureVote.SPAs.SwarmMVP.Main exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (href, class, style)
+import Html.Attributes exposing (class, href, style)
 import Material
-import Material.Scheme
 import Material.Button as Button
 import Material.Options as Options exposing (css)
+import Material.Scheme
+import SecureVote.Eth.Web3 exposing (setWeb3Provider)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Update exposing (update)
@@ -18,16 +19,16 @@ subscriptions model =
         []
 
 
-initCmds : Cmd Msg
-initCmds =
+initCmds : Model -> Cmd Msg
+initCmds initModel =
     Cmd.batch
-        []
+        [ setWeb3Provider initModel.ethNode ]
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( initModel, initCmds )
+        { init = ( initModel, initCmds initModel )
         , view = rootView
         , subscriptions = always Sub.none
         , update = update
