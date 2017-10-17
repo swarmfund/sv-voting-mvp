@@ -46,3 +46,7 @@
 #birds-container {
     opacity: .4;
 }
+
+.mdl-slider {
+    min-height: 20px;
+}

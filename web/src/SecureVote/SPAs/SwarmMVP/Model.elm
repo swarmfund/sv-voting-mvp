@@ -13,6 +13,7 @@ type alias Model =
     , dialogHtml : Html Msg
     , elevations : Dict Int Bool
     , fields : Dict String String
+    , ballotRange : Dict Int Int
     , route : Route
     , history : List Route
     , candidateTx : CandidateEthTx
@@ -27,6 +28,7 @@ initModel =
     , dialogHtml = div [] []
     , elevations = Dict.empty
     , fields = Dict.empty
+    , ballotRange = Dict.empty
     , route = SwmAddressR
     , history = []
     , candidateTx = { nullCandidateEthTx | to = Just "SWARM VOTING SMART CONTRACT ADDRESS" }
