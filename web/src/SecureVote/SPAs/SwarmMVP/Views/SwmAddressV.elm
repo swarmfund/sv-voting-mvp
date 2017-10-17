@@ -1,6 +1,5 @@
 module SecureVote.SPAs.SwarmMVP.Views.SwmAddressV exposing (..)
 
-import Dict
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
 import Material.Card as Card
@@ -11,13 +10,11 @@ import Material.Typography exposing (body1, display1, display2, display3, headli
 import Maybe.Extra exposing ((?), isNothing)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
-import SecureVote.Eth.Models as SvEthM
 import SecureVote.Eth.Utils exposing (isValidEthAddress, setCandTxFrom)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress, setSwmAddress, swmAddrId)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmVoteR))
-import Tuple exposing (second)
 
 
 swmAddressV : Model -> Html Msg
