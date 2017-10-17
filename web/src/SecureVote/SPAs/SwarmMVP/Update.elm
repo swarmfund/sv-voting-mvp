@@ -2,9 +2,11 @@ module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 
 import Dict
 import Material
-import SecureVote.Eth.Web3 exposing (setWeb3Provider)
+import Maybe.Extra exposing ((?))
+import SecureVote.Eth.Web3 exposing (..)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), Web3Msg)
+import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -37,9 +39,16 @@ update msg model =
         UpdateTokenBalance ->
             model ! []
 
+        -- Errors
+        LogErr err ->
+            { model | errors = err :: model.errors } ! []
+
         -- PORTS
-        PortWeb3 msg ->
-            model ! updateWeb3 msg model
+        ToWeb3 msg ->
+            model ! updateToWeb3 msg model
+
+        FromWeb3 msg ->
+            updateFromWeb3 msg model
 
         -- Boilerplate: Mdl action handler.
         Mdl msg_ ->
@@ -63,6 +72,23 @@ multiUpdate msgs model cmds =
             ( model, Cmd.batch cmds )
 
 
-updateWeb3 : Web3Msg -> Model -> List (Cmd msg)
-updateWeb3 web3msg model =
-    [ setWeb3Provider model.ethNode ]
+updateToWeb3 : ToWeb3Msg -> Model -> List (Cmd msg)
+updateToWeb3 web3msg model =
+    case web3msg of
+        SetProvider ->
+            [ setWeb3Provider model.ethNode ]
+
+        GetErc20Balance ->
+            let
+                swmAddr =
+                    -- probs okay because it will return 0
+                    getSwmAddress model ? "0x00"
+            in
+            [ getErc20Balance <| GetErc20BalanceReq model.swarmErc20Address swmAddr ]
+
+
+updateFromWeb3 : FromWeb3Msg -> Model -> ( Model, Cmd Msg )
+updateFromWeb3 msg model =
+    case msg of
+        GotBalance bal ->
+            { model | swmBalance = Just bal } ! []
