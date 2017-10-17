@@ -2,8 +2,9 @@ module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 
 import Dict
 import Material
+import SecureVote.Eth.Web3 exposing (setWeb3Provider)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), Web3Msg)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -36,6 +37,10 @@ update msg model =
         UpdateTokenBalance ->
             model ! []
 
+        -- PORTS
+        PortWeb3 msg ->
+            model ! updateWeb3 msg model
+
         -- Boilerplate: Mdl action handler.
         Mdl msg_ ->
             Material.update Mdl msg_ model
@@ -56,3 +61,8 @@ multiUpdate msgs model cmds =
 
         [] ->
             ( model, Cmd.batch cmds )
+
+
+updateWeb3 : Web3Msg -> Model -> List (Cmd msg)
+updateWeb3 web3msg model =
+    [ setWeb3Provider model.ethNode ]
