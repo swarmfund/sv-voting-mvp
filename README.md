@@ -39,6 +39,8 @@ You should set it up for your editor and Elm code should be formatted with this 
 
 Docs: https://github.com/avh4/elm-format - instructions are listed here for most popular editors.
 
+`npm install -g elm-format@exp` - currently using `elm-format-0.18 0.7.0-exp`
+
 ### Elm-Mdl
 
 We use `elm-mdl` (material design light) for UI components.

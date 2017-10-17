@@ -33,9 +33,6 @@ type BtnProps
 btn : Int -> Model -> List BtnProps -> List (Html Msg) -> Html Msg
 btn id model props inner =
     let
-        a =
-            1
-
         btnPropToAttr prop =
             case prop of
                 PriBtn ->
@@ -81,4 +78,6 @@ btn id model props inner =
         ( attrs, opts ) =
             List.foldl f ( [ class "dib" ], [] ) props
     in
-    div attrs [ Button.render Mdl [ id ] model.mdl opts inner ]
+    div attrs
+        [ Button.render Mdl [ id ] model.mdl opts inner
+        ]

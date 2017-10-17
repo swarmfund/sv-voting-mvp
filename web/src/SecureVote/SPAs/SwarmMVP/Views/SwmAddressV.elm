@@ -31,14 +31,14 @@ swmAddressV model =
 
         msgs =
             MultiMsg
-                [ ChangePage SwmVoteR
+                [ PageGoForward SwmVoteR
                 , SetCandidateTx (setCandTxFrom <| getSwmAddress model ? "AddressView getSwmAddress error")
                 , ToWeb3 GetErc20Balance
                 ]
 
         devMsgs =
             MultiMsg
-                [ ChangePage SwmVoteR
+                [ PageGoForward SwmVoteR
 
                 -- bitrex address holding golem
                 , setSwmAddress "0xFBb1b73C4f0BDa4f67dcA266ce6Ef42f520fBB98"

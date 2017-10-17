@@ -1,6 +1,6 @@
 module SecureVote.Components.UI.Dialog exposing (..)
 
-import Html exposing (Attribute, Html, text)
+import Html exposing (Attribute, Html, div, text)
 import Html.Attributes exposing (class)
 import Material.Dialog as Dialog
 import Material.Options as Options exposing (cs)
@@ -13,15 +13,14 @@ dialog : Model -> Html Msg
 dialog model =
     Dialog.view
         -- Tachyons has no Max-Height :(
-        [ cs "h-75 overflow-scroll"
+        -- possible flex attrs: flex flex-column justify-between
+        [ cs "overflow-scroll w-75 h-75"
         ]
-        [ Dialog.title [] [ text "Greetings" ]
-        , Dialog.content []
-            [ model.dialogHtml
+        [ Dialog.title [] [ text model.dialogHtml.title ]
+        , Dialog.content [ cs "" ]
+            [ model.dialogHtml.html
             ]
         , Dialog.actions []
-            -- Both Buttons do the same thing.
-            [ btn 976565675 model [ PriBtn, CloseDialog ] [ text "Okay" ]
-            , btn 458567467 model [ SecBtn, CloseDialog ] [ text "Close" ]
+            [ btn 976565675 model [ SecBtn, CloseDialog, Attr (class "fr") ] [ text "Close" ]
             ]
         ]

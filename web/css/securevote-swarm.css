@@ -12,6 +12,24 @@
     animation: slide-out 0.5s forwards;
 }
 
+.slide-in-back {
+    animation: slide-in-back 0.5s forwards;
+    visibility: visible;
+}
+
+.slide-out-back {
+    animation: slide-out-back 0.5s forwards;
+}
+
+.zoom-in {
+    animation: zoom-in 0.5s forwards;
+    visibility: visible;
+}
+
+.zoom-out {
+    animation: zoom-out 0.5s forwards;
+}
+
 @keyframes slide-in {
     0% {
         opacity: 0;
@@ -39,6 +57,59 @@
 }
 
 
+@keyframes slide-in-back {
+    0% {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(0%);
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+@keyframes slide-out-back {
+    0% {
+        transform: translateX(0%);
+        opacity: 1;
+        visibility: visible;
+    }
+    100% {
+        transform: translateX(100%);
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+@keyframes zoom-in {
+    0% {
+        opacity: 0;
+        visibility: hidden;
+        transform: scale(0.5, 0.5);
+    }
+    100% {
+        transform: scale(1, 1);
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+@keyframes zoom-out {
+    0% {
+        transform: scale(1, 1);
+        opacity: 1;
+        visibility: visible;
+    }
+    100% {
+        transform:  scale(0.5, 0.5);
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+
 #sv-background {
     background-color: #ffaf03;
 }
@@ -57,6 +128,6 @@
 }
 
 .sv-button-large button i.material-icons {
-    -webkit-transform: translate(-24px,-12px);
-    transform: translate(-24px,-12px);
+    /*-webkit-transform:  scale(0.5, 0.5); !*translate(-24px,-12px)*!*/
+    transform: translate(-75%, -50%) scale(0.5, 0.5);
 }

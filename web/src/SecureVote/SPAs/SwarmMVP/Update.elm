@@ -5,7 +5,7 @@ import Material
 import Maybe.Extra exposing ((?))
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
+import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
 
 
@@ -18,14 +18,20 @@ update msg model =
         SetField fieldName value ->
             { model | fields = Dict.insert fieldName value model.fields } ! []
 
-        ChangePage route ->
-            { model | route = route, history = model.route :: model.history } ! []
+        PageGoForward route ->
+            { model | route = route, history = model.route :: model.history, lastPageDirection = PageForward } ! []
 
-        ChangeToPreviousPage ->
-            { model | route = List.head model.history ? initModel.route, history = List.tail model.history ? [] } ! []
+        PageGoBack ->
+            { model
+                | route = List.head model.history ? initModel.route
+                , history = List.tail model.history ? []
+                , lastPageDirection = PageBack
+                , lastRoute = Just model.route
+            }
+                ! []
 
-        SetDialog view ->
-            { model | dialogHtml = view } ! []
+        SetDialog title view ->
+            { model | dialogHtml = { title = title, html = view } } ! []
 
         SetBallotRange id value ->
             { model | ballotRange = Dict.insert id (round value) model.ballotRange } ! []
