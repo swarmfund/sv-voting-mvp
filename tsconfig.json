@@ -5,9 +5,10 @@
     "sourceMap": true
   },
   "exclude": [
-    "node_modules"
+    "node_modules", "elm-stuff"
   ],
   "include": [
-    "./node_modules/web3-typescript-typings/index.d.ts"
+    "./node_modules/web3-typescript-typings/index.d.ts",
+    "./web"
   ]
 }

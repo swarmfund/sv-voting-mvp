@@ -7,7 +7,7 @@ var HTMLWebpackPlugin = require('html-webpack-plugin');
 
 
 var TARGET_ENV = process.env.npm_lifecycle_event === 'build-web' ? 'production' : 'development';
-var filename = (TARGET_ENV == 'production') ? '[name]-[hash].js' : '[name].js';
+var filename = (TARGET_ENV === 'production') ? '[name]-[hash].js' : '[name].js';
 
 const _dist = '_dist';
 const swarmOutputPath = path.join(__dirname, _dist);
@@ -27,6 +27,7 @@ const common = {
     },
     module: {
         rules: [
+            { test: /\.tsx?$/, loader: "ts-loader" },
             {
                 test:    /\.html$/,
                 exclude: /node_modules/,
@@ -60,7 +61,10 @@ const common = {
             // inject details of output file at end of body
             inject: 'body'
         })
-    ]
+    ],
+    resolve: {
+        extensions: [".js", ".json", ".ts"]
+    }
 };
 
 

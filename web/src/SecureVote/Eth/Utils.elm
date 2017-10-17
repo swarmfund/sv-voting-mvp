@@ -1,6 +1,7 @@
 module SecureVote.Eth.Utils exposing (..)
 
 import Char
+import Decimal exposing (Decimal)
 import Hex
 import Keccak exposing (ethereum_keccak_256)
 import Maybe.Extra exposing ((?), combine)
@@ -122,3 +123,88 @@ toChecksumAddress addr =
             hashM |> Maybe.andThen (\hash -> combine <| List.map2 checksumCaseR (String.toList hash) (String.toList noPrefix))
     in
     convertedCase |> Maybe.map ((++) "0x" << String.fromList)
+
+
+dec10ToThe18 : Decimal
+dec10ToThe18 =
+    Decimal.fromIntWithExponent 1 18
+
+
+dec10ToTheNeg18 : Decimal
+dec10ToTheNeg18 =
+    Decimal.fromIntWithExponent 1 -18
+
+
+dec0 : Decimal
+dec0 =
+    Decimal.zero
+
+
+decimalTo18dps : Decimal -> Decimal
+decimalTo18dps toDiv =
+    Decimal.mul toDiv dec10ToTheNeg18
+
+
+decimalFrom18dps : Decimal -> Decimal
+decimalFrom18dps toMul =
+    Decimal.mul toMul dec10ToThe18
+
+
+stripTrailingZeros : String -> String
+stripTrailingZeros str =
+    let
+        isZero =
+            String.endsWith "0" str
+    in
+    if isZero then
+        stripTrailingZeros <| String.dropRight 1 str
+    else
+        str
+
+
+stripTrailingDecimalPoint : String -> String
+stripTrailingDecimalPoint str =
+    let
+        isDec =
+            String.endsWith "." str
+    in
+    if isDec then
+        stripTrailingDecimalPoint <| String.dropRight 1 str
+    else
+        str
+
+
+addCommasToBalance : String -> String
+addCommasToBalance str =
+    let
+        postSplit =
+            String.split "." str
+
+        ( pre, post ) =
+            case postSplit of
+                pre_ :: post_ ->
+                    ( pre_, post_ )
+
+                [] ->
+                    ( str, [] )
+
+        last3 =
+            String.right 3 pre
+
+        firstLot =
+            String.dropRight 3 pre
+    in
+    if String.length str <= 3 then
+        str
+    else
+        String.join "." <| (addCommasToBalance firstLot ++ "," ++ last3) :: post
+
+
+formatBalance : String -> String
+formatBalance =
+    addCommasToBalance << stripTrailingDecimalPoint << stripTrailingZeros
+
+
+rawTokenBalance18DpsToBalance : Decimal -> String
+rawTokenBalance18DpsToBalance =
+    formatBalance << Decimal.toString << decimalTo18dps
