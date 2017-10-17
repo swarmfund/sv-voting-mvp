@@ -13,6 +13,7 @@ type
     = SetElevation Int Bool
     | SetField String String
     | ChangePage Route
+    | ChangeToPreviousPage
     | SetDialog (Html Msg)
     | SetBallotRange Int Float
       -- Eth related msgs
