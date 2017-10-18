@@ -4,7 +4,7 @@ import Decimal exposing (Decimal)
 import Html exposing (Html)
 import Material
 import SecureVote.Eth.Models exposing (CandidateEthTx)
-import SecureVote.SPAs.SwarmMVP.Routes exposing (Route)
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute, Route)
 
 
 type
@@ -37,12 +37,3 @@ type ToWeb3Msg
 
 type FromWeb3Msg
     = GotBalance Decimal
-
-
-type DialogRoute
-    = SettingsDialog
-    | BallotDialog String
-    | InfoDialog
-    | GethDialog
-    | VerifyDialog
-    | DebugDialog

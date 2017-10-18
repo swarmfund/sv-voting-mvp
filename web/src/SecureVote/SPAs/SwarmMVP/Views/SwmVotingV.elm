@@ -13,8 +13,8 @@ import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Utils exposing (processCandidateTx)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(GethDialog, VerifyDialog), Msg(PageGoForward, SetDialog))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetDialog))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(GethDialog, VerifyDialog), Route(SwmSubmitR))
 
 
 votingView : Model -> Html Msg

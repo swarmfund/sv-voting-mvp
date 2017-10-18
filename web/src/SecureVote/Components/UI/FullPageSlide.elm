@@ -11,7 +11,8 @@ import Material.Options as Options exposing (cs, css)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(DebugDialog, InfoDialog, SettingsDialog), Msg(..))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(DebugDialog, InfoDialog, SettingsDialog))
 
 
 -- TODO Refactor out SetElevation into SecureVote components (ala elm-mdl)

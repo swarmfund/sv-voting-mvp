@@ -15,8 +15,8 @@ import SecureVote.Eth.Utils exposing (decimalTo18dps, formatBalance, rawTokenBal
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (voteOptions)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(BallotDialog), Msg(PageGoForward, SetBallotRange, SetDialog))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetBallotRange, SetDialog))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmSubmitR))
 
 
 castVoteView : Model -> Html Msg

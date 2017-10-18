@@ -7,14 +7,14 @@ import Material
 import Material.Snackbar
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
-import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(NotFoundR, SwmAddressR))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(NotFoundR, SwmAddressR))
 
 
 type alias Model =
     { mdl : Material.Model
     , snack : Material.Snackbar.Model Msg
     , errors : List String
-    , dialogHtml : { title : String, html : Html Msg }
+    , dialogHtml : { title : String, route : DialogRoute }
     , elevations : Dict Int Bool
     , fields : Dict String String
     , ballotRange : Dict Int Int
@@ -35,7 +35,7 @@ initModel =
     { mdl = Material.model
     , snack = Material.Snackbar.model
     , errors = []
-    , dialogHtml = { title = "", html = div [] [] }
+    , dialogHtml = { title = "", route = NotFoundDialog }
     , elevations = Dict.empty
     , fields = Dict.empty
     , ballotRange = Dict.empty

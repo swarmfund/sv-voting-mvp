@@ -1,13 +1,12 @@
 module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 
 import Dict
-import Html exposing (Html)
 import Material
 import Maybe.Extra exposing ((?))
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(..), FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Views.DialogV exposing (..)
 
 
@@ -33,7 +32,7 @@ update msg model =
                 ! []
 
         SetDialog title route ->
-            { model | dialogHtml = { title = title, html = updateDialogView route model } } ! []
+            { model | dialogHtml = { title = title, route = route } } ! []
 
         SetBallotRange id value ->
             let
@@ -108,25 +107,3 @@ updateFromWeb3 msg model =
     case msg of
         GotBalance bal ->
             { model | swmBalance = Just bal } ! []
-
-
-updateDialogView : DialogRoute -> Model -> Html Msg
-updateDialogView route model =
-    case route of
-        SettingsDialog ->
-            settingsDialogV model
-
-        BallotDialog content ->
-            customDialogV content
-
-        InfoDialog ->
-            infoDialogV
-
-        GethDialog ->
-            gethDialogV
-
-        VerifyDialog ->
-            verifyDialogV
-
-        DebugDialog ->
-            debugDialogV model
