@@ -22,6 +22,7 @@ setSwmAddress =
     SetField swmAddrId
 
 
+ethNodeTemp : String
 ethNodeTemp =
     "ethNodeUrl"
 

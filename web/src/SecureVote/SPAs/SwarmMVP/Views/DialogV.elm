@@ -7,6 +7,7 @@ import Material.Textfield as Textf
 import Material.Typography exposing (menu)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
+import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRender)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getEthNodeTemp, setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(SetProvider))
@@ -56,9 +57,9 @@ verifyDialogV =
     div [] [ text "This is verify ballot dialog box" ]
 
 
-customDialogV : String -> Html Msg
+customDialogV : DialogHtml msg -> Html msg
 customDialogV content =
-    div [] [ text content ]
+    div [] [ dialogHtmlRender [] content ]
 
 
 debugDialogV : Model -> Html Msg
