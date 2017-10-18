@@ -15,9 +15,9 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(SetProvider))
 settingsDialogV : Model -> Html Msg
 settingsDialogV model =
     let
-        setEthNodeMsgs model_ =
+        setEthNodeMsgs =
             MultiMsg
-                [ SetEthNode <| getEthNodeTemp model_ ? ""
+                [ SetEthNode <| getEthNodeTemp model ? ""
                 , ToWeb3 SetProvider
                 ]
     in
@@ -36,7 +36,7 @@ settingsDialogV model =
                 , css "min-width" "400px"
                 ]
                 []
-            , btn 456467568 model [ PriBtn, Click <| setEthNodeMsgs model ] [ text "Update" ]
+            , btn 456467568 model [ PriBtn, Click <| setEthNodeMsgs ] [ text "Update" ]
             ]
         ]
 

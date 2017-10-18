@@ -7,7 +7,6 @@ import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
-import SecureVote.SPAs.SwarmMVP.Views.DialogV exposing (..)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
