@@ -6,3 +6,13 @@ type Route
     | SwmVoteR
     | SwmSubmitR
     | NotFoundR
+
+
+type DialogRoute
+    = SettingsDialog
+    | BallotDialog String
+    | InfoDialog
+    | GethDialog
+    | VerifyDialog
+    | DebugDialog
+    | NotFoundDialog

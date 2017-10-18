@@ -4,7 +4,7 @@ import Decimal exposing (Decimal)
 import Html exposing (Html)
 import Material
 import SecureVote.Eth.Models exposing (CandidateEthTx)
-import SecureVote.SPAs.SwarmMVP.Routes exposing (Route)
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute, Route)
 
 
 type
@@ -14,7 +14,7 @@ type
     | SetField String String
     | PageGoForward Route
     | PageGoBack
-    | SetDialog String (Html Msg)
+    | SetDialog String DialogRoute
     | SetBallotRange Int Float
       -- Eth related msgs
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)

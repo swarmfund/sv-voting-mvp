@@ -30,8 +30,8 @@ update msg model =
             }
                 ! []
 
-        SetDialog title view ->
-            { model | dialogHtml = { title = title, html = view } } ! []
+        SetDialog title route ->
+            { model | dialogHtml = { title = title, route = route } } ! []
 
         SetBallotRange id value ->
             let

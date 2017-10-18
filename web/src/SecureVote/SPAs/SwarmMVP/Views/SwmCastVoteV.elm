@@ -16,12 +16,7 @@ import SecureVote.SPAs.SwarmMVP.Ballot exposing (renderReleaseScheduleTitle, vot
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetBallotRange, SetDialog))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
-
-
-dialogView : String -> Html Msg
-dialogView content =
-    div [] [ text content ]
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmSubmitR))
 
 
 castVoteView : Model -> Html Msg
@@ -70,9 +65,9 @@ castVoteView model =
                 , div [ class "v-mid w-100 w-25-m w-30-l fl mb3 tr-l tr-m tc" ]
                     [ btn (id * 13 + 1)
                         model
-                        [ Click (SetDialog "Option Details" (dialogView <| toString description))
+                        [ SecBtn
+                        , Click (SetDialog "Option Details" (BallotDialog description))
                         , OpenDialog
-                        , SecBtn
                         ]
                         [ text "Details" ]
 

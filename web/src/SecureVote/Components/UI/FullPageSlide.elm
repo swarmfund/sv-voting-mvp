@@ -12,8 +12,7 @@ import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
-import SecureVote.SPAs.SwarmMVP.Views.InfoDialogV exposing (infoDialogV)
-import SecureVote.SPAs.SwarmMVP.Views.SettingsDialogV exposing (settingsDialogV)
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(DebugDialog, InfoDialog, SettingsDialog))
 
 
 -- TODO Refactor out SetElevation into SecureVote components (ala elm-mdl)
@@ -31,20 +30,10 @@ fullPageSlide id model attrs innerHtmls =
                    )
 
         settingsOpts =
-            [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Settings" <| settingsDialogV model) ]
+            [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Settings" SettingsDialog) ]
 
         infoOpts =
-            [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Info" infoDialogV) ]
-
-        genDebug model =
-            let
-                liE str =
-                    li [] [ text str ]
-            in
-            ul [ class "" ]
-                [ liE "Add whatever you want here for debug"
-                , liE <| toString model.ballotBits
-                ]
+            [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Info" InfoDialog) ]
     in
     div [ class "dt w-100 mv5" ]
         [ div
@@ -65,7 +54,7 @@ fullPageSlide id model attrs innerHtmls =
             ([ Card.actions []
                 [ btn 885338576 model backOpts [ Icon.view "arrow_back" [ Icon.size24 ] ]
                 , div [ class "fr dib" ]
-                    [ btn 133498391 model [ SecBtn, Click (SetDialog "Debug" <| genDebug model), OpenDialog ] [ text "Debug" ]
+                    [ btn 133498391 model [ SecBtn, Click (SetDialog "Debug" DebugDialog), OpenDialog ] [ text "Debug" ]
                     , btn 130572984 model infoOpts [ Icon.view "info_outline" [ Icon.size24 ] ]
                     , btn 345647875 model settingsOpts [ Icon.view "settings" [ Icon.size24 ] ]
                     ]
