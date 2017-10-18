@@ -11,6 +11,7 @@ import Maybe.Extra exposing ((?), isNothing)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Utils exposing (isValidEthAddress, setCandTxFrom)
+import SecureVote.SPAs.SwarmMVP.Ballot as Ballot exposing (BallotOption)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress, setSwmAddress, swmAddrId)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance))
@@ -29,15 +30,22 @@ swmAddressV model =
             else
                 BtnNop
 
+        setBallotDefaultMsgs =
+            List.map .id
+                >> List.map (\id_ -> SetBallotRange id_ 0)
+            <|
+                Ballot.voteOptions
+
         msgs =
-            MultiMsg
+            MultiMsg <|
                 [ PageGoForward SwmVoteR
                 , SetCandidateTx (setCandTxFrom <| getSwmAddress model ? "AddressView getSwmAddress error")
                 , ToWeb3 GetErc20Balance
                 ]
+                    ++ setBallotDefaultMsgs
 
         devMsgs =
-            MultiMsg
+            MultiMsg <|
                 [ PageGoForward SwmVoteR
 
                 -- bitrex address holding golem
@@ -45,6 +53,7 @@ swmAddressV model =
                 , SetCandidateTx <| setCandTxFrom "0xFBb1b73C4f0BDa4f67dcA266ce6Ef42f520fBB98"
                 , ToWeb3 GetErc20Balance
                 ]
+                    ++ setBallotDefaultMsgs
 
         devBtn =
             btn 394879384 model [ PriBtn, Attr (class "ph2"), Click devMsgs ] [ text "Dev Continue" ]
