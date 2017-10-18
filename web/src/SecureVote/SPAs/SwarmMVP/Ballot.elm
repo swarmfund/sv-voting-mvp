@@ -1,23 +1,37 @@
 module SecureVote.SPAs.SwarmMVP.Ballot exposing (..)
 
+import Html exposing (Html, em, span, text)
 
-type alias BallotOption =
+
+type alias BallotOption msg =
     { id : Int
-    , title : String
-    , description : String
-    , params : String
+    , rSchedule : ReleaseSchedule
+    , description : Html msg
     }
 
 
-reallyLongDescription : String
-reallyLongDescription =
-    "Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long DescriptionReally long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long DescriptionReally long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description Really long Description "
+type alias ReleaseSchedule =
+    { nReleases : Int
+    , releaseLength : Int
+    }
 
 
-voteOptions : List BallotOption
+renderReleaseScheduleTitle : ReleaseSchedule -> String
+renderReleaseScheduleTitle { nReleases, releaseLength } =
+    let
+        sOptional =
+            if nReleases > 1 then
+                "s"
+            else
+                ""
+    in
+    toString nReleases ++ " release" ++ sOptional ++ " of " ++ toString releaseLength ++ " days"
+
+
+voteOptions : List (BallotOption msg)
 voteOptions =
-    [ BallotOption 1337000001 "Option 1" reallyLongDescription ""
-    , BallotOption 1337000002 "Option 2" "Description 2" ""
-    , BallotOption 1337000003 "Option 3" "Description 3" ""
-    , BallotOption 1337000004 "Option 4" "Description 4" ""
+    [ BallotOption 1337000001 (ReleaseSchedule 8 42) <| text "This is the proposal in the whitepaper. The release will take approximately 1 year."
+    , BallotOption 1337000002 (ReleaseSchedule 42 8) <| text "This is like the release schedule in the whitepaper, but smaller chunks will be released more frequently."
+    , BallotOption 1337000003 (ReleaseSchedule 16 42) <| text "This release will occur over 2 years."
+    , BallotOption 1337000004 (ReleaseSchedule 1 42) <| span [] [ text "This will result in the ", em [] [ text "full" ], text " release of all tokens at 42 days" ]
     ]
