@@ -14,7 +14,7 @@ type
     | SetField String String
     | PageGoForward Route
     | PageGoBack
-    | SetDialog String (Html Msg)
+    | SetDialog String DialogRoute
     | SetBallotRange Int Float
       -- Eth related msgs
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)
@@ -37,3 +37,11 @@ type ToWeb3Msg
 
 type FromWeb3Msg
     = GotBalance Decimal
+
+
+type DialogRoute
+    = SettingsDialog
+    | BallotDialog
+    | InfoDialog
+    | GethDialog
+    | VerifyBallotDialog

@@ -15,7 +15,7 @@ import SecureVote.Eth.Utils exposing (decimalTo18dps, formatBalance, rawTokenBal
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (voteOptions)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetBallotRange, SetDialog))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(SettingsDialog), Msg(PageGoForward, SetBallotRange, SetDialog))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 
@@ -63,7 +63,7 @@ castVoteView model =
                     [ btn (id * 13 + 1)
                         model
                         [ SecBtn
-                        , Click (SetDialog "Option Details" (dialogView description))
+                        , Click (SetDialog "Option Details" SettingsDialog)
                         , OpenDialog
                         ]
                         [ text "Show Details" ]

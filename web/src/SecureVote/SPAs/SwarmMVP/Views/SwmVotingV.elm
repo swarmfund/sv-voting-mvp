@@ -13,7 +13,7 @@ import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Utils exposing (processCandidateTx)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetDialog))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(SettingsDialog), Msg(PageGoForward, SetDialog))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 
@@ -44,9 +44,9 @@ votingView model =
             , div [ class "mw7 ph3 overflow-visible center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
             , div [ class "mv4" ]
                 [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Click (PageGoForward SwmSubmitR) ] [ text "Cast using MEW" ]
-                , btn 785784536 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog "Cast using Geth" dialogView1) ] [ text "Cast using Geth" ]
+                , btn 785784536 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog "Cast using Geth" SettingsDialog) ] [ text "Cast using Geth" ]
                 ]
-            , btn 987572349 model [ PriBtn, Attr (class "mv3"), OpenDialog, Click (SetDialog "Verify Your Ballot" dialogView2) ] [ text "Verify Ballot" ]
+            , btn 987572349 model [ PriBtn, Attr (class "mv3"), OpenDialog, Click (SetDialog "Verify Your Ballot" SettingsDialog) ] [ text "Verify Ballot" ]
             ]
         ]
 

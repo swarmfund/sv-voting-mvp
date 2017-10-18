@@ -11,7 +11,7 @@ import Material.Options as Options exposing (cs, css)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(SettingsDialog), Msg(..))
 import SecureVote.SPAs.SwarmMVP.Views.InfoDialogV exposing (infoDialogV)
 import SecureVote.SPAs.SwarmMVP.Views.SettingsDialogV exposing (settingsDialogV)
 
@@ -31,10 +31,10 @@ fullPageSlide id model attrs innerHtmls =
                    )
 
         settingsOpts =
-            [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Settings" <| settingsDialogV model) ]
+            [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Settings" SettingsDialog) ]
 
         infoOpts =
-            [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Info" infoDialogV) ]
+            [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Info" SettingsDialog) ]
 
         genDebug model =
             let
@@ -65,7 +65,7 @@ fullPageSlide id model attrs innerHtmls =
             ([ Card.actions []
                 [ btn 885338576 model backOpts [ Icon.view "arrow_back" [ Icon.size24 ] ]
                 , div [ class "fr dib" ]
-                    [ btn 133498391 model [ SecBtn, Click (SetDialog "Debug" <| genDebug model), OpenDialog ] [ text "Debug" ]
+                    [ btn 133498391 model [ SecBtn, Click (SetDialog "Debug" SettingsDialog), OpenDialog ] [ text "Debug" ]
                     , btn 130572984 model infoOpts [ Icon.view "info_outline" [ Icon.size24 ] ]
                     , btn 345647875 model settingsOpts [ Icon.view "settings" [ Icon.size24 ] ]
                     ]
