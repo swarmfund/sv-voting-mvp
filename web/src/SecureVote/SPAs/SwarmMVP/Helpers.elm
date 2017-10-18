@@ -22,3 +22,17 @@ getSwmAddress model =
 setSwmAddress : String -> Msg
 setSwmAddress =
     SetField swmAddrId
+
+
+ethNodeTemp =
+    "ethNodeUrl"
+
+
+getEthNodeTemp : Model -> Maybe String
+getEthNodeTemp model =
+    Dict.get ethNodeTemp model.fields
+
+
+setEthNodeTemp : String -> Msg
+setEthNodeTemp =
+    SetField ethNodeTemp
