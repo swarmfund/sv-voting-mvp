@@ -2,7 +2,6 @@ module SecureVote.SPAs.SwarmMVP.Model exposing (..)
 
 import Decimal exposing (Decimal)
 import Dict exposing (Dict)
-import Html exposing (Html, div)
 import Material
 import Material.Snackbar
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
@@ -14,7 +13,7 @@ type alias Model =
     { mdl : Material.Model
     , snack : Material.Snackbar.Model Msg
     , errors : List String
-    , dialogHtml : { title : String, route : DialogRoute }
+    , dialogHtml : { title : String, route : DialogRoute Msg }
     , elevations : Dict Int Bool
     , fields : Dict String String
     , ballotRange : Dict Int Int

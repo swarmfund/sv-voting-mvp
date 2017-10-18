@@ -1,5 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Routes exposing (..)
 
+import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml)
+
 
 type Route
     = SwmAddressR
@@ -8,9 +10,9 @@ type Route
     | NotFoundR
 
 
-type DialogRoute
+type DialogRoute msg
     = SettingsDialog
-    | BallotDialog String
+    | BallotDialog (DialogHtml msg)
     | InfoDialog
     | GethDialog
     | VerifyDialog
