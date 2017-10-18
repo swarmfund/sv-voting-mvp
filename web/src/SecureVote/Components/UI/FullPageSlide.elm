@@ -3,7 +3,6 @@ module SecureVote.Components.UI.FullPageSlide exposing (..)
 import Dict
 import Html exposing (Attribute, Html, code, div, li, text, ul)
 import Html.Attributes exposing (class)
-import Json.Encode exposing (encode)
 import Material.Card as Card
 import Material.Color as Color
 import Material.Elevation as Elevation
@@ -36,7 +35,6 @@ fullPageSlide id model attrs innerHtmls =
 
         infoOpts =
             [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Info" infoDialogV) ]
-            [ Icon, Attr (class "sv-button-large") ]
 
         genDebug model =
             let

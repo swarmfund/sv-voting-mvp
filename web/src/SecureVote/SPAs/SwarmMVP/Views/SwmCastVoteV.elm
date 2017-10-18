@@ -38,7 +38,7 @@ castVoteView model =
                 [ span [ class " center w-100 w-15-l w-25-m fl f4 tl v-mid mb2" ] [ text title ]
                 , div [ class " w-100 w-70-l w-50-m fl mb3 center" ]
                     [ div [] [ text <| "Your vote is: " ++ toString (Dict.get id model.ballotRange ? 0) ]
-                    , div [class "flex flex-row content-center"]
+                    , div [ class "flex flex-row content-center" ]
                         [ span
                             [ class "f3 relative"
                             , style [ ( "top", "3px" ), ( "left", "15px" ) ]
