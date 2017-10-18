@@ -1,4 +1,4 @@
-module SecureVote.SPAs.SwarmMVP.Views.SettingsDialogV exposing (..)
+module SecureVote.SPAs.SwarmMVP.Views.DialogV exposing (..)
 
 import Html exposing (Html, div, span, text)
 import Material.Options as Options exposing (cs, css)
@@ -38,3 +38,23 @@ settingsDialogV model =
             , btn 456467568 model [ PriBtn, Click <| setEthNodeMsgs model ] [ text "Update" ]
             ]
         ]
+
+
+infoDialogV : Html Msg
+infoDialogV =
+    div [] [ text "This is info Dialog Box" ]
+
+
+gethDialogView : Html Msg
+gethDialogView =
+    div [] [ text "This is Geth Dialog Box" ]
+
+
+verifyDialogView : Html Msg
+verifyDialogView =
+    div [] [ text "This is verify ballot dialog box" ]
+
+
+customDialogView : String -> Html Msg
+customDialogView content =
+    div [] [ text content ]

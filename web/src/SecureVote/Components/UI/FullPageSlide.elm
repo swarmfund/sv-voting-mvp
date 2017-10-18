@@ -11,9 +11,7 @@ import Material.Options as Options exposing (cs, css)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(SettingsDialog), Msg(..))
-import SecureVote.SPAs.SwarmMVP.Views.InfoDialogV exposing (infoDialogV)
-import SecureVote.SPAs.SwarmMVP.Views.SettingsDialogV exposing (settingsDialogV)
+import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(InfoDialog, SettingsDialog), Msg(..))
 
 
 -- TODO Refactor out SetElevation into SecureVote components (ala elm-mdl)
@@ -34,7 +32,7 @@ fullPageSlide id model attrs innerHtmls =
             [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Settings" SettingsDialog) ]
 
         infoOpts =
-            [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Info" SettingsDialog) ]
+            [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Info" InfoDialog) ]
 
         genDebug model =
             let

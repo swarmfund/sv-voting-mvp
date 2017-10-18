@@ -41,7 +41,7 @@ type FromWeb3Msg
 
 type DialogRoute
     = SettingsDialog
-    | BallotDialog
+    | BallotDialog String
     | InfoDialog
     | GethDialog
-    | VerifyBallotDialog
+    | VerifyDialog

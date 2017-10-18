@@ -8,8 +8,7 @@ import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(..), FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
-import SecureVote.SPAs.SwarmMVP.Views.InfoDialogV exposing (infoDialogV)
-import SecureVote.SPAs.SwarmMVP.Views.SettingsDialogV exposing (settingsDialogV)
+import SecureVote.SPAs.SwarmMVP.Views.DialogV exposing (..)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -117,14 +116,14 @@ updateDialogView route model =
         SettingsDialog ->
             settingsDialogV model
 
-        BallotDialog ->
-            settingsDialogV model
+        BallotDialog content ->
+            customDialogView content
 
         InfoDialog ->
-            infoDialogV model
+            infoDialogV
 
         GethDialog ->
-            settingsDialogV model
+            gethDialogView
 
-        VerifyBallotDialog ->
-            settingsDialogV model
+        VerifyDialog ->
+            verifyDialogView
