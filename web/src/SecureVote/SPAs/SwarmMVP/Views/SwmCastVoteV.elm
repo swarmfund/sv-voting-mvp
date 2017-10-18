@@ -12,7 +12,7 @@ import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Utils exposing (decimalTo18dps, formatBalance, rawTokenBalance18DpsToBalance, stripTrailingZeros)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (voteOptions)
+import SecureVote.SPAs.SwarmMVP.Ballot exposing (renderReleaseScheduleTitle, voteOptions)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetBallotRange, SetDialog))
@@ -28,40 +28,52 @@ castVoteView model =
         optionList =
             List.map optionListItem voteOptions
 
-        optionListItem { id, title, description, params } =
-            div [ class "mw-5 cf mb5 mt3" ]
-                [ span [ class " center w-100 w-15-l w-25-m fl f4 tl v-mid mb2" ] [ text title ]
-                , div [ class " w-100 w-70-l w-50-m fl mb3 center" ]
-                    [ div [] [ text <| "Your vote is: " ++ toString (Dict.get id model.ballotRange ? 0) ]
-                    , div [ class "flex flex-row content-center" ]
-                        [ span
-                            [ class "f3 relative"
-                            , style [ ( "top", "3px" ), ( "left", "15px" ) ]
+        optionListItem { id, rSchedule, description } =
+            div [ class "center mw-5 cf mb4 mt3 db w-100 bb bw1 b--silver" ]
+                [ div [ class "h-100 w-100 w-100-m w-30-l fl mt2 mb3 tl-l v-mid" ]
+                    [ span [ class "w-100 f4 tc tl-l v-mid b" ] [ text <| renderReleaseScheduleTitle rSchedule ] ]
+                , div [ class "cf w-0 w-25-m fl dn dib-m" ]
+                    -- &nbsp;
+                    [ text " " ]
+                , div [ class "cf v-mid w-100 w-50-m w-40-l fl mb2" ]
+                    [ div [] [ text <| "Your vote: " ++ toString (Dict.get id model.ballotRange ? 0) ]
+                    , div [ class "center" ]
+                        [ div [ class "inline-flex flex-row content-center cf relative", style [ ( "top", "-10px" ) ] ]
+                            [ span
+                                [ class "f3 relative"
+                                , style [ ( "top", "0px" ), ( "left", "15px" ) ]
+                                ]
+                                [ text "👎" ]
+                            , div [ class "dib" ]
+                                [ Slider.view
+                                    [ Slider.value <| toFloat <| Dict.get id model.ballotRange ? 0
+                                    , Slider.min <| toFloat ballotDisplayMin
+                                    , Slider.max <| toFloat ballotDisplayMax
+                                    , Slider.step 1
+                                    , Slider.onChange <| SetBallotRange id
+                                    , cs ""
+                                    ]
+                                ]
+                            , span
+                                [ class "f3 relative"
+                                , style [ ( "top", "0px" ), ( "right", "13px" ) ]
+                                ]
+                                [ text "❤️" ]
                             ]
-                            [ text "👎" ]
-                        , Slider.view
-                            [ Slider.value <| toFloat <| Dict.get id model.ballotRange ? 0
-                            , Slider.min <| toFloat ballotDisplayMin
-                            , Slider.max <| toFloat ballotDisplayMax
-                            , Slider.step 1
-                            , Slider.onChange <| SetBallotRange id
-                            , cs ""
-                            ]
-                        , span
-                            [ class "f3 relative"
-                            , style [ ( "top", "3px" ), ( "right", "15px" ) ]
-                            ]
-                            [ text "❤️" ]
                         ]
                     ]
-                , div [ class "dtc w-100 w-15-l w-25-m fr" ]
+                , div [ class "v-mid w-100 w-25-m w-30-l fl mb3 tr-l tr-m tc" ]
                     [ btn (id * 13 + 1)
                         model
                         [ SecBtn
                         , Click (SetDialog "Option Details" (BallotDialog description))
                         , OpenDialog
                         ]
-                        [ text "Show Details" ]
+                        [ text "Details" ]
+
+                    --                        , Icon
+                    --                        ]
+                    --                        [ MIcon.view "help_outline" [ MIcon.size24 ] ]
                     ]
                 ]
     in
@@ -71,7 +83,7 @@ castVoteView model =
         [ Card.text [ cs "center tc" ]
             [ Options.styled span [ display2, Color.text Color.black, cs "db pa2" ] [ text "Swarm Liquidity Vote" ]
             , Options.styled span [ headline, cs "black dib ba pa3 ma3" ] [ text <| "SWM Balance: " ++ swmBalanceStr ]
-            , div [ class "mw7 center" ] optionList
+            , div [ class "mw7 center black" ] optionList
             , btn 894823489 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmSubmitR) ] [ text "Continue" ]
             ]
         ]
