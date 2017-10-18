@@ -5,9 +5,9 @@ var hash = document.location.hash.substr(1);
 if (hash) hash = parseInt(hash, 0);
 
 /* TEXTURE WIDTH FOR SIMULATION */
-var WIDTH = hash || 32;
+var WIDTH = 16;
 
-var BIRDS = WIDTH * WIDTH;
+var BIRDS = WIDTH * WIDTH * 2;  // 512 currently - nBirds
 
 // Custom Geometry - using 3 triangles each. No UVs, no normals currently.
 THREE.BirdGeometry = function () {

@@ -19,7 +19,6 @@ type
       -- Eth related msgs
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)
     | SetEthNode String
-    | UpdateTokenBalance
       -- Utility msgs
     | MultiMsg (List Msg)
       -- Port msgs

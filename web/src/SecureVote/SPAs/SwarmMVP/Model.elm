@@ -18,6 +18,7 @@ type alias Model =
     , elevations : Dict Int Bool
     , fields : Dict String String
     , ballotRange : Dict Int Int
+    , ballotBits : Dict Int (Result String (List Int))
     , route : Route
     , history : List Route
     , lastPageDirection : LastPageDirection
@@ -38,6 +39,7 @@ initModel =
     , elevations = Dict.empty
     , fields = Dict.empty
     , ballotRange = Dict.empty
+    , ballotBits = Dict.empty
     , route = SwmAddressR
     , history = []
     , lastRoute = Nothing

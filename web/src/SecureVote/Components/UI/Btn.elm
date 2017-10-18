@@ -1,17 +1,10 @@
 module SecureVote.Components.UI.Btn exposing (..)
 
-import Dict
 import Html exposing (Attribute, Html, div, h1, h2, h3, p, span, text)
 import Html.Attributes exposing (class, style)
 import Material.Button as Button
-import Material.Card as Card
-import Material.Color as Color
 import Material.Dialog as Dialog
-import Material.Elevation as Elevation
 import Material.Options as Options exposing (cs, css)
-import Material.Scheme
-import Material.Textfield as Textf
-import Material.Typography exposing (display1, display2, display3, headline, title)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(Mdl))
 

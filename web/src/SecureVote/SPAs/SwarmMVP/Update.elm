@@ -4,7 +4,7 @@ import Dict
 import Material
 import Maybe.Extra exposing ((?))
 import SecureVote.Eth.Web3 exposing (..)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
 
@@ -34,7 +34,15 @@ update msg model =
             { model | dialogHtml = { title = title, html = view } } ! []
 
         SetBallotRange id value ->
-            { model | ballotRange = Dict.insert id (round value) model.ballotRange } ! []
+            let
+                val =
+                    round value
+            in
+            { model
+                | ballotRange = Dict.insert id val model.ballotRange
+                , ballotBits = Dict.insert id (ballotValToBytes val) model.ballotBits
+            }
+                ! []
 
         MultiMsg msgs ->
             multiUpdate msgs model []
@@ -44,9 +52,6 @@ update msg model =
 
         SetEthNode addr ->
             { model | ethNode = addr } ! []
-
-        UpdateTokenBalance ->
-            model ! []
 
         -- Errors
         LogErr err ->
