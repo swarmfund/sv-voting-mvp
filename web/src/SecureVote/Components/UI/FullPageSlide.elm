@@ -11,7 +11,7 @@ import Material.Options as Options exposing (cs, css)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(InfoDialog, SettingsDialog), Msg(..))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (DialogRoute(DebugDialog, InfoDialog, SettingsDialog), Msg(..))
 
 
 -- TODO Refactor out SetElevation into SecureVote components (ala elm-mdl)
@@ -33,16 +33,6 @@ fullPageSlide id model attrs innerHtmls =
 
         infoOpts =
             [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Info" InfoDialog) ]
-
-        genDebug model =
-            let
-                liE str =
-                    li [] [ text str ]
-            in
-            ul [ class "" ]
-                [ liE "Add whatever you want here for debug"
-                , liE <| toString model.ballotBits
-                ]
     in
     div [ class "dt w-100 mv5" ]
         [ div
@@ -63,7 +53,7 @@ fullPageSlide id model attrs innerHtmls =
             ([ Card.actions []
                 [ btn 885338576 model backOpts [ Icon.view "arrow_back" [ Icon.size24 ] ]
                 , div [ class "fr dib" ]
-                    [ btn 133498391 model [ SecBtn, Click (SetDialog "Debug" SettingsDialog), OpenDialog ] [ text "Debug" ]
+                    [ btn 133498391 model [ SecBtn, Click (SetDialog "Debug" DebugDialog), OpenDialog ] [ text "Debug" ]
                     , btn 130572984 model infoOpts [ Icon.view "info_outline" [ Icon.size24 ] ]
                     , btn 345647875 model settingsOpts [ Icon.view "settings" [ Icon.size24 ] ]
                     ]

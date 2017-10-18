@@ -45,3 +45,4 @@ type DialogRoute
     | InfoDialog
     | GethDialog
     | VerifyDialog
+    | DebugDialog

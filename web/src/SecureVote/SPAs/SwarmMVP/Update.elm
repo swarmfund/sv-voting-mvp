@@ -117,13 +117,16 @@ updateDialogView route model =
             settingsDialogV model
 
         BallotDialog content ->
-            customDialogView content
+            customDialogV content
 
         InfoDialog ->
             infoDialogV
 
         GethDialog ->
-            gethDialogView
+            gethDialogV
 
         VerifyDialog ->
-            verifyDialogView
+            verifyDialogV
+
+        DebugDialog ->
+            debugDialogV model

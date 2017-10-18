@@ -1,6 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Views.DialogV exposing (..)
 
-import Html exposing (Html, div, span, text)
+import Html exposing (Html, div, li, span, text, ul)
+import Html.Attributes exposing (class)
 import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
 import Material.Typography exposing (menu)
@@ -45,16 +46,28 @@ infoDialogV =
     div [] [ text "This is info Dialog Box" ]
 
 
-gethDialogView : Html Msg
-gethDialogView =
+gethDialogV : Html Msg
+gethDialogV =
     div [] [ text "This is Geth Dialog Box" ]
 
 
-verifyDialogView : Html Msg
-verifyDialogView =
+verifyDialogV : Html Msg
+verifyDialogV =
     div [] [ text "This is verify ballot dialog box" ]
 
 
-customDialogView : String -> Html Msg
-customDialogView content =
+customDialogV : String -> Html Msg
+customDialogV content =
     div [] [ text content ]
+
+
+debugDialogV : Model -> Html Msg
+debugDialogV model =
+    let
+        liE str =
+            li [] [ text str ]
+    in
+    ul [ class "" ]
+        [ liE "Add whatever you want here for debug"
+        , liE <| toString model.ballotBits
+        ]
