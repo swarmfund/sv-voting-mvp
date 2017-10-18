@@ -5,7 +5,6 @@ import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (class, style)
 import Material.Card as Card
 import Material.Color as Color
-import Material.Icon as MIcon
 import Material.Options as Options exposing (cs, css)
 import Material.Slider as Slider
 import Material.Typography exposing (display2, headline)
@@ -35,39 +34,51 @@ castVoteView model =
             List.map optionListItem voteOptions
 
         optionListItem { id, rSchedule, description } =
-            div [ class "center mw-5 cf mb5 mt3 dt" ]
-                [ span [ class "dtc f4 tl v-mid mb2" ] [ text <| renderReleaseScheduleTitle rSchedule ]
-                , div [ class "dtc cf v-mid" ]
+            div [ class "center mw-5 cf mb4 mt3 db w-100 bb bw1 b--silver" ]
+                [ div [ class "h-100 w-100 w-100-m w-30-l fl mt2 mb3 tl-l v-mid" ]
+                    [ span [ class "w-100 f4 tc tl-l v-mid b" ] [ text <| renderReleaseScheduleTitle rSchedule ] ]
+                , div [ class "cf w-0 w-25-m fl dn dib-m" ]
+                    -- &nbsp;
+                    [ text " " ]
+                , div [ class "cf v-mid w-100 w-50-m w-40-l fl mb2" ]
                     [ div [] [ text <| "Your vote: " ++ toString (Dict.get id model.ballotRange ? 0) ]
-                    , div [ class "center flex flex-row content-center cf w5" ]
-                        [ span
-                            [ class "f3 relative"
-                            , style [ ( "top", "0px" ), ( "left", "20px" ) ]
+                    , div [ class "center" ]
+                        [ div [ class "inline-flex flex-row content-center cf relative", style [ ( "top", "-10px" ) ] ]
+                            [ span
+                                [ class "f3 relative"
+                                , style [ ( "top", "0px" ), ( "left", "15px" ) ]
+                                ]
+                                [ text "👎" ]
+                            , div [ class "dib" ]
+                                [ Slider.view
+                                    [ Slider.value <| toFloat <| Dict.get id model.ballotRange ? 0
+                                    , Slider.min <| toFloat ballotDisplayMin
+                                    , Slider.max <| toFloat ballotDisplayMax
+                                    , Slider.step 1
+                                    , Slider.onChange <| SetBallotRange id
+                                    , cs ""
+                                    ]
+                                ]
+                            , span
+                                [ class "f3 relative"
+                                , style [ ( "top", "0px" ), ( "right", "13px" ) ]
+                                ]
+                                [ text "❤️" ]
                             ]
-                            [ text "👎" ]
-                        , Slider.view
-                            [ Slider.value <| toFloat <| Dict.get id model.ballotRange ? 0
-                            , Slider.min <| toFloat ballotDisplayMin
-                            , Slider.max <| toFloat ballotDisplayMax
-                            , Slider.step 1
-                            , Slider.onChange <| SetBallotRange id
-                            , cs "center"
-                            ]
-                        , span
-                            [ class "f3 relative"
-                            , style [ ( "top", "0px" ), ( "right", "20px" ) ]
-                            ]
-                            [ text "❤️" ]
                         ]
                     ]
-                , div [ class "dtc v-mid sv-button-large" ]
+                , div [ class "v-mid w-100 w-25-m w-30-l fl mb3 tr-l tr-m tc" ]
                     [ btn (id * 13 + 1)
                         model
                         [ Click (SetDialog "Option Details" (dialogView <| toString description))
                         , OpenDialog
-                        , Icon
+                        , SecBtn
                         ]
-                        [ MIcon.view "help_outline" [ MIcon.size24 ] ]
+                        [ text "Details" ]
+
+                    --                        , Icon
+                    --                        ]
+                    --                        [ MIcon.view "help_outline" [ MIcon.size24 ] ]
                     ]
                 ]
     in
