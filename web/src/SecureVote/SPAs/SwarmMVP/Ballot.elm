@@ -1,6 +1,5 @@
 module SecureVote.SPAs.SwarmMVP.Ballot exposing (..)
 
-import Html exposing (Html, em, p, span, text)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(..))
 
 
