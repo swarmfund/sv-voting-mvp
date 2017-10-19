@@ -29,9 +29,13 @@ castVoteView model =
             List.map optionListItem voteOptions
 
         optionListItem { id, rSchedule, description } =
+            let
+                rSchedTitle =
+                    renderReleaseScheduleTitle rSchedule
+            in
             div [ class "center mw-5 cf mb4 mt3 db w-100 bb bw1 b--silver" ]
                 [ div [ class "h-100 w-100 w-100-m w-30-l fl mt2 mb3 tl-l v-mid" ]
-                    [ span [ class "w-100 f4 tc tl-l v-mid b" ] [ text <| renderReleaseScheduleTitle rSchedule ] ]
+                    [ span [ class "w-100 f4 tc tl-l v-mid b" ] [ text rSchedTitle ] ]
                 , div [ class "cf w-0 w-25-m fl dn dib-m" ]
                     -- &nbsp;
                     [ text " " ]
@@ -66,7 +70,7 @@ castVoteView model =
                     [ btn (id * 13 + 1)
                         model
                         [ SecBtn
-                        , Click (SetDialog "Option Details" (BallotDialog description))
+                        , Click (SetDialog (rSchedTitle ++ ": Details") (BallotDialog description))
                         , OpenDialog
                         ]
                         [ text "Details" ]
