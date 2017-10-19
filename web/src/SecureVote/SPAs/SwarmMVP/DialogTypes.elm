@@ -1,6 +1,6 @@
 module SecureVote.SPAs.SwarmMVP.DialogTypes exposing (..)
 
-import Html exposing (Html, div, em, p, text)
+import Html exposing (Html, div, em, li, p, text, ul)
 
 
 type DialogHtml msg
@@ -8,6 +8,8 @@ type DialogHtml msg
     | DlogEm String
     | DlogTxt String
     | DlogDiv (List (DialogHtml msg))
+    | DlogUl (List (DialogHtml msg))
+    | DlogLi (DialogHtml msg)
       -- Dialog with classes or whatever
     | DlogWAttr (List (Html.Attribute msg)) (DialogHtml msg)
 
@@ -30,6 +32,12 @@ dialogHtmlRender attrs input =
 
         DlogTxt str ->
             text str
+
+        DlogUl elems ->
+            ul attrs <| renderedElems elems
+
+        DlogLi elem ->
+            li attrs [ dialogHtmlRender [] elem ]
 
         DlogWAttr attrs dlogHtml ->
             dialogHtmlRender attrs dlogHtml
