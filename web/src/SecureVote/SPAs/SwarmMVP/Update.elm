@@ -6,7 +6,7 @@ import Maybe.Extra exposing ((?))
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -64,6 +64,9 @@ update msg model =
         FromWeb3 msg ->
             updateFromWeb3 msg model
 
+        FromCurve25519 msg ->
+            updateFromCurve25519 msg model
+
         -- Boilerplate: Mdl action handler.
         Mdl msg_ ->
             Material.update Mdl msg_ model
@@ -106,3 +109,10 @@ updateFromWeb3 msg model =
     case msg of
         GotBalance bal ->
             { model | swmBalance = Just bal } ! []
+
+
+updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )
+updateFromCurve25519 msg model =
+    case msg of
+        GotKey kp ->
+            { model | keypair = Just kp } ! []

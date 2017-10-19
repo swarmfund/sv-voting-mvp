@@ -2,6 +2,7 @@ module SecureVote.SPAs.SwarmMVP.Msg exposing (..)
 
 import Decimal exposing (Decimal)
 import Material
+import SecureVote.Crypto.Curve25519 exposing (ReceiveKeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute, Route)
 
@@ -23,6 +24,7 @@ type
       -- Port msgs
     | ToWeb3 ToWeb3Msg
     | FromWeb3 FromWeb3Msg
+    | FromCurve25519 FromCurve25519Msg
       -- Errors
     | LogErr String
       -- Elm Mdl
@@ -36,3 +38,7 @@ type ToWeb3Msg
 
 type FromWeb3Msg
     = GotBalance Decimal
+
+
+type FromCurve25519Msg
+    = GotKey ReceiveKeyPair
