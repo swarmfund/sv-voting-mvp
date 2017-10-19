@@ -14,6 +14,7 @@
     "clean-webpack-plugin": "^0.1.17",
     "copy-webpack-plugin": "^4.1.1",
     "css-loader": "^0.28.7",
+    "dialog-polyfill": "^0.4.9",
     "elm": "^0.18.0",
     "elm-hot-loader": "^0.5.4",
     "elm-webpack-loader": "^4.3.1",
