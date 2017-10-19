@@ -2,7 +2,7 @@
 
 // Require index.html so it gets copied to dist
 require('./css/securevote-swarm.css');
-require('./css/tachyons.min.css');
+require('./css/vendor/tachyons.min.css');
 require('./css/vendor/material.amber-light_blue.min.css');
 import Web3 from 'web3';
 const web3 = new Web3();
