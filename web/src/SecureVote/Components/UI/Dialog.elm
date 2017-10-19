@@ -3,7 +3,7 @@ module SecureVote.Components.UI.Dialog exposing (..)
 import Html exposing (Attribute, Html, div, h1, text)
 import Html.Attributes exposing (class)
 import Material.Dialog as Dialog
-import Material.Options as Options exposing (cs)
+import Material.Options as Options exposing (cs, css)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(Mdl))
@@ -40,13 +40,14 @@ dialog model =
     Dialog.view
         -- Tachyons has no Max-Height :(
         -- possible flex attrs: flex flex-column justify-between
-        [ cs "overflow-scroll w-75 h-75"
+        [ cs "overflow-scroll w-75"
+        , css "max-height" "75%"
         ]
         [ Dialog.title [] [ text model.dialogHtml.title ]
         , Dialog.content [ cs "" ]
             [ innerHtml
             ]
-        , Dialog.actions []
+        , Dialog.actions [ cs "v-btm" ]
             [ btn 976565675 model [ SecBtn, CloseDialog, Attr (class "fr") ] [ text "Close" ]
             ]
         ]

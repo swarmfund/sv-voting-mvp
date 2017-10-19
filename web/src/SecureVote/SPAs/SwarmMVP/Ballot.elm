@@ -1,7 +1,12 @@
 module SecureVote.SPAs.SwarmMVP.Ballot exposing (..)
 
-import Html exposing (Html, em, p, span, text)
+import Round as R
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(..))
+
+
+openingDesc : String
+openingDesc =
+    "This option for the release of SWM tokens corresponds to the following specification:"
 
 
 type alias BallotOption msg =
@@ -29,11 +34,71 @@ renderReleaseScheduleTitle { nReleases, releaseLength } =
     toString nReleases ++ " release" ++ sOptional ++ " of " ++ toString releaseLength ++ " days"
 
 
+rSchedToListElems : ReleaseSchedule -> List (DialogHtml msg)
+rSchedToListElems rSched =
+    let
+        txtToLi =
+            DlogLi << DlogTxt
+
+        nRel =
+            rSched.nReleases
+
+        relLen =
+            rSched.releaseLength
+
+        nRelS =
+            if nRel > 1 then
+                "s"
+            else
+                ""
+
+        relLenS =
+            if relLen > 1 then
+                "s"
+            else
+                ""
+
+        relLenStr =
+            toString relLen
+
+        nRelStr =
+            toString nRel
+    in
+    [ txtToLi <|
+        "This release involves "
+            ++ nRelStr
+            ++ " release"
+            ++ nRelS
+            ++ " over "
+            ++ relLenStr
+            ++ " day"
+            ++ relLenS
+            ++ "."
+    , txtToLi <|
+        "At the conclusion of each "
+            ++ relLenStr
+            ++ " day period, approximately "
+            ++ (R.round 2 <| 100.0 / toFloat nRel)
+            ++ "% of tokens will be released, proportionally across all token holders."
+    , txtToLi <|
+        "This means the full liquidity release schedule will take "
+            ++ (toString <| (nRel * relLen))
+            ++ " days to complete."
+    ]
+
+
 addBallotDesc : List (BallotOption msg) -> List (BallotOption msg)
 addBallotDesc ballotOptions =
     let
-        expandDesc bOpt =
-            bOpt
+        enhanceDesc rSched desc =
+            DlogDiv
+                [ DlogP [ DlogTxt openingDesc ]
+                , DlogUl <| rSchedToListElems rSched
+                , desc
+                ]
+
+        expandDesc { id, rSchedule, description } =
+            BallotOption id rSchedule <| enhanceDesc rSchedule description
     in
     List.map expandDesc ballotOptions
 
