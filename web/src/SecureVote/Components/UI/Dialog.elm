@@ -1,6 +1,6 @@
 module SecureVote.Components.UI.Dialog exposing (..)
 
-import Html exposing (Attribute, Html, div, h1, text)
+import Html exposing (Attribute, Html, div, h1, span, text)
 import Html.Attributes exposing (class)
 import Material.Dialog as Dialog
 import Material.Options as Options exposing (cs)
@@ -42,7 +42,8 @@ dialog model =
         -- possible flex attrs: flex flex-column justify-between
         [ cs "overflow-scroll w-75 h-75"
         ]
-        [ Dialog.title [] [ text model.dialogHtml.title ]
+        -- span here fixes graphical error on safari
+        [ Dialog.title [] [ span [] [ text model.dialogHtml.title ] ]
         , Dialog.content [ cs "" ]
             [ innerHtml
             ]
