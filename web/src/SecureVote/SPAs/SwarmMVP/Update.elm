@@ -3,6 +3,7 @@ module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 import Dict
 import Material
 import Maybe.Extra exposing ((?))
+import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
@@ -43,6 +44,13 @@ update msg model =
                 , ballotBits = Dict.insert id (ballotValToBytes val) model.ballotBits
             }
                 ! []
+
+        ConstructBallotPlaintext ->
+            let
+                encCmd =
+                    encryptBytes { hexSk = "", hexRemotePk = "", bytesToSign = [] }
+            in
+            model ! [ encCmd ]
 
         MultiMsg msgs ->
             multiUpdate msgs model []
@@ -116,3 +124,6 @@ updateFromCurve25519 msg model =
     case msg of
         GotKey kp ->
             { model | keypair = Just kp } ! []
+
+        GotEncBytes bs ->
+            { model | encBytes = Just bs } ! []

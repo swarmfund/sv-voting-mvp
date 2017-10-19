@@ -1,5 +1,5 @@
 module SecureVote.Crypto.Types exposing (..)
 
 
-type alias PrivKey =
-    List Int
+a =
+    1

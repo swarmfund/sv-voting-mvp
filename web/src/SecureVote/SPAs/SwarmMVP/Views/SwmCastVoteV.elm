@@ -15,7 +15,7 @@ import SecureVote.Eth.Utils exposing (decimalTo18dps, formatBalance, rawTokenBal
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (renderReleaseScheduleTitle, voteOptions)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetBallotRange, SetDialog))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmSubmitR))
 
 
@@ -80,6 +80,12 @@ castVoteView model =
                     --                        [ MIcon.view "help_outline" [ MIcon.size24 ] ]
                     ]
                 ]
+
+        progressMsgs =
+            MultiMsg
+                [ ConstructBallotPlaintext
+                , PageGoForward SwmSubmitR
+                ]
     in
     fullPageSlide 657980946
         model
@@ -88,6 +94,6 @@ castVoteView model =
             [ Options.styled span [ display2, Color.text Color.black, cs "db pa2" ] [ text "Swarm Liquidity Vote" ]
             , Options.styled span [ headline, cs "black dib ba pa3 ma3" ] [ text <| "SWM Balance: " ++ swmBalanceStr ]
             , div [ class "mw7 center black" ] optionList
-            , btn 894823489 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmSubmitR) ] [ text "Continue" ]
+            , btn 894823489 model [ PriBtn, Attr (class "mv3"), Click progressMsgs ] [ text "Continue" ]
             ]
         ]

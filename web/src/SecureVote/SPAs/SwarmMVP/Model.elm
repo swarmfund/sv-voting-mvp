@@ -4,7 +4,7 @@ import Decimal exposing (Decimal)
 import Dict exposing (Dict)
 import Material
 import Material.Snackbar
-import SecureVote.Crypto.Curve25519 exposing (ReceiveKeyPair)
+import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(NotFoundR, SwmAddressR))
@@ -27,7 +27,8 @@ type alias Model =
     , ethNode : String
     , swarmErc20Address : String
     , swmBalance : Maybe Decimal
-    , keypair : Maybe ReceiveKeyPair
+    , keypair : Maybe Curve25519KeyPair
+    , encBytes : Maybe (List Int)
     }
 
 
@@ -52,6 +53,7 @@ initModel =
     , swarmErc20Address = "0xa74476443119A942dE498590Fe1f2454d7D4aC0d"
     , swmBalance = Nothing
     , keypair = Nothing
+    , encBytes = Nothing
     }
 
 

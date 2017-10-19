@@ -18,6 +18,9 @@ const CopyWebpackPluginConfig = new CopyWebpackPlugin([
 
 
 const common = {
+    node: {
+        fs: "empty"
+    },
     entry: {
         "sv-swarm": ['./web/index.js']
     },
