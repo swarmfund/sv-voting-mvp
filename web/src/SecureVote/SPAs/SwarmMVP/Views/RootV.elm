@@ -10,6 +10,7 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
 import SecureVote.SPAs.SwarmMVP.Views.SwmAddressV exposing (swmAddressV)
 import SecureVote.SPAs.SwarmMVP.Views.SwmCastVoteV exposing (castVoteView)
+import SecureVote.SPAs.SwarmMVP.Views.SwmHowToVoteV exposing (howToVoteView)
 import SecureVote.SPAs.SwarmMVP.Views.SwmVotingV exposing (votingView)
 
 
@@ -17,6 +18,7 @@ rootView : Model -> Html Msg
 rootView model =
     slideHost model
         [ ( SwmAddressR, swmAddressV model )
+        , ( SwmHowToVoteR, howToVoteView model )
         , ( SwmVoteR, castVoteView model )
         , ( SwmSubmitR, votingView model )
         ]
