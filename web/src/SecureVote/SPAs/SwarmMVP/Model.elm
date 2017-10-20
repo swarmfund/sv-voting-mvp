@@ -13,7 +13,7 @@ import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits)
 
 type alias Model =
     { mdl : Material.Model
-    , snack : Material.Snackbar.Model Msg
+    , snack : Material.Snackbar.Model String
     , errors : List String
     , dialogHtml : { title : String, route : DialogRoute Msg }
     , elevations : Dict Int Bool

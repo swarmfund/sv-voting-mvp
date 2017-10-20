@@ -2,6 +2,7 @@ module SecureVote.SPAs.SwarmMVP.Views.RootV exposing (..)
 
 import Html exposing (Attribute, Html, div, h1, h2, h3, p, span, text)
 import Html.Attributes exposing (class, style)
+import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Dialog exposing (dialog)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageForward), Model)
@@ -19,7 +20,9 @@ rootView model =
         , ( SwmVoteR, castVoteView model )
         , ( SwmSubmitR, votingView model )
         ]
-        [ dialog model ]
+        [ dialog model
+        , Snackbar.view model.snack |> Html.map Snackbar
+        ]
 
 
 slideHost : Model -> List ( Route, Html Msg ) -> List (Html Msg) -> Html Msg

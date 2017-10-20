@@ -2,6 +2,8 @@ module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 
 import Dict
 import Material
+import Material.Helpers as MHelp exposing (map1st, map2nd)
+import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Web3 exposing (..)
@@ -78,7 +80,12 @@ update msg model =
 
         -- Errors
         LogErr err ->
-            { model | errors = err :: model.errors } ! []
+            addSnack err model
+
+        Snackbar msg_ ->
+            Snackbar.update msg_ model.snack
+                |> map1st (\s -> { model | snack = s })
+                |> map2nd (Cmd.map Snackbar)
 
         -- PORTS
         ToWeb3 msg ->
@@ -93,6 +100,19 @@ update msg model =
         -- Boilerplate: Mdl action handler.
         Mdl msg_ ->
             Material.update Mdl msg_ model
+
+
+addSnack : String -> Model -> ( Model, Cmd Msg )
+addSnack err model =
+    let
+        ( snackbar_, effect ) =
+            Snackbar.add (Snackbar.toast "some payload" err) model.snack
+                |> map2nd (Cmd.map Snackbar)
+
+        model_ =
+            { model | snack = snackbar_, errors = err :: model.errors }
+    in
+    ( model_, Cmd.batch [ effect ] )
 
 
 multiUpdate : List Msg -> Model -> List (Cmd Msg) -> ( Model, Cmd Msg )
