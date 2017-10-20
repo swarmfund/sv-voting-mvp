@@ -5,10 +5,12 @@ import Material
 import Material.Helpers as MHelp exposing (map1st, map2nd)
 import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
+import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
+import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -46,6 +48,27 @@ update msg model =
             }
                 ! []
 
+        ConstructBallotPlaintext ->
+            let
+                plainBytesM =
+                    orderedBallotBits model.ballotBits |> Maybe.andThen (flip constructBallot "0xa74476443119A942dE498590Fe1f2454d7D4aC0d")
+
+                skM =
+                    Maybe.map .hexSk model.keypair
+
+                remotePkM =
+                    model.remoteHexPk
+
+                encCmds =
+                    case ( skM, remotePkM, plainBytesM ) of
+                        ( Just sk, Just pk, Just bs ) ->
+                            [ encryptBytes { hexSk = sk, hexRemotePk = pk, bytesToSign = bs } ]
+
+                        _ ->
+                            []
+            in
+            { model | ballotPlaintext = plainBytesM } ! encCmds
+
         MultiMsg msgs ->
             multiUpdate msgs model []
 
@@ -70,6 +93,9 @@ update msg model =
 
         FromWeb3 msg ->
             updateFromWeb3 msg model
+
+        FromCurve25519 msg ->
+            updateFromCurve25519 msg model
 
         -- Boilerplate: Mdl action handler.
         Mdl msg_ ->
@@ -126,3 +152,13 @@ updateFromWeb3 msg model =
     case msg of
         GotBalance bal ->
             { model | swmBalance = Just bal } ! []
+
+
+updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )
+updateFromCurve25519 msg model =
+    case msg of
+        GotKey kp ->
+            { model | keypair = Just kp } ! []
+
+        GotEncBytes bs ->
+            { model | encBytes = Just bs } ! []

@@ -5,6 +5,7 @@ import Decimal exposing (Decimal)
 import Hex
 import Keccak exposing (ethereum_keccak_256)
 import Maybe.Extra exposing ((?), combine)
+import ParseInt
 import Regex exposing (Regex, contains, regex)
 import SecureVote.Eth.Models exposing (CandidateEthTx, MinEthTx)
 
@@ -77,9 +78,34 @@ toHex ints =
     (combine <| List.map intToHex ints) |> Maybe.map String.concat
 
 
+fromHex : String -> Maybe (List Int)
+fromHex str =
+    let
+        byte =
+            Result.toMaybe <| ParseInt.parseIntHex <| String.slice 0 2 str
+
+        remStr =
+            String.dropLeft 2 str
+    in
+    if str == "" then
+        Just []
+    else if String.length str % 2 == 0 then
+        Maybe.map2 (\b bs -> b :: bs) byte (fromHex remStr)
+    else
+        Nothing
+
+
 toHexEth : List Int -> Maybe String
 toHexEth ints =
     Maybe.map ((++) "0x") (toHex ints)
+
+
+fromHexEth : String -> Maybe (List Int)
+fromHexEth str =
+    if String.slice 0 2 str == "0x" then
+        fromHex <| String.dropLeft 2 str
+    else
+        Nothing
 
 
 intToHexEth : Int -> Maybe String
