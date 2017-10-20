@@ -33,7 +33,7 @@ votingView model =
             , Options.styled div [ headline, cs "black" ] [ text "Ballot Transaction:" ]
             , div [ class "mw7 ph3 overflow-visible center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
             , div [ class "mv4" ]
-                [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Click (PageGoForward SwmSubmitR) ] [ text "Cast using MEW" ]
+                [ btn 758678435 model [ SecBtn, Attr (class "ph3") ] [ text "Cast using MEW" ]
                 , btn 785784536 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog "Cast using Geth" GethDialog) ] [ text "Cast using Geth" ]
                 ]
             , btn 987572349 model [ PriBtn, Attr (class "mv3"), OpenDialog, Click (SetDialog "Verify Your Ballot" VerifyDialog) ] [ text "Verify Ballot" ]

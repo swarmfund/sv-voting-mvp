@@ -11,7 +11,7 @@ import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Ro
 
 type alias Model =
     { mdl : Material.Model
-    , snack : Material.Snackbar.Model Msg
+    , snack : Material.Snackbar.Model String
     , errors : List String
     , dialogHtml : { title : String, route : DialogRoute Msg }
     , elevations : Dict Int Bool

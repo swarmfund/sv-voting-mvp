@@ -2,6 +2,7 @@ module SecureVote.SPAs.SwarmMVP.Msg exposing (..)
 
 import Decimal exposing (Decimal)
 import Material
+import Material.Snackbar as Snackbar
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute, Route)
 
@@ -25,6 +26,7 @@ type
     | FromWeb3 FromWeb3Msg
       -- Errors
     | LogErr String
+    | Snackbar (Snackbar.Msg String)
       -- Elm Mdl
     | Mdl (Material.Msg Msg)
 
