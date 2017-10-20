@@ -5,6 +5,7 @@ import ParseInt exposing (parseIntRadix, toRadix)
 import Result.Extra exposing (isOk)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(SetField))
+import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits, intsToRangeBallot3Bits)
 
 
 swmAddrId : String
@@ -66,7 +67,7 @@ ballotDisplayMin =
     0 - ballotRangeAbs
 
 
-ballotValToBytes : Int -> Result String (List Int)
+ballotValToBytes : Int -> Result String RangeBallot3Bits
 ballotValToBytes value =
     let
         -- this will change -3 to 0, 0 to +3, and +3 to 6, for example (with ballotRangeAbs = 3)
@@ -91,7 +92,7 @@ ballotValToBytes value =
                     )
 
         procString =
-            String.split "" >> List.map String.toInt >> Result.Extra.combine
+            String.split "" >> List.map String.toInt >> Result.Extra.combine >> Result.andThen intsToRangeBallot3Bits
     in
     case reencodedOkay of
         Ok _ ->

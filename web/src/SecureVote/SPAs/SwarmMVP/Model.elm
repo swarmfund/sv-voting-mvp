@@ -8,6 +8,7 @@ import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(NotFoundR, SwmAddressR))
+import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits)
 
 
 type alias Model =
@@ -18,7 +19,7 @@ type alias Model =
     , elevations : Dict Int Bool
     , fields : Dict String String
     , ballotRange : Dict Int Int
-    , ballotBits : Dict Int (Result String (List Int))
+    , ballotBits : Dict Int (Result String RangeBallot3Bits)
     , route : Route
     , history : List Route
     , lastPageDirection : LastPageDirection

@@ -11,7 +11,7 @@ const curve25519Ports = (app) => {
                 f(...args);
             } catch (err) {
                 const _err = err.message ? JSON.stringify(err.message) : JSON.stringify(err);
-                console.log('Caught curve25519 error:', _err);
+                console.log('Caught curve25519 error:', _err)
                 app.ports.receiveCurve25519Error.send(_err);
             }
         };
