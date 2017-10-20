@@ -8,6 +8,7 @@ import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
+import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -47,10 +48,24 @@ update msg model =
 
         ConstructBallotPlaintext ->
             let
-                encCmd =
-                    encryptBytes { hexSk = "", hexRemotePk = "", bytesToSign = [] }
+                plainBytesM =
+                    orderedBallotBits model.ballotBits |> Maybe.andThen (flip constructBallot "0xa74476443119A942dE498590Fe1f2454d7D4aC0d")
+
+                skM =
+                    Maybe.map .hexSk model.keypair
+
+                remotePkM =
+                    model.remoteHexPk
+
+                encCmds =
+                    case ( skM, remotePkM, plainBytesM ) of
+                        ( Just sk, Just pk, Just bs ) ->
+                            [ encryptBytes { hexSk = sk, hexRemotePk = pk, bytesToSign = bs } ]
+
+                        _ ->
+                            []
             in
-            model ! [ encCmd ]
+            { model | ballotPlaintext = plainBytesM } ! encCmds
 
         MultiMsg msgs ->
             multiUpdate msgs model []

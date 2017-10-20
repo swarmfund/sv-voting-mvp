@@ -36,6 +36,7 @@ const curve25519Ports = (app) => {
             const encrypted = nacl.crypto_box(msg, nonce, theirPk, sk);
             const arrayToReturn = Array.prototype.slice.call(encrypted);
             app.ports.receiveEncryptedBytes.send(arrayToReturn);
+            console.log("encryptBytes sent via receiveEncryptedBytes:", arrayToReturn);
         }));
     })
 

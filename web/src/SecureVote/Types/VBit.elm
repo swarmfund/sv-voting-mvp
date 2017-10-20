@@ -1,6 +1,7 @@
 module SecureVote.Types.VBit exposing (..)
 
 import Maybe.Extra
+import SecureVote.List.Utils exposing (padRight)
 import SecureVote.Types.TypeNat exposing (OnePlus, Zero)
 
 
@@ -67,6 +68,45 @@ vblFromList (SafeList listOfLen) bitList =
         Nothing
 
 
+vblToList : SafeList VBit n -> List VBit
+vblToList (SafeList vbits) =
+    vbits
+
+
 intsToVBits : List Int -> Maybe (List VBit)
 intsToVBits ints =
     Maybe.Extra.combine <| List.map intToVBit ints
+
+
+vBitsToInt : List VBit -> Int
+vBitsToInt vbits =
+    let
+        len =
+            List.length vbits
+    in
+    case vbits of
+        vbit :: vbits_ ->
+            vBitsToInt vbits_
+                + (if vbit == OneBit then
+                    2 ^ (len - 1)
+                   else
+                    0
+                  )
+
+        [] ->
+            0
+
+
+vBitsToBytes : List VBit -> List Int
+vBitsToBytes vbits =
+    let
+        byte1 =
+            vBitsToInt <| padRight 8 ZeroBit <| List.take 8 vbits
+
+        remBits =
+            List.drop 8 vbits
+    in
+    if List.length vbits == 0 then
+        []
+    else
+        byte1 :: vBitsToBytes remBits

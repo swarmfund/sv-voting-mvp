@@ -1,7 +1,5 @@
 module SecureVote.Voting.Types.RangeVoting exposing (..)
 
-import Maybe.Extra
-import SecureVote.Types.TypeNat exposing (OnePlus, Zero)
 import SecureVote.Types.VBit exposing (Len3, SafeList, VBit, intsToVBits, vblFromList, vblLen3)
 
 

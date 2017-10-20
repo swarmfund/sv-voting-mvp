@@ -1,17 +1,17 @@
 module SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (..)
 
+import Dict exposing (Dict)
+import Maybe.Extra exposing ((?))
 import SecureVote.Eth.Types exposing (EthAddress)
+import SecureVote.Eth.Utils exposing (fromHexEth)
+import SecureVote.SPAs.SwarmMVP.Ballot exposing (BallotOption, voteOptions)
+import SecureVote.Types.VBit exposing (vBitsToBytes, vblToList)
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits)
 
 
-type alias Nonce =
-    -- List of 6 bytes
-    List Int
-
-
-nonceCheck : Nonce -> Bool
-nonceCheck nonce =
-    True
+byteCheck : Int -> Bool
+byteCheck b =
+    b >= 0 && b <= 255
 
 
 type alias RangeBallotPlaintext =
@@ -22,13 +22,34 @@ type alias RangeBallotPlaintext =
 rangeBallotTxtCheck : RangeBallotPlaintext -> Bool
 rangeBallotTxtCheck ballotBytes =
     let
-        byteRangeCheck =
-            List.all <| List.map (\b -> b >= 0 && b <= 255) ballotBytes
+        valCheck =
+            List.all byteCheck ballotBytes
 
-        lengthCheck =
+        lenCheck =
             List.length ballotBytes == 16
     in
-    byteRangeCheck && lengthCheck
+    valCheck && lenCheck
 
 
-constructBallot : Nonce -> List RangeBallot3Bits -> EthAddress -> RangeBallotPlaintext
+constructBallot : List RangeBallot3Bits -> EthAddress -> Maybe RangeBallotPlaintext
+constructBallot votes delegate =
+    let
+        voteBytes =
+            vBitsToBytes <| List.concat (List.map vblToList votes)
+
+        ethPrefixM =
+            Maybe.map (List.take 14) <| fromHexEth delegate
+    in
+    Maybe.map (\prefix -> voteBytes ++ prefix) ethPrefixM
+
+
+orderedBallotBits : Dict Int (Result String RangeBallot3Bits) -> Maybe (List RangeBallot3Bits)
+orderedBallotBits ballotBitsDict =
+    let
+        ballotIds =
+            List.map .id voteOptions
+
+        ballotBits =
+            Maybe.Extra.combine <| List.map (\id -> Dict.get id ballotBitsDict ? Err "" |> Result.toMaybe) ballotIds
+    in
+    ballotBits

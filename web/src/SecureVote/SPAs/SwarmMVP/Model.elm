@@ -30,6 +30,8 @@ type alias Model =
     , swmBalance : Maybe Decimal
     , keypair : Maybe Curve25519KeyPair
     , encBytes : Maybe (List Int)
+    , ballotPlaintext : Maybe (List Int)
+    , remoteHexPk : Maybe String
     }
 
 
@@ -55,6 +57,8 @@ initModel =
     , swmBalance = Nothing
     , keypair = Nothing
     , encBytes = Nothing
+    , ballotPlaintext = Nothing
+    , remoteHexPk = Just "ef524153a1a69d4a1644fabf34177bd24caa7ae09909574d25098c9f376e123f"
     }
 
 
