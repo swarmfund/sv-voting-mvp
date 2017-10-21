@@ -2,8 +2,8 @@ module SecureVote.SPAs.SwarmMVP.Msg exposing (..)
 
 import Decimal exposing (Decimal)
 import Material
-import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import Material.Snackbar as Snackbar
+import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute, Route)
 

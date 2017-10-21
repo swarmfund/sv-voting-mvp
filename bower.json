@@ -1,0 +1,36 @@
+{
+  "name": "admin",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output",
+    "_dist",
+    "_pureDist",
+    ".idea",
+    "contract",
+    "docs",
+    "elm-stuff",
+    "tests",
+    "web"
+  ],
+  "dependencies": {
+    "purescript-prelude": "^3.1.0",
+    "purescript-console": "^3.0.0",
+    "purescript-lists": "^4.10.0",
+    "purescript-assert": "^3.0.0",
+    "purescript-yargs": "^3.1.0",
+    "purescript-exceptions": "^3.1.0",
+    "purescript-crypt-nacl": "^0.3.0",
+    "purescript-b64": "^0.0.3",
+    "purescript-format": "^3.0.0",
+    "purescript-integers": "^3.1.0",
+    "purescript-yarn": "^3.0.0",
+    "purescript-strings": "^3.3.1",
+    "purescript-quickcheck": "^4.6.0",
+    "purescript-node-process": "^5.0.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^3.0.0"
+  }
+}

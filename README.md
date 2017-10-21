@@ -50,4 +50,10 @@ We use `elm-mdl` (material design light) for UI components.
 
 ## Audit Suite
 
-(TODO)
+The Audit suite is built in Purescript.
+
+To compile / develop it:
+
+`npm install -g purescript pulp bower`
+
+
