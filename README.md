@@ -14,9 +14,12 @@ This repository contains three key items:
 
 ## Solidity Contract
 
-The contract lives in `./contract` and uses truffle for development.
+The contract lives in `./contract` and uses truffle for development, though not for deployment.
 
-* `yarn solc` to compile contract via truffle to `./contract/build`
+* `yarn sol-compile` to compile contract to `_solDist`
+* `yarn sol-deploy <args>` to deploy (after compiling) to the blockchain
+
+To play with a Web3-esq CLI run `yarn sol-compile && yarn sol-cli`
 
 ## Web UI
 

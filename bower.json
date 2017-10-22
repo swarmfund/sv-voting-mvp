@@ -28,9 +28,17 @@
     "purescript-yarn": "^3.0.0",
     "purescript-strings": "^3.3.1",
     "purescript-quickcheck": "^4.6.0",
-    "purescript-node-process": "^5.0.0"
+    "purescript-node-process": "^5.0.0",
+    "purescript-foldable-traversable": "^3.6.1",
+    "purescript-spec-quickcheck": "^2.0.0",
+    "purescript-numbers": "^5.0.0",
+    "purescript-now": "^3.0.0",
+    "purescript-node-child-process": "^4.0.0",
+    "purescript-ffi-utils": "^2.0.1",
+    "purescript-bytestrings": "^6.0.0"
   },
   "devDependencies": {
-    "purescript-psci-support": "^3.0.0"
+    "purescript-psci-support": "^3.0.0",
+    "purescript-spec": "^2.0.0"
   }
 }

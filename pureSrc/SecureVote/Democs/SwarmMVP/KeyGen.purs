@@ -17,21 +17,30 @@ import SecureVote.Crypto.Curve25519 (genCurve25519Key)
 import SecureVote.Utils.ArrayBuffer (toHex)
 
 
+type KeyPair = { sk :: String, pk :: String }
+
+
+generateKey :: forall e. Eff (naclRandom :: NACL_RANDOM | e) KeyPair
+generateKey = do
+    key <- genCurve25519Key
+    let sk = toHex <<< toUint8Array $ getBoxSecretKey key
+    let pk = toHex <<< toUint8Array $ getBoxPublicKey key
+    pure {sk, pk}
+
+
 generateAndShowKey :: forall eff. Eff (naclRandom :: NACL_RANDOM, console :: CONSOLE | eff) Unit
 generateAndShowKey = do
-            key <- genCurve25519Key
-            let sk = toHex <<< toUint8Array $ getBoxSecretKey key
-            let pk = toHex <<< toUint8Array $ getBoxPublicKey key
+            {sk, pk} <- generateKey
             log "############################################"
             log "## SWARM BALLOT ENCRYPTION KEY GENERATION ##"
             log "############################################"
             log ""
             log ""
             log "Here is your SECRET KEY. KEEP THIS PRIVATE:"
-            log sk
+            log $ "sk: 0x" <> sk
             log ""
             log "Here is your PUBLIC KEY. PUBLISH THIS TO THE BLOCKCHAIN:"
-            log pk
+            log $ "pk: 0x" <> pk
             log ""
             log ""
             log "The public key should be published before the ballot by providing it to the Eth smart contract constructor."

@@ -24,11 +24,8 @@ app ethUrl swmAddress =
         let exitC = exitCode ballotAns
         let msgStart = exitMsgHeader exitC
         let msgBody = either id id ballotAns
-        log ""
-        log msgStart
-        log ""
-        log msgBody
-        log ""
+        log $ "\n" <> msgStart <> "\n"
+        log $ msgBody
         exit exitC
     where
         exitCode e = if isRight e then 0 else 1

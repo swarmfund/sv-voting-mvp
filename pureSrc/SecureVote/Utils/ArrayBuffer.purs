@@ -5,16 +5,34 @@ import Prelude
 import Data.Array (cons, replicate)
 import Data.ArrayBuffer.ArrayBuffer (fromArray)
 import Data.ArrayBuffer.DataView as DV
-import Data.ArrayBuffer.Typed (toIntArray, dataView, asUint8Array)
-import Data.ArrayBuffer.Types (Uint8Array)
+import Data.ArrayBuffer.Typed (asUint8Array, dataView, toArray, toIntArray)
+import Data.ArrayBuffer.Types (ArrayView, Uint8, Uint8Array)
 import Data.Int (fromStringAs, hexadecimal, toNumber, toStringAs)
 import Data.Maybe (Maybe(..))
 import Data.String (fromCharArray, joinWith, length, take, drop) as String
+import Data.String.Yarn (reverse)
+import Unsafe.Coerce (unsafeCoerce)
+
+
+newtype UI8AShowable = UI8AShowable Uint8Array
+
+justUI8A :: UI8AShowable -> Uint8Array
+justUI8A (UI8AShowable a) = a
+
+instance showUint8Array :: Show (UI8AShowable) where
+  show a = unsafeCoerce a
+
+instance eqUint8Array :: Eq UI8AShowable where
+  eq (UI8AShowable a) (UI8AShowable b) = toArray a == toArray b
 
 
 padLeft :: Char -> Int -> String -> String
 padLeft c len str = prefix <> str
-  where prefix = String.fromCharArray (replicate (len - String.length str) c)
+  where prefix = String.fromCharArray <<< flip replicate c $ (len - String.length str)
+
+
+padRight :: Char -> Int -> String -> String
+padRight c len str = reverse $ padLeft c len $ reverse str 
 
 
 toHex :: Uint8Array -> String
