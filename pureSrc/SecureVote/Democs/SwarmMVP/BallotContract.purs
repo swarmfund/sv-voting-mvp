@@ -35,6 +35,9 @@ noArgs = unit
 foreign import makeSwmVotingContractImpl :: forall a. Fn3 (a -> Maybe a) (Maybe a) String (Maybe SwmVotingContract)
 foreign import setWeb3ProviderImpl :: forall a. Fn1 String a
 
+-- web3 FFI
+foreign import getAccountImpl :: forall a b. Fn3 (a -> Either a b) (b -> Either a b) Int (Either String String)
+
 -- contract FFI
 foreign import getBallotSKImpl :: forall a. Fn3 (a -> Maybe a) (Maybe a) SwmVotingContract (Maybe a)
 foreign import getBallotPropImpl :: forall a b c. Fn5 (a -> Either a b) (b -> Either a b) String c SwmVotingContract (Either a b) 
@@ -52,6 +55,9 @@ makeSwmVotingContract = runFn3 makeSwmVotingContractImpl Just Nothing
 setWeb3Provider :: forall a. String -> a 
 setWeb3Provider = runFn1 setWeb3ProviderImpl
 
+-- web3 functions
+getAccount :: Int -> Either String String
+getAccount = runFn3 getAccountImpl Left Right 
 
 -- contract functions
 getBallotSK :: forall a. SwmVotingContract -> Maybe String

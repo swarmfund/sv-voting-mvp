@@ -23,6 +23,15 @@ exports.setWeb3ProviderImpl = function(host) {
 }
 
 
+exports.getAccountImpl = function(left, right, n) {
+    const acc = web3.eth.accounts[n];
+    if (acc) {
+        return right(acc)
+    }
+    return left("Account not found");
+}
+
+
 exports.makeSwmVotingContractImpl = function(just, nothing, addr) {
     if (!ethUtils.isValidAddress(addr)) {
         console.log("Invalid address provided for voting contract");
@@ -55,6 +64,9 @@ const eitherF = function(left, right, contract) {
         try {
             const ans = contract[prop].apply(this, args);
             console.log("eitherF got ans", ans)
+            if (ans.s && ans.e && ans.c) {
+                return right(ans.toString(10));
+            }
             return right(ans);
         } catch (err) {
             return left(JSON.stringify(err));
@@ -66,7 +78,8 @@ const eitherF = function(left, right, contract) {
 exports.getBallotPropImpl = function(left, right, prop, args, contract) {
     const runPropWithArgs = eitherF(left, right, contract);
     console.log("Running", prop, "args:", args)
-    return runPropWithArgs(prop, args)
+    const ans = runPropWithArgs(prop, args)
+    return ans;
 }
 
 

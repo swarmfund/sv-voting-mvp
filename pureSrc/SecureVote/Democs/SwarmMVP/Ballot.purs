@@ -33,15 +33,15 @@ delegateAddr = "0x1111111111111111111111111111111111111111"
 arrayToUint8A = asUint8Array <<< whole <<< fromArray 
 
 
-makeBallot :: forall e. Eff (random :: RANDOM | e) Uint8Array
-makeBallot = do
+makeBallot :: forall e. String -> Eff (random :: RANDOM | e) Uint8Array
+makeBallot delegate = do
     ballots <- randInts 4
     let ballotsBits = padRight '0' 16 $ joinWith "" $ map ballotToBitStr ballots
     let ballotsBytes = bitStrToBytes ballotsBits
     let finalBytes = arrayToUint8A $ ballotsBytes <> (asArray procDelegateA)
     pure $ finalBytes
   where
-    procDelegateM = fromHex $ take (14 * 2) $ replace (Pattern "0x") (Replacement "") delegateAddr
+    procDelegateM = fromHex $ take (14 * 2) $ replace (Pattern "0x") (Replacement "") delegate
     procDelegateA = fromMaybe (arrayToUint8A []) procDelegateM
 
 

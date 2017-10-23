@@ -8,7 +8,7 @@ import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Now (NOW)
-import Control.Monad.Eff.Random (RANDOM)
+import Control.Monad.Eff.Random (RANDOM, randomInt)
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Crypt.NaCl (NACL_RANDOM, box, getBoxPublicKey, getBoxSecretKey, toUint8Array)
 import Data.Array (drop, tail, dropWhile, head, range, replicate, zip, (:))
@@ -16,10 +16,13 @@ import Data.ArrayBuffer.ArrayBuffer (fromArray)
 import Data.ArrayBuffer.DataView (whole)
 import Data.ArrayBuffer.Typed (asUint8Array)
 import Data.ArrayBuffer.Types (Uint8Array)
-import Data.Either (Either(..), fromRight)
+import Data.Either (Either(..), either, fromRight)
+import Data.Int (decimal, fromNumber, fromStringAs)
 import Data.List (List(..))
 import Data.Maybe (Maybe(..), fromJust, maybe)
+import Data.Number as Num
 import Data.Number.Format (toString)
+import Data.Ord (abs)
 import Data.String (joinWith)
 import Data.String.CodePoints (take)
 import Data.String.Utils (lines, words)
@@ -32,7 +35,7 @@ import Node.Encoding (Encoding(..))
 import Partial.Unsafe (unsafePartial)
 import SecureVote.Crypto.Curve25519 (genCurve25519Key)
 import SecureVote.Democs.SwarmMVP.Ballot (makeBallot)
-import SecureVote.Democs.SwarmMVP.BallotContract (SwmVotingContract(..), noArgs, ballotPropHelper, ballotPropHelperAff, getBallotEncPK, makeSwmVotingContract, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, BallotResult)
+import SecureVote.Democs.SwarmMVP.BallotContract (SwmVotingContract(..), getAccount, noArgs, ballotPropHelper, ballotPropHelperAff, getBallotEncPK, makeSwmVotingContract, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, BallotResult)
 import SecureVote.Democs.SwarmMVP.KeyGen (generateKey)
 import SecureVote.Utils.ArrayBuffer (fromHex, toHex)
 import SecureVote.Utils.Time (currentTimestamp)
@@ -54,12 +57,18 @@ rpcPortStr = toString rpcPort
 
 -- Don't set this to more than 199 (we generate 200 accounts in testrpc during the auto-tests)
 nVotes :: Int
-nVotes = 30
+nVotes = 5
 
 
 logBuffer str = unsafePerformEff $ B.toString UTF8 str
 
 logUC = log <<< unsafeCoerce
+
+self :: forall a. a -> a
+self a = a
+
+unsFromJ :: forall a. Maybe a -> a 
+unsFromJ a = unsafePartial $ fromJust a
 
 
 completeBallotTest :: forall e. SpecType (e)
@@ -108,7 +117,7 @@ completeBallotTest = do
         ballotSuccess <- logAndPrintResults ballotResultE
         ballotSuccess `shouldEqual` true 
 
-        let (nVotesInContract :: Int) = ballotPropHelper "nVotesCast" noArgs contract 
+        let (nVotesInContract :: Int) = unsFromJ $ (fromStringAs decimal) $ unsafePartial $ fromRight $ ballotPropHelper "nVotesCast" noArgs contract 
         nVotesInContract `shouldEqual` nVotes
 
         pure unit 
@@ -151,6 +160,9 @@ createBallots cM = case cM of
 genBallots :: forall e. Int -> Eff (random :: RANDOM | e) (Array Uint8Array)
 genBallots 0 = pure []
 genBallots n = do
+    setDelegate <- randomInt 0 1
+    delegateE <- if setDelegate == 1 then getAccount <$> randomInt 0 nVotes else pure $ Right "0x1111122222333334444411111222223333344444"
+    let delegate = unsafePartial $ fromRight delegateE
     ballot <- makeBallot
     ballots <- genBallots (n-1)
     pure $ ballot : ballots

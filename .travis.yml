@@ -5,6 +5,7 @@ before_install:
     - echo "hi"
 install:
     - yarn install
+    - bower install
 before_script:
     - |
       testrpc -a 210 > /dev/null 2>&1 &
@@ -17,3 +18,7 @@ after_script:
 cache:
   directories:
     - tests/elm-stuff/build-artifacts
+    - node-modules
+    - output
+    - .pulp-cache
+    - bower_components

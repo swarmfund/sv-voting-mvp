@@ -55,7 +55,7 @@
   "scripts": {
     "----- SMART CONTRACT COMMANDS": "",
     "sol-test": "cd contract && truffle test",
-    "_testrpc": "testrpc",
+    "_testrpc": "testrpc -a 201",
     "sol-compile": "./bin/solidity/compile.sh",
     "sol-deploy": "node ./bin/solidity/deploy.js",
     "sol-deploy-auto": "yarn sol-deploy --unsafeSkipChecks --deploy",
@@ -64,8 +64,6 @@
     "elm-live": "yarn _live",
     "web": "webpack-dev-server --port 3000 --open",
     "build-web": "webpack",
-    "_open_browser": "open http://localhost:8000/web/src/SecureVote/SPAs/SwarmMVP/Main.elm",
-    "_reactor": "elm-reactor",
     "_live": "elm-live ./web/src/SecureVote/SPAs/SwarmMVP/Main.elm --output=./web/sv-swarm.js --dir=./web --open --debug",
     "----- PureScript (Aduit + Admin)": "",
     "audit-dev": "pulp -w build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Auditor -j 2 --to _pureDist/audit.js -o ./output ",
@@ -73,9 +71,10 @@
     "admin-dev": "pulp -w build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Admin -j 2 --to _pureDist/admin.js -o ./output ",
     "admin-prod": "pulp build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Admin -j 2 --to _pureDist/admin.js -o ./output",
     "purs-test": "pulp -w test --src-path pureSrc --test-path pureTest",
+    "purs-test-no-watch": "pulp test --src-path pureSrc --test-path pureTest",
     "----- FULL SYSTEM / HELPER COMMANDS": "",
     "dry-run": "run-p _sc_testrpc_deploy",
     "node": "node",
-    "test-all": "elm-test && yarn purs-test && cd contract && truffle test"
+    "test-all": "elm-test && yarn purs-test-no-watch && cd contract && truffle test"
   }
 }
