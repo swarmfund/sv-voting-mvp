@@ -7,6 +7,7 @@ type Route
     = SwmAddressR
     | SwmHowToVoteR
     | SwmVoteR
+    | SwmDelegateR
     | SwmSubmitR
     | NotFoundR
 
