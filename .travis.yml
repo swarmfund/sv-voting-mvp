@@ -5,6 +5,7 @@ before_install:
     - echo "hi"
 install:
     - yarn install
+    - npm i -g bower
     - bower install
 before_script:
     - |

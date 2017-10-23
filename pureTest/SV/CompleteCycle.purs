@@ -12,6 +12,7 @@ import Control.Monad.Eff.Random (RANDOM, randomInt)
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Crypt.NaCl (NACL_RANDOM, box, getBoxPublicKey, getBoxSecretKey, toUint8Array)
 import Data.Array (drop, tail, dropWhile, head, range, replicate, zip, (:))
+import Data.Array as Array
 import Data.ArrayBuffer.ArrayBuffer (fromArray)
 import Data.ArrayBuffer.DataView (whole)
 import Data.ArrayBuffer.Typed (asUint8Array)
@@ -91,9 +92,9 @@ completeBallotTest = do
         
         -- create lots of ballots
         ballots <- createBallots contractM
-        log $ unsafeCoerce $ head $ map toHex ballots
+        logUC $ Array.take 5 $ map toHex ballots
         let encdBallots = encryptBallots (ui8SK) ballots
-        log $ unsafeCoerce $ head $ map (\(Tuple enc pk) -> Tuple (toHex enc) (toHex pk) ) encdBallots
+        log $ unsafeCoerce $ Array.take 5 $ map (\(Tuple enc pk) -> Tuple (toHex enc) (toHex pk) ) encdBallots
 
         -- publish ballots
         let enumeratedBallots = zip (range 1 9999) encdBallots
@@ -162,8 +163,8 @@ genBallots 0 = pure []
 genBallots n = do
     setDelegate <- randomInt 0 1
     delegateE <- if setDelegate == 1 then getAccount <$> randomInt 0 nVotes else pure $ Right "0x1111122222333334444411111222223333344444"
-    let delegate = unsafePartial $ fromRight delegateE
-    ballot <- makeBallot
+    let (delegate :: String) = unsafePartial $ fromRight delegateE
+    ballot <- makeBallot delegate
     ballots <- genBallots (n-1)
     pure $ ballot : ballots
 
