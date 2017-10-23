@@ -4,6 +4,7 @@ const colors = require('colors');
 
 const loadDetails = () => {
     try {
+        console.log("Running from", process.cwd())
         const solDist = "_solDist"
         var prefix = ""
         while (true) {

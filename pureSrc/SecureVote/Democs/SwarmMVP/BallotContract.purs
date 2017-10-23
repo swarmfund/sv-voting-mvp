@@ -5,6 +5,7 @@ import Prelude
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Compat (EffFnAff(..), fromEffFnAff)
 import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (log)
 import Control.Monad.Eff.Now (NOW, now)
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
@@ -34,7 +35,7 @@ import Unsafe.Coerce (unsafeCoerce)
 data SwmVotingContract = SwmVotingContract SwmVotingContract
 
 
-type BallotResult = Either String String
+type BallotResult = String
 
 
 type Ballot = {ballot :: Uint8Array, pubkey :: Uint8Array, address :: String}
@@ -102,6 +103,15 @@ web3CastBallot :: forall e. Int -> Tuple Uint8Array Uint8Array -> SwmVotingContr
 web3CastBallot accN (Tuple encBallot senderPk) contract = fromEffFnAff $ runFn4 submitBallotImpl accN encBallot senderPk contract
 
 
+-- runBallotCount :: forall e. Maybe SwmVotingContract -> Aff (| e) (Either String BallotResult)
+-- runBallotCount Nothing = pure $ Left "Contract is not initialized."
+-- runBallotCount (Just contract) = 
+--     do  -- Aff monad
+--         nowTime <- liftEff currentTimestamp
+--         endTime <- ballotPropHelperAff "endTime" noArgs contract
+--         pure $ Left ""
+
+
 runBallotCount :: forall e. Maybe SwmVotingContract -> BallotResult
 runBallotCount Nothing = Left "Contract is not initialized."
 runBallotCount (Just contract) = 
@@ -120,6 +130,8 @@ runBallotCount (Just contract) =
         nVotes <- (fromMaybe 0 <<< fromStringAs decimal) <$> (ballotPropHelper "nVotesCast" noArgs contract)
         ballots <- getBallots contract nVotes
         decryptedBallots <- maybe (Left "Ballots failed decryption") Right $ decryptBallots ballotSecKey ballots 
+
+
 
         pure ""
     where

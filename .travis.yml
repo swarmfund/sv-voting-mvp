@@ -4,7 +4,7 @@ node_js:
 before_install: 
     - echo "hi"
 install:
-    - yarn install
+    - yarn install --non-interactive
     - npm i -g bower
     - bower install
 before_script:
@@ -21,5 +21,6 @@ cache:
     - tests/elm-stuff/build-artifacts
     - node-modules
     - output
+    - outputTest
     - .pulp-cache
     - bower_components
