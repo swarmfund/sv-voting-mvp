@@ -1,7 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Views.RootV exposing (..)
 
-import Html exposing (Attribute, Html, div, h1, h2, h3, p, span, text)
-import Html.Attributes exposing (class, style)
+import Html exposing (Attribute, Html, div, h1, h2, h3, img, p, span, text)
+import Html.Attributes exposing (class, src, style)
 import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Dialog exposing (dialog)
@@ -22,7 +22,8 @@ rootView model =
         , ( SwmVoteR, castVoteView model )
         , ( SwmSubmitR, votingView model )
         ]
-        [ dialog model
+        [ img [ src "img/swarm-logo-white-sm.png", class "mv1 mh4-l center db" ] []
+        , dialog model
         , Snackbar.view model.snack |> Html.map Snackbar
         ]
 

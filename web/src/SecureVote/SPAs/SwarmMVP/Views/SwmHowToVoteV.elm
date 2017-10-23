@@ -24,7 +24,7 @@ howToVoteView model =
         model
         []
         [ Card.text [ cs "center tc" ]
-            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2" ] [ text "Swarm Liquidity Vote" ]
+            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Swarm Liquidity Vote" ]
             , Options.styled span [ headline, cs "black db pa2 mv3" ] [ text "How To Vote" ]
             , div [ class "mw7 ph3 overflow-visible center" ] [ p [ class "tl" ] [ text loremIpsum ] ]
             , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmVoteR) ] [ text "Continue" ]
