@@ -44,19 +44,19 @@ genCurve25519Key = generateBoxKeyPair
 
 
 genOneTimeNonce :: BoxPublicKey -> Nonce
-genOneTimeNonce senderPk = toNonce $ asUint8Array $ slice 0 24 $ toIntArray $ toUint8Array senderPk
+genOneTimeNonce senderPk = toNonce $ asUint8Array $ slice 0 24 $ toIntArray $ sha256 $ toUint8Array senderPk
 
 
 decryptOneTimeBallot :: Box -> BoxPublicKey -> BoxSecretKey -> Maybe Message
 decryptOneTimeBallot boxToOpen voterPk ballotEncSk = fromM $ do
-    let _ = unsafePerformEff $ log $ "Decrypting " <> (toStr boxToOpen) <> " from " <> (toStr voterPk)
+    let _ = unsafePerformEff $ log $ "Decrypting " <> (toStrUnsafe boxToOpen) <> " from " <> (toStrUnsafe voterPk)
     M $ boxOpen boxToOpen (genOneTimeNonce voterPk) voterPk ballotEncSk 
 
 
 encryptOneTimeBallot :: BoxPublicKey -> Message -> BoxPublicKey -> BoxSecretKey -> Box
 encryptOneTimeBallot senderPk msg encPk senderSk = fromM $ do
-    let _ = unsafePerformEff $ log $ "Encrypting " <> (toStr msg) <> " from " <> (toStr senderPk) <> " to " <> (toStr encPk)
+    let _ = unsafePerformEff $ log $ "Encrypting " <> (toStrUnsafe msg) <> " from " <> (toStrUnsafe senderPk) <> " to " <> (toStrUnsafe encPk)
     M $ box msg (genOneTimeNonce senderPk) encPk senderSk
 
 
-toStr = unsafeCoerce <<< toHex <<< toUint8Array
+toStrUnsafe = unsafeCoerce <<< toHex <<< toUint8Array

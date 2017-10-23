@@ -7,7 +7,7 @@ const loadDetails = () => {
         console.log("Running from", process.cwd())
         const solDist = "_solDist"
         var prefix = ""
-        while (true) {
+        for (var i = 0; i < 7; i++) {
             if (fs.existsSync("./" + prefix + solDist)) {
                 console.log("Found _solDist at:", "./" + prefix + solDist);
                 break;
