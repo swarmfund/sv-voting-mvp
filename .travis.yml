@@ -2,6 +2,6 @@ language: node_js
 before_install: 
     - echo "hi"
 install:
-    - echo "hi"
+    - yarn install
 script:
     "yaml test-all"
