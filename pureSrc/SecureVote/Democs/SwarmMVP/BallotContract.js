@@ -68,3 +68,31 @@ exports.getBallotPropImpl = function(left, right, prop, args, contract) {
     console.log("Running", prop, "args:", args)
     return runPropWithArgs(prop, args)
 }
+
+
+exports.getBallotPropAsyncImpl = function(prop, args, contract) {
+    return function(onErr, onSucc) {
+        console.log('ballot async', prop, args);
+        args.push({gas: 999999, from: web3.eth.coinbase});
+        args.push(function(err, res) {
+            console.log('ballot async got', err, res);
+            if (err) { onErr(err) }
+            onSucc(res);
+        })
+        contract[prop].apply(this, args);
+    }
+}
+
+
+exports.submitBallotImpl = function(accN, encBallot, senderPk, contract) {
+    return function(onErr, onSucc) {
+        const eb = "0x" + Buffer.from(encBallot).toString('hex');
+        const pk = "0x" + Buffer.from(senderPk).toString('hex');
+        contract.submitBallot(eb, pk, {from: web3.eth.accounts[accN + 1], gas: 999999}, function(err, txHash){
+            if (err) {
+                return onErr(err);
+            }
+            return onSucc(txHash);
+        })
+    }
+}

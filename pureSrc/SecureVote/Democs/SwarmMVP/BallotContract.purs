@@ -2,22 +2,29 @@ module SecureVote.Democs.SwarmMVP.BallotContract where
 
 import Prelude
 
+import Control.Monad.Aff (Aff)
+import Control.Monad.Aff.Compat (EffFnAff(..), fromEffFnAff)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (log)
 import Control.Monad.Eff.Now (NOW, now)
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Trans.Class (lift)
+import Data.ArrayBuffer.Types (Uint8Array)
 import Data.DateTime.Instant (toDateTime, unInstant)
 import Data.Either (Either(..))
-import Data.Function.Uncurried (Fn0, Fn1, Fn2, Fn3, Fn4, Fn5, runFn0, runFn1, runFn2, runFn3, runFn4, runFn5)
+import Data.Function.Uncurried (Fn0, Fn1, Fn2, Fn3, Fn4, Fn5, Fn6, runFn0, runFn1, runFn2, runFn3, runFn4, runFn5, runFn6)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Number.Format (toString)
 import Data.Time.Duration (Milliseconds(..))
+import Data.Tuple (Tuple(..))
 import Math (round)
 import SecureVote.Utils.Time (currentTimestamp)
 
 
 data SwmVotingContract = SwmVotingContract SwmVotingContract
+
+
+type BallotResult = (Either String String)
 
 
 noArgs :: Unit
@@ -32,6 +39,10 @@ foreign import setWeb3ProviderImpl :: forall a. Fn1 String a
 foreign import getBallotSKImpl :: forall a. Fn3 (a -> Maybe a) (Maybe a) SwmVotingContract (Maybe a)
 foreign import getBallotPropImpl :: forall a b c. Fn5 (a -> Either a b) (b -> Either a b) String c SwmVotingContract (Either a b) 
 ballotPropHelper = runFn5 getBallotPropImpl Left Right
+foreign import getBallotPropAsyncImpl :: forall e b c. Fn3 String c SwmVotingContract (EffFnAff (| e) b) 
+ballotPropHelperAff = runFn3 getBallotPropAsyncImpl
+
+foreign import submitBallotImpl :: forall e. Fn4 Int Uint8Array Uint8Array SwmVotingContract (EffFnAff (| e) String)
 
 
 -- contract setup functions
@@ -55,7 +66,19 @@ getBallotEncPK :: SwmVotingContract -> Either String String
 getBallotEncPK = ballotPropHelper "ballotEncryptionPubkey" noArgs
 
 
-runBallotCount :: forall e. Maybe SwmVotingContract -> (Either String String)
+setBallotEndTime :: forall e. Int -> SwmVotingContract -> Aff (| e) String
+setBallotEndTime endTime contract = fromEffFnAff $ ballotPropHelperAff "setEndTime" [endTime] contract
+
+
+releaseSecretKey :: forall e. String -> SwmVotingContract -> Aff (| e) String
+releaseSecretKey secKey contract = fromEffFnAff $ ballotPropHelperAff "revealSeckey" ["0x" <> secKey] contract
+
+
+web3CastBallot :: forall e. Int -> Tuple Uint8Array Uint8Array -> SwmVotingContract -> (Aff (| e) (String))
+web3CastBallot accN (Tuple encBallot senderPk) contract = fromEffFnAff $ runFn4 submitBallotImpl accN encBallot senderPk contract
+
+
+runBallotCount :: forall e. Maybe SwmVotingContract -> BallotResult
 runBallotCount Nothing = Left "Contract is not initialized."
 runBallotCount (Just contract) = 
     do
