@@ -24,7 +24,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (tuple3)
 import Math (round)
 import SecureVote.Crypto.Curve25519 (decryptOneTimeBallot, toBox, toBoxPubkey, toBoxSeckey)
-import SecureVote.Utils.ArrayBuffer (fromEthHex, fromEthHexE, fromHex, fromHexE)
+import SecureVote.Utils.ArrayBuffer (fromEthHex, fromEthHexE, fromHex, fromHexE, toHex)
 import SecureVote.Utils.Monads (mToE)
 import SecureVote.Utils.Poly (self)
 import SecureVote.Utils.Time (currentTimestamp)
@@ -139,12 +139,15 @@ getBallots contract n = do
 
 decryptBallots :: Uint8Array -> Array EncBallot -> Maybe (Array Ballot)
 decryptBallots _ [] = Just []
-decryptBallots seckey ballots = do
+decryptBallots encSK ballots = do
     {encBallot, pubkey, address} <- head ballots
-    ballot <- toUint8Array <$> decryptOneTimeBallot (toBox encBallot) (toBoxPubkey pubkey) (toBoxSeckey seckey)
+    let voterPK = pubkey
+    let _ = unsafePerformEff $ log $ "voterPK: " <> (unsafeCoerce voterPK)
+    ballot <- toUint8Array <$> decryptOneTimeBallot (toBox encBallot) (toBoxPubkey voterPK) (toBoxSeckey encSK)
+    let _ = unsafePerformEff $ log $ unsafeCoerce $ toHex ballot 
     remBallots <- tail ballots
-    otherBallots <- decryptBallots seckey remBallots
-    pure $ {ballot, pubkey, address} : otherBallots
+    otherBallots <- decryptBallots encSK remBallots
+    pure $ {ballot, pubkey: voterPK, address} : otherBallots
 
 
 

@@ -35,7 +35,7 @@ import Node.Buffer as B
 import Node.ChildProcess (CHILD_PROCESS, defaultExecOptions, execFile)
 import Node.Encoding (Encoding(..))
 import Partial.Unsafe (unsafePartial)
-import SecureVote.Crypto.Curve25519 (genCurve25519Key, toNonce, toBoxPubkey, toMessage)
+import SecureVote.Crypto.Curve25519 (genCurve25519Key, toNonce, toBoxPubkey, toMessage, encryptOneTimeBallot)
 import SecureVote.Crypto.NativeEd25519 (sha256)
 import SecureVote.Democs.SwarmMVP.Ballot (makeBallot)
 import SecureVote.Democs.SwarmMVP.BallotContract (SwmVotingContract(..), getAccount, noArgs, ballotPropHelper, ballotPropHelperAff, getBallotEncPK, makeSwmVotingContract, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, BallotResult)
@@ -60,7 +60,7 @@ rpcPortStr = toString rpcPort
 
 -- Don't set this to more than 199 (we generate 200 accounts in testrpc during the auto-tests)
 nVotes :: Int
-nVotes = 5
+nVotes = 30
 
 
 logBuffer str = unsafePerformEff $ B.toString UTF8 str
@@ -85,8 +85,9 @@ completeBallotTest = do
         compileOut <- compileSol
         
         -- deploy it
-        Tuple encSk deployOut <- deploySol
+        {pk: encPk, sk: encSk, outBuffer: deployOut} <- deploySol
         let ui8SK = unsafePartial $ fromJust $ fromHex encSk
+        let ui8PK = unsafePartial $ fromJust $ fromHex encPk
         deployStr <- liftEff $ B.toString UTF8 deployOut
 
         -- get contract object
@@ -95,7 +96,7 @@ completeBallotTest = do
         -- create lots of ballots
         ballots <- createBallots contractM
         logUC $ Array.take 5 $ map toHex ballots
-        let encdBallots = encryptBallots (ui8SK) ballots
+        let encdBallots = encryptBallots (ui8PK) ballots
         log $ unsafeCoerce $ Array.take 5 $ map (\(Tuple enc pk) -> Tuple (toHex enc) (toHex pk) ) encdBallots
 
         -- publish ballots
@@ -137,7 +138,7 @@ compileSol = do
         affExec "yarn" ["sol-compile"]
 
 
-deploySol :: forall e. AffAll e (Tuple String Buffer)
+deploySol :: forall e. AffAll e {pk :: String, sk :: String, outBuffer :: Buffer}
 deploySol = do
         nowTime <- liftEff currentTimestamp
         let endTime = toString $ nowTime + 60.0
@@ -146,7 +147,9 @@ deploySol = do
                 "--endTime", endTime, "--ballotEncPubkey", "0x" <> pk,
                 "--unsafeSkipChecks", "--deploy", "--web3Provider",
                 "http://localhost:" <> rpcPortStr, "--testing"]
-        pure $ Tuple sk outBuffer 
+        log $ "Generated Encryption PublicKey : " <> pk
+        log $ "Generated Encryption SecretKey : " <> sk
+        pure $ {pk, sk, outBuffer}
 
 
 createBallots :: forall e. Maybe SwmVotingContract -> AffAll e ((Array Uint8Array))
@@ -176,13 +179,10 @@ encryptBallots _ [] = []
 encryptBallots encPk ballots = do
         ballot <- ballots
         let keypair = unsafePerformEff $ genCurve25519Key
-        let publicKey = getBoxPublicKey keypair
-        let secretKey = getBoxSecretKey keypair
-        let nonce = genNonce publicKey
-        let encBallot = toUint8Array $ box (toMessage ballot) nonce (toBoxPubkey encPk) secretKey
-        pure $ (Tuple encBallot (unsafeCoerce publicKey))
-    where
-      genNonce pk = toNonce $ asUint8Array $ slice 0 24 $ toIntArray $ sha256 $ toUint8Array pk
+        let voterPK = getBoxPublicKey keypair
+        let voterSK = getBoxSecretKey keypair
+        let encBallot = toUint8Array $ encryptOneTimeBallot voterPK (toMessage ballot) (toBoxPubkey encPk) voterSK
+        pure $ (Tuple encBallot (toUint8Array voterPK))
 
 
 castBallots :: forall e. Array (Tuple Int (Tuple Uint8Array Uint8Array)) -> Maybe SwmVotingContract -> Aff (| e) (Array String)
