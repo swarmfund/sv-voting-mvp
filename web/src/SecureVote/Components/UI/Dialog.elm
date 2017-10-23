@@ -26,7 +26,7 @@ dialog model =
                     infoDialogV
 
                 GethDialog ->
-                    gethDialogV
+                    gethDialogV model
 
                 VerifyDialog ->
                     verifyDialogV
