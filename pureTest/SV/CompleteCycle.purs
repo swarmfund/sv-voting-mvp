@@ -197,7 +197,7 @@ castBallots allBallots (Just contract) = do
 castBallots _ _ = pure []
 
 
-logAndPrintResults :: forall e. BallotResult -> Aff (console :: CONSOLE | e) Boolean
+logAndPrintResults :: forall e. Either String BallotResult -> Aff (console :: CONSOLE | e) Boolean
 logAndPrintResults ballotResults = case ballotResults of 
     Left err -> do
         log $ "Ballot Count Failed!\n" <> err

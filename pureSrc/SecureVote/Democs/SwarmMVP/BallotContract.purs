@@ -112,7 +112,7 @@ web3CastBallot accN (Tuple encBallot senderPk) contract = fromEffFnAff $ runFn4 
 --         pure $ Left ""
 
 
-runBallotCount :: forall e. Maybe SwmVotingContract -> BallotResult
+runBallotCount :: forall e. Maybe SwmVotingContract -> Either String BallotResult
 runBallotCount Nothing = Left "Contract is not initialized."
 runBallotCount (Just contract) = 
     do  -- do in Either monad
