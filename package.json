@@ -70,11 +70,12 @@
     "audit-prod": "pulp build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Auditor -j 2 --to _pureDist/audit.js -o ./output",
     "admin-dev": "pulp -w build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Admin -j 2 --to _pureDist/admin.js -o ./output ",
     "admin-prod": "pulp build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Admin -j 2 --to _pureDist/admin.js -o ./output",
-    "purs-test": "pulp -w test --src-path pureSrc --test-path pureTest",
-    "purs-test-no-watch": "pulp test --src-path pureSrc --test-path pureTest",
+    "purs-test": "pulp -w test --src-path pureSrc --test-path pureTest -o outputTest",
+    "purs-test-no-watch": "pulp test --src-path pureSrc --test-path pureTest -o outputTest",
     "----- FULL SYSTEM / HELPER COMMANDS": "",
     "dry-run": "run-p _sc_testrpc_deploy",
     "node": "node",
-    "test-all": "elm-test && yarn purs-test-no-watch && cd contract && truffle test"
+    "test-all": "yarn purs-test-no-watch && cd contract && truffle test",
+    "test-all-elm": "elm-test # note: we want to add elm-test back in once travis is working due to compile times for elm :/"
   }
 }

@@ -11,11 +11,11 @@ import Control.Monad.Eff.Now (NOW)
 import Control.Monad.Eff.Random (RANDOM, randomInt)
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Crypt.NaCl (NACL_RANDOM, box, getBoxPublicKey, getBoxSecretKey, toUint8Array)
-import Data.Array (drop, tail, dropWhile, head, range, replicate, zip, (:))
+import Data.Array (drop, dropWhile, head, range, replicate, slice, tail, zip, (:))
 import Data.Array as Array
 import Data.ArrayBuffer.ArrayBuffer (fromArray)
 import Data.ArrayBuffer.DataView (whole)
-import Data.ArrayBuffer.Typed (asUint8Array)
+import Data.ArrayBuffer.Typed (toArray, toIntArray)
 import Data.ArrayBuffer.Types (Uint8Array)
 import Data.Either (Either(..), either, fromRight)
 import Data.Int (decimal, fromNumber, fromStringAs)
@@ -28,13 +28,15 @@ import Data.String (joinWith)
 import Data.String.CodePoints (take)
 import Data.String.Utils (lines, words)
 import Data.Tuple (Tuple(..))
+import Data.TypedArray (asUint8Array)
 import Data.TypedArray as TA
 import Node.Buffer (Buffer)
 import Node.Buffer as B
 import Node.ChildProcess (CHILD_PROCESS, defaultExecOptions, execFile)
 import Node.Encoding (Encoding(..))
 import Partial.Unsafe (unsafePartial)
-import SecureVote.Crypto.Curve25519 (genCurve25519Key)
+import SecureVote.Crypto.Curve25519 (genCurve25519Key, toNonce, toBoxPubkey, toMessage)
+import SecureVote.Crypto.NativeEd25519 (sha256)
 import SecureVote.Democs.SwarmMVP.Ballot (makeBallot)
 import SecureVote.Democs.SwarmMVP.BallotContract (SwmVotingContract(..), getAccount, noArgs, ballotPropHelper, ballotPropHelperAff, getBallotEncPK, makeSwmVotingContract, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, BallotResult)
 import SecureVote.Democs.SwarmMVP.KeyGen (generateKey)
@@ -177,10 +179,10 @@ encryptBallots encPk ballots = do
         let publicKey = getBoxPublicKey keypair
         let secretKey = getBoxSecretKey keypair
         let nonce = genNonce publicKey
-        let encBallot = toUint8Array $ box (unsafeCoerce ballot) (unsafeCoerce nonce) (unsafeCoerce encPk) secretKey
+        let encBallot = toUint8Array $ box (toMessage ballot) nonce (toBoxPubkey encPk) secretKey
         pure $ (Tuple encBallot (unsafeCoerce publicKey))
     where
-      genNonce pk = asUint8Array $ whole $ fromArray $ replicate 24 0.0
+      genNonce pk = toNonce $ asUint8Array $ slice 0 24 $ toIntArray $ sha256 $ toUint8Array pk
 
 
 castBallots :: forall e. Array (Tuple Int (Tuple Uint8Array Uint8Array)) -> Maybe SwmVotingContract -> Aff (| e) (Array String)

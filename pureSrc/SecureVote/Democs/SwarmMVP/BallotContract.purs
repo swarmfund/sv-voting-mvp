@@ -9,23 +9,36 @@ import Control.Monad.Eff.Console (log)
 import Control.Monad.Eff.Now (NOW, now)
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Trans.Class (lift)
+import Crypt.NaCl (toUint8Array)
+import Data.Array (head, tail, (:))
 import Data.ArrayBuffer.Types (Uint8Array)
 import Data.DateTime.Instant (toDateTime, unInstant)
 import Data.Either (Either(..))
 import Data.Function.Uncurried (Fn0, Fn1, Fn2, Fn3, Fn4, Fn5, Fn6, runFn0, runFn1, runFn2, runFn3, runFn4, runFn5, runFn6)
-import Data.Int (decimal, fromStringAs)
+import Data.Int (decimal, fromStringAs, toNumber, toStringAs)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Number (fromString)
 import Data.Number.Format (toString)
 import Data.Time.Duration (Milliseconds(..))
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested (tuple3)
 import Math (round)
+import SecureVote.Crypto.Curve25519 (decryptOneTimeBallot, toBox, toBoxPubkey, toBoxSeckey)
+import SecureVote.Utils.ArrayBuffer (fromEthHex, fromEthHexE, fromHex, fromHexE)
+import SecureVote.Utils.Monads (mToE)
+import SecureVote.Utils.Poly (self)
 import SecureVote.Utils.Time (currentTimestamp)
+import Unsafe.Coerce (unsafeCoerce)
 
 
 data SwmVotingContract = SwmVotingContract SwmVotingContract
 
 
-type BallotResult = (Either String String)
+type BallotResult = Either String String
+
+
+type Ballot = {ballot :: Uint8Array, pubkey :: Uint8Array, address :: String}
+type EncBallot = {encBallot :: Uint8Array, pubkey :: Uint8Array, address :: String}
 
 
 noArgs :: Unit
@@ -61,11 +74,15 @@ getAccount :: Int -> Either String String
 getAccount = runFn3 getAccountImpl Left Right 
 
 -- contract functions
-getBallotSK :: forall a. SwmVotingContract -> Maybe String
-getBallotSK = runFn3 getBallotSKImpl Just Nothing
+getBallotSK :: SwmVotingContract -> Either String Uint8Array
+getBallotSK contract = do 
+    skStr <- ballotPropHelper "ballotEncryptionSeckey" noArgs contract
+    if skStr == "0x0000000000000000000000000000000000000000000000000000000000000000" then
+            Left "Ballot Encryption Secret Key has not yet been published"
+        else 
+            fromEthHexE skStr
 
-
-getBallotEndTime :: forall a. SwmVotingContract -> Either String Number
+getBallotEndTime :: forall a. SwmVotingContract -> Either String String
 getBallotEndTime = ballotPropHelper "endTime" noArgs
 
 
@@ -91,22 +108,46 @@ runBallotCount (Just contract) =
     do  -- do in Either monad
         -- check time of ballot
         let nowTime = unsafePerformEff currentTimestamp
-        endTime <- getBallotEndTime contract
+        endTimeStr <- getBallotEndTime contract
+        endTime <- mToE "Could not convert endTime to Number" $ fromString endTimeStr
         let _ = unsafePerformEff $ log $ "Ballot end time: " <> (toString endTime) <> "\nCurrent Time:    " <> (toString nowTime)
         cont <- canContinue (nowTime > endTime) "The ballot has not ended yet!"
         
         -- get the secret key
-        ballotSecKey <- ballotSkE
+        ballotSecKey <- getBallotSK contract
 
         -- get number of votes and then the votes
-        nVotes <- fromStringAs decimal <$> ballotPropHelper "nVotesCast" noArgs contract 
+        nVotes <- (fromMaybe 0 <<< fromStringAs decimal) <$> (ballotPropHelper "nVotesCast" noArgs contract)
+        ballots <- getBallots contract nVotes
+        decryptedBallots <- maybe (Left "Ballots failed decryption") Right $ decryptBallots ballotSecKey ballots 
 
-
-        pure $ ballotSecKey
+        pure ""
     where
         canContinue cond errMsg = if cond then Right true else Left errMsg
-        ballotSkM = getBallotSK contract
-        ballotSkE = maybe (Left "Contract returned nothing for secret key - has it been published yet?") Right ballotSkM
+
+
+getBallots :: SwmVotingContract -> Int -> Either String (Array EncBallot)
+getBallots _ 0 = Right []
+getBallots contract n = do
+    let currVote = n-1
+    encBallot <- fromEthHexE =<< ballotPropHelper "encryptedBallots" [currVote] contract
+    pubkey <- fromEthHexE =<< ballotPropHelper "associatedPubkeys" [currVote] contract
+    address <- ballotPropHelper "associatedAddresses" [currVote] contract
+    otherVotes <- getBallots contract currVote
+    Right $ {encBallot, pubkey, address} : otherVotes
+
+
+decryptBallots :: Uint8Array -> Array EncBallot -> Maybe (Array Ballot)
+decryptBallots _ [] = Just []
+decryptBallots seckey ballots = do
+    {encBallot, pubkey, address} <- head ballots
+    ballot <- toUint8Array <$> decryptOneTimeBallot (toBox encBallot) (toBoxPubkey pubkey) (toBoxSeckey seckey)
+    remBallots <- tail ballots
+    otherBallots <- decryptBallots seckey remBallots
+    pure $ {ballot, pubkey, address} : otherBallots
+
+
+
 
 
 

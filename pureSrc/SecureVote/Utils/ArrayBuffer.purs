@@ -7,10 +7,12 @@ import Data.ArrayBuffer.ArrayBuffer (fromArray)
 import Data.ArrayBuffer.DataView as DV
 import Data.ArrayBuffer.Typed (asUint8Array, dataView, toArray, toIntArray)
 import Data.ArrayBuffer.Types (ArrayView, Uint8, Uint8Array)
+import Data.Either (Either(..))
 import Data.Int (fromStringAs, hexadecimal, toNumber, toStringAs)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.String (fromCharArray, joinWith, length, take, drop) as String
 import Data.String.Yarn (reverse)
+import SecureVote.Utils.Monads (mToE)
 import Unsafe.Coerce (unsafeCoerce)
 
 
@@ -42,9 +44,25 @@ toHex bs = (String.joinWith "") $ map (pad <<< intConv) $ toIntArray bs
           pad = padLeft '0' 2
 
 
+toEthHex :: Uint8Array -> String
+toEthHex bs = "0x" <> toHex bs
+
+
 fromHex :: String -> Maybe Uint8Array
 fromHex str = map (asUint8Array <<< DV.whole <<< fromArray <<< map toNumber) mInts
   where mInts = hexToIntList str
+
+
+fromHexE :: String -> Either String Uint8Array
+fromHexE str = mToE "Unable to decode hex" $ fromHex str
+
+
+fromEthHex :: String -> Maybe Uint8Array
+fromEthHex str = if String.take 2 str /= "0x" then Nothing else fromHex $ String.drop 2 str 
+
+
+fromEthHexE :: forall a. String -> Either String Uint8Array
+fromEthHexE str = mToE "Unable to decode eth hex" $ fromEthHex str
 
 
 hexToIntList :: String -> Maybe (Array Int)
