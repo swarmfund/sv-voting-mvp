@@ -10,6 +10,7 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
 import SecureVote.SPAs.SwarmMVP.Views.SwmAddressV exposing (swmAddressV)
 import SecureVote.SPAs.SwarmMVP.Views.SwmCastVoteV exposing (castVoteView)
+import SecureVote.SPAs.SwarmMVP.Views.SwmDelegateV exposing (delegateView)
 import SecureVote.SPAs.SwarmMVP.Views.SwmHowToVoteV exposing (howToVoteView)
 import SecureVote.SPAs.SwarmMVP.Views.SwmVotingV exposing (votingView)
 
@@ -20,6 +21,7 @@ rootView model =
         [ ( SwmAddressR, swmAddressV model )
         , ( SwmHowToVoteR, howToVoteView model )
         , ( SwmVoteR, castVoteView model )
+        , ( SwmDelegateR, delegateView model )
         , ( SwmSubmitR, votingView model )
         ]
         [ img [ src "img/swarm-logo-white-sm.png", class "mv1 mh4-l center db" ] []

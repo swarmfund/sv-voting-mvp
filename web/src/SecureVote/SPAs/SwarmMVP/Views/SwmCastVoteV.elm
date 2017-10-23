@@ -7,17 +7,16 @@ import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs, css)
 import Material.Slider as Slider
-import Material.Textfield as Textf
 import Material.Typography exposing (display2, headline)
-import Maybe.Extra exposing ((?), isNothing)
+import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
-import SecureVote.Eth.Utils exposing (decimalTo18dps, formatBalance, isValidEthAddress, rawTokenBalance18DpsToBalance, stripTrailingZeros)
+import SecureVote.Eth.Utils exposing (rawTokenBalance18DpsToBalance)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (renderReleaseScheduleTitle, voteOptions)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, getDelegateAddress, setDelegateAddress)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmSubmitR))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmDelegateR))
 
 
 castVoteView : Model -> Html Msg
@@ -82,19 +81,10 @@ castVoteView model =
                     ]
                 ]
 
-        btnDisabled =
-            if addrErr || (isNothing <| getDelegateAddress model) then
-                Disabled
-            else
-                BtnNop
-
-        ( addrErr, addrErrMsg ) =
-            validAddress model
-
         progressMsgs =
             MultiMsg
                 [ ConstructBallotPlaintext
-                , PageGoForward SwmSubmitR
+                , PageGoForward SwmDelegateR
                 ]
     in
     fullPageSlide 123413553
@@ -104,38 +94,6 @@ castVoteView model =
             [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Swarm Liquidity Vote" ]
             , Options.styled span [ headline, cs "black dib ba pa3 ma3" ] [ text <| "SWM Balance: " ++ swmBalanceStr ]
             , div [ class "mw7 center black" ] optionList
-            , p [] [ text "Some text explaining delegation goes here.." ]
-            , Textf.render Mdl
-                [ 7674564333 ]
-                model.mdl
-                [ Options.onInput <| setDelegateAddress
-                , Textf.label "Delegate's Address (optional)"
-                , Textf.floatingLabel
-                , Textf.value <| getDelegateAddress model ? ""
-                , Textf.error addrErrMsg |> Options.when addrErr
-                , css "min-width" "400px"
-                , cs "db center"
-                ]
-                []
-            , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs, btnDisabled ] [ text "Continue" ]
+            , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs ] [ text "Continue" ]
             ]
         ]
-
-
-validAddress : Model -> ( Bool, String )
-validAddress model =
-    let
-        delegateAddress =
-            getDelegateAddress model
-    in
-    case delegateAddress of
-        Nothing ->
-            ( False, "Please paste in your Delegate's Eth address" )
-
-        Just addr ->
-            if isValidEthAddress addr then
-                ( False, "Address valid!" )
-            else if addr == "" then
-                ( False, "Use Default Address" )
-            else
-                ( True, "Invalid address" )
