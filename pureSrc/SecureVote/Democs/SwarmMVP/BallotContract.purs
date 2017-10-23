@@ -13,6 +13,7 @@ import Data.ArrayBuffer.Types (Uint8Array)
 import Data.DateTime.Instant (toDateTime, unInstant)
 import Data.Either (Either(..))
 import Data.Function.Uncurried (Fn0, Fn1, Fn2, Fn3, Fn4, Fn5, Fn6, runFn0, runFn1, runFn2, runFn3, runFn4, runFn5, runFn6)
+import Data.Int (decimal, fromStringAs)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Number.Format (toString)
 import Data.Time.Duration (Milliseconds(..))
@@ -87,14 +88,20 @@ web3CastBallot accN (Tuple encBallot senderPk) contract = fromEffFnAff $ runFn4 
 runBallotCount :: forall e. Maybe SwmVotingContract -> BallotResult
 runBallotCount Nothing = Left "Contract is not initialized."
 runBallotCount (Just contract) = 
-    do
+    do  -- do in Either monad
         -- check time of ballot
         let nowTime = unsafePerformEff currentTimestamp
         endTime <- getBallotEndTime contract
         let _ = unsafePerformEff $ log $ "Ballot end time: " <> (toString endTime) <> "\nCurrent Time:    " <> (toString nowTime)
         cont <- canContinue (nowTime > endTime) "The ballot has not ended yet!"
+        
         -- get the secret key
         ballotSecKey <- ballotSkE
+
+        -- get number of votes and then the votes
+        nVotes <- fromStringAs decimal <$> ballotPropHelper "nVotesCast" noArgs contract 
+
+
         pure $ ballotSecKey
     where
         canContinue cond errMsg = if cond then Right true else Left errMsg

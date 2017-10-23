@@ -34,8 +34,8 @@
     "purescript-numbers": "^5.0.0",
     "purescript-now": "^3.0.0",
     "purescript-node-child-process": "^4.0.0",
-    "purescript-ffi-utils": "^2.0.1",
-    "purescript-bytestrings": "^6.0.0"
+    "purescript-bytestrings": "^6.0.0",
+    "purescript-aff": "^4.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0",
