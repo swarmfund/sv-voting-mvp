@@ -75,6 +75,7 @@
     "purs-test": "pulp -w test --src-path pureSrc --test-path pureTest",
     "----- FULL SYSTEM / HELPER COMMANDS": "",
     "dry-run": "run-p _sc_testrpc_deploy",
-    "node": "node"
+    "node": "node",
+    "test-all": "elm-test && yarn purs-test && cd contract && truffle test"
   }
 }

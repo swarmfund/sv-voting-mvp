@@ -5,5 +5,10 @@ before_install:
     - echo "hi"
 install:
     - yarn install
+    - |
+      testrpc &
+      TESTRPC_PID=$!
 script:
-    "yaml test-all"
+    "yarn test-all"
+after_script:
+    - kill -s SIGTERM $TESTRPC_PID
