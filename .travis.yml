@@ -5,10 +5,15 @@ before_install:
     - echo "hi"
 install:
     - yarn install
+before_script:
     - |
-      testrpc &
+      testrpc -a 210 > /dev/null 2>&1 &
       TESTRPC_PID=$!
 script:
     "yarn test-all"
 after_script:
     - kill -s SIGTERM $TESTRPC_PID
+
+cache:
+  directories:
+    - tests/elm-stuff/build-artifacts

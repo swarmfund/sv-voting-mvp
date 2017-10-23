@@ -32,7 +32,7 @@ import Node.Encoding (Encoding(..))
 import Partial.Unsafe (unsafePartial)
 import SecureVote.Crypto.Curve25519 (genCurve25519Key)
 import SecureVote.Democs.SwarmMVP.Ballot (makeBallot)
-import SecureVote.Democs.SwarmMVP.BallotContract (SwmVotingContract(..), getBallotEncPK, makeSwmVotingContract, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, BallotResult)
+import SecureVote.Democs.SwarmMVP.BallotContract (SwmVotingContract(..), noArgs, ballotPropHelper, ballotPropHelperAff, getBallotEncPK, makeSwmVotingContract, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, BallotResult)
 import SecureVote.Democs.SwarmMVP.KeyGen (generateKey)
 import SecureVote.Utils.ArrayBuffer (fromHex, toHex)
 import SecureVote.Utils.Time (currentTimestamp)
@@ -52,6 +52,7 @@ rpcPortStr :: String
 rpcPortStr = toString rpcPort
 
 
+-- Don't set this to more than 199 (we generate 200 accounts in testrpc during the auto-tests)
 nVotes :: Int
 nVotes = 30
 
@@ -81,15 +82,15 @@ completeBallotTest = do
         
         -- create lots of ballots
         ballots <- createBallots contractM
-        log $ unsafeCoerce $ map toHex ballots
+        log $ unsafeCoerce $ head $ map toHex ballots
         let encdBallots = encryptBallots (ui8SK) ballots
-        log $ unsafeCoerce $ map (\(Tuple enc pk) -> Tuple (toHex enc) (toHex pk) ) encdBallots
+        log $ unsafeCoerce $ head $ map (\(Tuple enc pk) -> Tuple (toHex enc) (toHex pk) ) encdBallots
 
         -- publish ballots
         let enumeratedBallots = zip (range 1 9999) encdBallots
         log "Casting ballots"
         ballotTxids <- castBallots enumeratedBallots contractM
-        logUC ballotTxids
+        logUC $ head ballotTxids
 
         -- end the ballot
         let contract = unsafePartial $ fromJust contractM
@@ -106,6 +107,9 @@ completeBallotTest = do
         -- check count results
         ballotSuccess <- logAndPrintResults ballotResultE
         ballotSuccess `shouldEqual` true 
+
+        let (nVotesInContract :: Int) = ballotPropHelper "nVotesCast" noArgs contract 
+        nVotesInContract `shouldEqual` nVotes
 
         pure unit 
     it "does something else" $ pure unit

@@ -25,6 +25,8 @@ hexBinTests = do
       "" `shouldMatch` []
       "00000000" `shouldMatch` [0,0,0,0]
       "10" `shouldMatch` [16]
+      "1010" `shouldMatch` [16, 16]
+      "0010" `shouldMatch` [0, 16]
       "ff" `shouldMatch` [255]
       "deadbeef" `shouldMatch` [222,173,190,239]
   where
