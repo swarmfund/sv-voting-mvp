@@ -1,7 +1,7 @@
 module SecureVote.Components.UI.Btn exposing (..)
 
 import Html exposing (Attribute, Html, div, h1, h2, h3, p, span, text)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class, style, target)
 import Material.Button as Button
 import Material.Dialog as Dialog
 import Material.Options as Options exposing (cs, css)
@@ -15,6 +15,7 @@ type BtnProps
     | Flat
     | Icon
     | Click Msg
+    | Link String
     | Disabled
     | OpenDialog
     | CloseDialog
@@ -42,6 +43,9 @@ btn id model props inner =
 
                 Click msg ->
                     ( [], [ Options.onClick msg ] )
+
+                Link url ->
+                    ( [], [ Button.link url, Options.attribute <| target "_blank" ] )
 
                 Disabled ->
                     ( [], [ Button.disabled ] )
