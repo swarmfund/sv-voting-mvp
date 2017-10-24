@@ -75,7 +75,6 @@
     "----- FULL SYSTEM / HELPER COMMANDS": "",
     "dry-run": "run-p _sc_testrpc_deploy",
     "node": "node",
-    "test-all": "yarn purs-test-no-watch && cd contract && truffle test",
-    "test-all-elm": "elm-test # note: we want to add elm-test back in once travis is working due to compile times for elm :/"
+    "test-all": "elm-test && yarn purs-test-no-watch && cd contract && truffle test"
   }
 }
