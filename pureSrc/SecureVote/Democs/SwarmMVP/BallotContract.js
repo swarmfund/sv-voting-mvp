@@ -7,11 +7,10 @@ const ethUtils = require('ethereumjs-util');
 const web3 = new Web3();
 
 // we run this file from multiple locations so relative paths need some help
-var loadDetails = function(){throw Error("Not implemented")};
 try {
-    loadDetails = require('../../bin/solidity/loadContractDetails');
+    var loadDetails = require('../../bin/solidity/loadContractDetails');
 } catch (err) {
-    loadDetails = require('../bin/solidity/loadContractDetails');
+    var loadDetails = require('../bin/solidity/loadContractDetails');
 }
 const deets = loadDetails();
 const abi = deets[0];

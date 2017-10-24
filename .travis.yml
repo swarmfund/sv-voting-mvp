@@ -5,7 +5,7 @@ before_install:
     - echo "hi"
 install:
     - yarn install --non-interactive
-    - npm i -g bower
+    - npm i -g bower solc
     - bower install
 before_script:
     - ./bin/solidity/compile.sh

@@ -42,8 +42,8 @@ type Ballot = {ballot :: Uint8Array, pubkey :: Uint8Array, address :: String}
 type EncBallot = {encBallot :: Uint8Array, pubkey :: Uint8Array, address :: String}
 
 
-noArgs :: Unit
-noArgs = unit
+noArgs :: forall a. Array a
+noArgs = []
 
 
 -- contract setup FFI
@@ -57,7 +57,7 @@ foreign import getAccountImpl :: forall a b. Fn3 (a -> Either a b) (b -> Either 
 foreign import getBallotSKImpl :: forall a. Fn3 (a -> Maybe a) (Maybe a) SwmVotingContract (Maybe a)
 foreign import getBallotPropImpl :: forall a b c. Fn5 (a -> Either a b) (b -> Either a b) String c SwmVotingContract (Either a b) 
 ballotPropHelper = runFn5 getBallotPropImpl Left Right
-foreign import getBallotPropAsyncImpl :: forall e b c. Fn3 String c SwmVotingContract (EffFnAff (| e) b) 
+foreign import getBallotPropAsyncImpl :: forall e b c. Fn3 String (Array c) SwmVotingContract (EffFnAff (| e) b) 
 ballotPropHelperAff = runFn3 getBallotPropAsyncImpl
 
 foreign import submitBallotImpl :: forall e. Fn4 Int Uint8Array Uint8Array SwmVotingContract (EffFnAff (| e) String)
@@ -119,7 +119,7 @@ runBallotCount (Just contract) =
     do  -- Aff monad
         nowTime <- liftEff $ currentTimestamp
         endTime <- swmEndTime contract 
-        pure $ Left ""
+        pure $ Right "not implemented"
 
 
 -- runBallotCount' :: forall e. Maybe SwmVotingContract -> Either String BallotResult

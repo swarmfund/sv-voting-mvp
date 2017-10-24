@@ -91,7 +91,9 @@ completeBallotTest = do
         deployStr <- liftEff $ B.toString UTF8 deployOut
 
         -- get contract object
-        let contractM = outputToVotingContract deployStr
+        let addrM = contractAddrM deployStr
+        let contractM = outputToVotingContract addrM
+        log $ "Contract found at: " <> (unsafePartial $ fromJust addrM)
         
         -- create lots of ballots
         ballots <- createBallots contractM
@@ -127,7 +129,8 @@ completeBallotTest = do
         pure unit 
     it "does something else" $ pure unit
   where
-    outputToVotingContract outputStr = Just outputStr >>= extractContractAddr >>= makeSwmVotingContract
+    contractAddrM outputStr = Just outputStr >>= extractContractAddr
+    outputToVotingContract addrM = addrM >>= makeSwmVotingContract
     getEncPk cM = do
         contract <- maybe (Left "No contract") Right cM
         getBallotEncPK contract
@@ -150,6 +153,14 @@ deploySol = do
         log $ "Generated Encryption PublicKey : " <> pk
         log $ "Generated Encryption SecretKey : " <> sk
         pure $ {pk, sk, outBuffer}
+
+
+extractContractAddr :: String -> Maybe String
+extractContractAddr output = addr
+    where
+      lineM = head $ dropWhile (not <<< lineMatches) $ lines output
+      lineMatches str = "Contract Addr: 0x" == take 17 str
+      addr = lineM >>= (\str' -> head $ drop 2 $ words str')
 
 
 createBallots :: forall e. Maybe SwmVotingContract -> AffAll e ((Array Uint8Array))
@@ -216,10 +227,3 @@ affExec cmd args = makeAff $ \cb -> do
         _ <- throwError $ error $ "Canceled: " <> cmd <> (joinWith " " args)
         pure unit)
 
-
-extractContractAddr :: String -> Maybe String
-extractContractAddr output = addr
-    where
-      lineM = head $ dropWhile (not <<< lineMatches) $ lines output
-      lineMatches str = "Contract Addr: 0x" == take 17 str
-      addr = lineM >>= (\str' -> head $ drop 2 $ words str')
