@@ -1,6 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Views.SwmVotingV exposing (..)
 
-import Html exposing (Html, code, div, pre, span, text)
+import Dict
+import Html exposing (Html, b, code, div, p, pre, span, text)
 import Html.Attributes exposing (class, style)
 import Json.Encode exposing (encode)
 import Material.Card as Card
@@ -13,6 +14,8 @@ import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Utils exposing (processCandidateTx)
+import SecureVote.SPAs.SwarmMVP.Ballot exposing (renderReleaseScheduleTitle, voteOptions)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (getDelegateAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetDialog))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(GethDialog, VerifyDialog), Route(SwmSubmitR))
@@ -20,6 +23,25 @@ import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(GethDialog, VerifyD
 
 votingView : Model -> Html Msg
 votingView model =
+    let
+        tableRow ( desc, value ) =
+            div []
+                [ b [] [ text <| desc ++ ": " ]
+                , text value
+                ]
+
+        getResults { id, rSchedule, description } =
+            ( renderReleaseScheduleTitle rSchedule
+            , toString <| Dict.get id model.ballotRange ? 0
+            )
+
+        displayResults =
+            div [ class "mt2 tl" ]
+                (List.map tableRow
+                    (List.map getResults voteOptions)
+                    ++ [ tableRow ( "Delegate", getDelegateAddress model ? "None" ) ]
+                )
+    in
     fullPageSlide 923844759
         model
         []
@@ -28,8 +50,8 @@ votingView model =
             , div [ class "ba dib pa3 ma3", style [ ( "min-width", "50%" ) ] ]
                 [ Options.styled span
                     [ headline, cs "black" ]
-                    [ text "Ballot Details:" ]
-                , div [] [ text "You selected: Option 1" ]
+                    [ text "Ballot Summary:" ]
+                , displayResults
                 ]
             , Options.styled div [ headline, cs "black" ] [ text "Ballot Transaction:" ]
             , div [ class "mw7 ph3 overflow-visible center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
