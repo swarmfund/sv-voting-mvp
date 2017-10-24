@@ -14,13 +14,13 @@ import Control.Monad.Trans.Class (lift)
 import Control.Parallel (parTraverse)
 import Crypt.NaCl (BoxPublicKey, BoxSecretKey, toUint8Array)
 import Data.Array (foldl, head, length, range, tail, (:))
-import Data.ArrayBuffer.Types (Uint8Array)
+import Data.ArrayBuffer.Types (ArrayView, Uint8, Uint8Array)
 import Data.DateTime.Instant (toDateTime, unInstant)
 import Data.Either (Either(..), either)
 import Data.Function.Uncurried (Fn0, Fn1, Fn2, Fn3, Fn4, Fn5, Fn6, runFn0, runFn1, runFn2, runFn3, runFn4, runFn5, runFn6)
 import Data.Int (decimal, fromStringAs, toNumber, toStringAs)
 import Data.Int as DInt
-import Data.Map (Map, empty, insert, lookup, showTree, keys)
+import Data.Map (Map, empty, fromFoldable, insert, keys, lookup, showTree)
 import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
 import Data.Number (fromString)
 import Data.Number.Format (toString)
@@ -32,7 +32,7 @@ import Math (round)
 import SecureVote.Crypto.Curve25519 (decryptOneTimeBallot, toBox, toBoxPubkey, toBoxSeckey)
 import SecureVote.Democs.SwarmMVP.Ballot (delegateAddr)
 import SecureVote.Utils.Array (fromList)
-import SecureVote.Utils.ArrayBuffer (fromEthHex, fromEthHexE, fromHex, fromHexE, toHex)
+import SecureVote.Utils.ArrayBuffer (UI8AShowable(..), fromEthHex, fromEthHexE, fromHex, fromHexE, toHex)
 import SecureVote.Utils.Monads (mToE)
 import SecureVote.Utils.Numbers (intToStr)
 import SecureVote.Utils.Poly (self)
@@ -41,6 +41,7 @@ import Unsafe.Coerce (unsafeCoerce)
 
 
 class Web3Contract a
+    
 
 
 -- These types can never be instantiated from purescript, they can be given from the FFI though
@@ -55,7 +56,6 @@ type BallotResult = String
 
 
 type Ballot = {ballot :: Uint8Array, voterPk :: Uint8Array, voterAddr :: String}
-type BallotWBalance = {ballot :: Uint8Array, voterPk :: Uint8Array, voterAddr :: String, balance :: Int}
 type EncBallot = {encBallot :: Uint8Array, voterPk :: Uint8Array, voterAddr :: String}
 type EncBallotWVoter = {encBallot :: Uint8Array, voterPk :: BoxPublicKey}
 
@@ -149,7 +149,7 @@ swmNVotes contract = do
     maybe (throwError $ error $ "nVotes was not an integer: " <> nVotesStr) pure nVotes
 
 
-runBallotCount :: forall e. SwmVotingContract -> Erc20Contract -> (Aff (now :: NOW, console :: CONSOLE | e) (Either String BallotResult))
+runBallotCount :: forall a e. SwmVotingContract -> Erc20Contract -> (Aff (now :: NOW, console :: CONSOLE | e) (Either String String))
 runBallotCount contract erc20 = 
       do  -- Aff monad
         nowTime <- liftEff $ currentTimestamp
@@ -160,18 +160,34 @@ runBallotCount contract erc20 =
             else do
                 ballotSeckey <- swmBallotSk contract
                 log $ "Ballot encryption secret key: " <> (toHex $ toUint8Array ballotSeckey)
+
                 nVotes <- swmNVotes contract 
                 log $ "Smart contract reports " <> (intToStr nVotes) <> " votes were cast"
+
                 encBallots <- getBallots contract nVotes
                 log $ "Retrieved " <> (lenStr encBallots) <> " ballots"
+
                 decryptedBallots <- decryptBallots ballotSeckey encBallots
                 log $ "Decrypted " <> (lenStr decryptedBallots) <> " ballots successfully"
-                ballotsToCount <- injectBalances erc20 decryptedBallots
-                delegateMap <- pure $ constructDelegateMap ballotsToCount
-                log $ "Delegate Map: \n" <> renderDelegates delegateMap 
-                -- ballotCount <- countBallots contract ballotsToCount
 
-                pure $ Right "done"
+                balanceMap <- getBalances erc20 decryptedBallots
+                log $ "Balance Map: \n" <> renderMap balanceMap
+
+                delegateMap <- pure $ constructDelegateMap decryptedBallots
+                log $ "Delegate Map: \n" <> renderMap delegateMap 
+
+                ballotResult <- countBallots contract decryptedBallots delegateMap balanceMap
+                
+                let futureResp = { ballotSeckey
+                                 , nVotes
+                                 , encBallots
+                                 , decryptedBallots
+                                 , delegateMap
+                                 , ballotResult
+                                 }
+
+                pure $ Right "<success but not implemented>"
+                    
     where
       lenStr :: forall a. Array a -> String 
       lenStr = intToStr <<< length
@@ -204,35 +220,48 @@ decryptBallots encSk ballots = do
             maybe (throwError $ error $ "Unable to decrypt ballot from: " <> voterAddr) (\ballot -> pure $ {ballot, voterPk, voterAddr}) ballotM
 
 
-injectBalances :: forall e. Erc20Contract -> Array Ballot -> Aff (| e) (Array BallotWBalance)
-injectBalances erc20 ballots = do
-        parTraverse addBalance ballots
+getBalances :: forall e. Erc20Contract -> Array Ballot -> Aff (| e) (Map String Int)
+getBalances erc20 ballots = do
+        pairs <- parTraverse addBalance ballots
+        pure $ fromFoldable pairs
     where
         addBalance {ballot, voterPk, voterAddr} = do
             balM <- DInt.fromString <$> ballotPropHelperAff "balanceOf" [voterAddr] erc20
             balance <- maybe (throwError $ error $ "Unable to get balance for " <> voterAddr) pure balM
-            pure $ {ballot, voterPk, voterAddr, balance}
+            pure $ Tuple voterAddr balance
 
 
-constructDelegateMap :: Array BallotWBalance -> Map String String
+constructDelegateMap :: Array Ballot -> Map String (Maybe String)
 constructDelegateMap ballots = 
         delegateMap
     where
-        delegateMap = foldl (\m {voterAddr, delegateAddr} -> insert voterAddr delegateAddr m) empty voterDelegateParis
-        voterDelegateParis = map (\{voterAddr, ballot} -> {voterAddr, delegateAddr: genDelegateFromBallot ballot}) ballots
-        genDelegateFromBallot ballotUI8A = fromMaybe nullAddr $ lookup (drop 4 $ toHex ballotUI8A) addrPrefixMap
-        addrPrefixMap = foldl (\m addr -> insert (take (14*2) $ drop 2 addr) addr m) empty allAddresses
-        allAddresses = map (\{voterAddr} -> voterAddr) ballots
-        nullAddr = "0x0000000000000000000000000000000000000000"
+        delegateMap = 
+            foldl (\m {voterAddr, delegateAddr} -> insert voterAddr delegateAddr m) empty voterDelegateParis
+
+        voterDelegateParis =
+            map (\{voterAddr, ballot} -> {voterAddr, delegateAddr: genDelegateFromBallot ballot}) ballots
+
+        genDelegateFromBallot ballotUI8A = 
+            lookup (drop 4 $ toHex ballotUI8A) addrPrefixMap
+
+        addrPrefixMap = 
+            foldl (\m addr -> insert (take (14*2) $ drop 2 addr) addr m) empty allAddresses
+            
+        allAddresses = 
+            map (\{voterAddr} -> voterAddr) ballots
         
 
-renderDelegates :: Map String String -> String
-renderDelegates delMap = finalStr
+renderMap :: forall v. (Show v) => Map String v -> String
+renderMap m = joinWith "\n" $ map (\{k, v} -> "  " <> k <> " -> " <> v) kvPairs
     where
-        finalStr = joinWith "\n" $ map (\{k, v} -> "  " <> k <> " -> " <> v) kvPairs
-        kvPairs = map (\k -> {k, v: fromMaybe "UNKNOWN" $ lookup k delMap}) $ fromList $ keys delMap
+        kvPairs = map (\k -> {k, v: maybe "Nothing" (\a -> show a) $ lookup k m}) $ fromList $ keys m
 
 
-countBallots :: forall e. SwmVotingContract -> Array BallotWBalance -> Aff (| e) BallotResult
-countBallots contract ballots = do
+countBallots :: forall e. 
+    SwmVotingContract -> 
+    Array Ballot -> 
+    Map String (Maybe String) -> 
+    Map String Int -> 
+    Aff (| e) BallotResult
+countBallots contract ballots delMap balMap = do
     pure ""

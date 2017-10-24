@@ -64,7 +64,7 @@ rpcPortStr = toString rpcPort
 -- Don't set this to more than 200 (we generate 210 accounts in testrpc during the auto-tests)
 -- Note: TestRPC seems to break between the 500 and 700 mark (500 works).
 nVotes :: Int
-nVotes = 100
+nVotes = 20
 
 
 logBuffer str = unsafePerformEff $ B.toString UTF8 str
@@ -84,7 +84,7 @@ completeBallotTest = do
         -- setup rpc server
         -- testRpc <- testRpcServer rpcPort
         let _ = setWeb3Provider $ "http://localhost:" <> rpcPortStr
-        let voterIds = range 1 nVotes
+        let voterIds = range 1 (nVotes + 1)
         
         -- compile contract
         compileOut <- compileSol []
@@ -148,10 +148,10 @@ completeBallotTest = do
         releaseSKTxid <- releaseSecretKey encSk contract
         logUC releaseSKTxid
 
-        -- -- count ballot
+        -- count ballot
         ballotResultE <- runBallotCount contract erc20Contract
 
-        -- -- check count results
+        -- check count results
         ballotSuccess <- logAndPrintResults ballotResultE
         ballotSuccess `shouldEqual` true 
 
@@ -209,7 +209,8 @@ genBalances voterIds = do
         sequence $ map genBal voterIds
     where
         genBal voterId = do
-            newBal <- liftEff $ randomInt 10 1000
+            giveCoins <- liftEff $ randomInt 0 10
+            newBal <- if giveCoins < 9 then liftEff $ randomInt 10 1000 else pure 0
             addr <- either (throwError <<< error) pure (getAccount voterId)
             pure $ {addr, newBal}
 

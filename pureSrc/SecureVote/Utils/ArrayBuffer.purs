@@ -24,7 +24,7 @@ justUI8A :: UI8AShowable -> Uint8Array
 justUI8A (UI8AShowable a) = a
 
 instance showUint8Array :: Show (UI8AShowable) where
-  show a = unsafeCoerce a
+  show (UI8AShowable a) = "[ UI8A: " <> toHex a <> " ]"
 
 instance eqUint8Array :: Eq UI8AShowable where
   eq (UI8AShowable a) (UI8AShowable b) = toArray a == toArray b
