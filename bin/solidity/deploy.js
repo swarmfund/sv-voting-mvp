@@ -19,7 +19,6 @@ const log = (msg, offset=0) => {
 
 
 loadDetails = require('./loadContractDetails');
-const [abi, bin] = loadDetails();
 
 
 const main = () => {
@@ -57,24 +56,35 @@ const main = () => {
           describe: "URI for web3 provider - HTTP only",
           default: "http://localhost:8545",
           type: 'string'
+      },
+      "deployOther": {
+          describe: "The contract name of an alternate contract to deploy, do not include '.sol'",
+          type: 'string'
       }
     }).version(false).argv;
     
-    if (args.ballotEncPubkey.length != 66 || args.ballotEncPubkey.slice(0,2) != "0x") {
+    if (!args.deployOther && (args.ballotEncPubkey.length != 66 || args.ballotEncPubkey.slice(0,2) != "0x")) {
         log("Error:".bgRed.white + " Ballot Encryption Pubkey is not 64 bytes formatted in Ethereum Hex")
         process.exit(1);
     }
 
+    
+    const contractName = args.deployOther || "SwarmVotingMVP";
+    const [abi, bin] = loadDetails(contractName);
+
+    
     web3.setProvider(new Web3.providers.HttpProvider(args.web3Provider))
     
     log("\n\nSummary of Deployment:\n".cyan.bold)
 
-    const startTime = new Date(args.startTime * 1000);
-    const endTime = new Date(args.endTime * 1000);
-    log("Start Time: " + startTime.toString().yellow, 2);
-    log("End Time: " + endTime.toString().yellow, 2);
-    log("Ballot Encryption Pubkey:", 2)
-    log(args.ballotEncPubkey.yellow, 4)
+    if (!args.deployOther) {
+        const startTime = new Date(args.startTime * 1000);
+        const endTime = new Date(args.endTime * 1000);
+        log("Start Time: " + startTime.toString().yellow, 2);
+        log("End Time: " + endTime.toString().yellow, 2);
+        log("Ballot Encryption Pubkey:", 2)
+        log(args.ballotEncPubkey.yellow, 4)
+    }
     log("Sending from: " + web3.eth.coinbase.yellow, 2);
     log("\nBe sure to " + "double and triple check".magenta + " these before you go live!\n")
     
@@ -86,13 +96,25 @@ const main = () => {
 
     const deployF = () => {
         const contract = web3.eth.contract(abi);
-        const bytecode = contract.new.getData(args.startTime, args.endTime, args.ballotEncPubkey, args.testing, {data: "0x" + bin});
+
+        // set the contract deployment arguments
+        const contractArgs = args.deployOther ? [] : [args.startTime, args.endTime, args.ballotEncPubkey, args.testing];
         
+        // organise our arguments for getting final bytecode
+        const bytecodeArgs = R.append({data: "0x" + bin}, contractArgs);
+        // get the final bytecode for gas estimation
+        const bytecode = contract.new.getData(...bytecodeArgs);
+        
+        // create our params for sending
         const sendParams = {data: "0x" + bin, from: web3.eth.coinbase};
-        const compiledData = contract.new.getData(args.startTime, args.endTime, args.ballotEncPubkey, args.testing, sendParams)
+
+        // get arguments for the compiled data gas estimate
+        const compiledDataArgs = R.append(sendParams, contractArgs);
+        const compiledData = contract.new.getData(...compiledDataArgs);
         const compiledSendParams = R.merge(sendParams, {data: compiledData});
         const estGas = web3.eth.estimateGas(compiledSendParams);
 
+        // add gas estimates with some headroom
         compiledSendParams.gas = Math.round(estGas * 1.5);
         sendParams.gas = Math.round(estGas * 1.5);
 
@@ -100,7 +122,8 @@ const main = () => {
             log("About to deploy...")
             log("NOTE:".yellow + " The cli will become unresponsive until the transaction confirms. Please be patient. \n\n")
             log("\nContract Deploying!\n".green);
-            const r = contract.new(args.startTime, args.endTime, args.ballotEncPubkey, args.testing, sendParams, (err, deployed) => {
+
+            const deployCallback = (err, deployed) => {
                 if (err) {
                     log("WARNING:".red + " Ran into an error while deploying contract:")
                     log(err);
@@ -116,7 +139,11 @@ const main = () => {
                         log("Awaiting a confirmation...\n".cyan);
                     }
                 }
-            })
+            };
+
+            // organise our final arguments and deploy!
+            const deploymentArgs = R.concat(contractArgs, [sendParams, deployCallback])
+            const r = contract.new(...deploymentArgs)
         } else {
             log("Contract to deploy:\n".green.bold);
             log(JSON.stringify(compiledSendParams, null, 2))

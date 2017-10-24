@@ -66,7 +66,7 @@
     "build-web": "webpack",
     "_live": "elm-live ./web/src/SecureVote/SPAs/SwarmMVP/Main.elm --output=./web/sv-swarm.js --dir=./web --open --debug",
     "----- PureScript (Aduit + Admin)": "",
-    "audit-dev": "pulp -w build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Auditor -j 2 --to _pureDist/audit-dev.js -o ./output ",
+    "audit-dev": "pulp -w build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Auditor -j 2 --to _pureDist/audit.js -o ./output ",
     "audit-prod": "pulp build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Auditor -j 2 --to _pureDist/audit.js -o ./output",
     "admin-dev": "pulp -w build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Admin -j 2 --to _pureDist/admin.js -o ./output ",
     "admin-prod": "pulp build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Admin -j 2 --to _pureDist/admin.js -o ./output",

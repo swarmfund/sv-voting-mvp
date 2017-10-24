@@ -8,8 +8,26 @@ LGREEN='\033[1;32m'
 LBLUE='\033[1;34m'
 LCYAN='\033[1;36m'
 
+# getopts 
+CONTRACT_NAME="SwarmVotingMVP.sol"
+while getopts ":c:" opt; do 
+    case $opt in
+        c)
+            CONTRACT_NAME="$OPTARG"
+            ;;
+        \?)
+            echo "invalid option -$OPTARG"
+            exit 1
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument"
+            exit 1
+            ;;
+    esac
+done
+
 # params
-CONTRACT_PATH="./contract/contracts/SwarmVotingMVP.sol"
+CONTRACT_PATH="./contract/contracts/$CONTRACT_NAME"
 OUTPUT_DIR="_solDist"
 
 if [ $(pwd | grep "bin/solidity") ]; then
@@ -37,19 +55,21 @@ function solcCommon {
 }
 
 
-echo -e "${LGREEN}>>> Starting solidity compilation <<<${NC}\n"
+echo -e "${LGREEN}>>> Starting solidity compilation of $CONTRACT_NAME <<<${NC}\n"
 
 if solcCommon --bin --abi ; then
-    echo -e "${LGREEN}Solidity compilation succeeded.${NC}"
+    echo -e "${LGREEN}Solidity compilation of $CONTRACT_NAME succeeded.${NC}"
 else
-    echo -e "${RED}ERROR: Solidity compilation failed${NC}"
+    echo -e "${RED}ERROR: Solidity compilation of $CONTRACT_NAME failed${NC}"
     exit 1;
 fi
 
 SOLC_VERSION=$(solc --version | grep Version | cut -d ' ' -f 2)
 
+C_NAME_NO_SOL=$(echo "$CONTRACT_NAME" | cut -d '.' -f 1)
+
 echo -e "\n${LCYAN}>>> Smart Contract Verification Details <<<${NC}\n"
-echo -e "Contract Name: ${LCYAN}SwarmVotingMVP${NC}"
+echo -e "Contract Name: ${LCYAN}$C_NAME_NO_SOL${NC}"
 echo -e "Solc Version: ${LCYAN}$SOLC_VERSION${NC}"
 echo -e "Optimization: ${LCYAN}Enabled (500 runs)${NC}"
 echo -e "Contract code: ${LCYAN}$CONTRACT_PATH${NC}\n"

@@ -19,7 +19,7 @@ import Data.ArrayBuffer.DataView (whole)
 import Data.ArrayBuffer.Typed (toArray, toIntArray)
 import Data.ArrayBuffer.Types (Uint8Array)
 import Data.Either (Either(..), either, fromRight)
-import Data.Int (decimal, fromNumber, fromStringAs, toStringAs)
+import Data.Int (decimal, fromNumber, fromString, fromStringAs, toStringAs)
 import Data.List (List(..))
 import Data.Maybe (Maybe(..), fromJust, maybe)
 import Data.Number as Num
@@ -28,6 +28,7 @@ import Data.Ord (abs)
 import Data.String (joinWith)
 import Data.String.CodePoints (take)
 import Data.String.Utils (lines, words)
+import Data.Traversable (and, sequence)
 import Data.Tuple (Tuple(..))
 import Data.TypedArray (asUint8Array)
 import Data.TypedArray as TA
@@ -39,9 +40,10 @@ import Partial.Unsafe (unsafePartial)
 import SecureVote.Crypto.Curve25519 (genCurve25519Key, toNonce, toBoxPubkey, toMessage, encryptOneTimeBallot)
 import SecureVote.Crypto.NativeEd25519 (sha256)
 import SecureVote.Democs.SwarmMVP.Ballot (makeBallot)
-import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, SwmVotingContract(..), EncBallotWVoter, ballotPropHelper, ballotPropHelperAff, getAccount, getBallotEncPK, makeSwmVotingContract, noArgs, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot)
+import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, EncBallotWVoter, Erc20Contract(..), SwmVotingContract(..), ballotPropHelper, ballotPropHelperAff, getAccount, getBallotEncPK, makeErc20Contract, makeSwmVotingContract, noArgs, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot)
 import SecureVote.Democs.SwarmMVP.KeyGen (generateKey)
 import SecureVote.Utils.ArrayBuffer (fromHex, toHex)
+import SecureVote.Utils.Numbers (intToStr)
 import SecureVote.Utils.Time (currentTimestamp)
 import Test.SV.Types (SpecType)
 import Test.Spec (it)
@@ -62,7 +64,7 @@ rpcPortStr = toString rpcPort
 -- Don't set this to more than 200 (we generate 210 accounts in testrpc during the auto-tests)
 -- Note: TestRPC seems to break between the 500 and 700 mark (500 works).
 nVotes :: Int
-nVotes = 100
+nVotes = 10
 
 
 logBuffer str = unsafePerformEff $ B.toString UTF8 str
@@ -82,10 +84,14 @@ completeBallotTest = do
         -- setup rpc server
         -- testRpc <- testRpcServer rpcPort
         let _ = setWeb3Provider $ "http://localhost:" <> rpcPortStr
+        let voterIds = range 1 nVotes
         
         -- compile contract
-        compileOut <- compileSol
-        log "Compiled contract."
+        compileOut <- compileSol []
+        log "Compiled contract"
+
+        compileErc20Out <- compileSol ["-c", "Erc20.sol"]
+        log "Compiled Erc20 contract"
         
         -- deploy it
         {pk: encPk, sk: encSk, outBuffer: deployOut} <- deploySol
@@ -93,10 +99,32 @@ completeBallotTest = do
         let ui8PK = unsafePartial $ fromJust $ fromHex encPk
         deployStr <- liftEff $ B.toString UTF8 deployOut
 
+        deployErc20Out <- deployArbitrary "Erc20"
+        deployErc20Str <- liftEff $ B.toString UTF8 deployErc20Out
+
         -- get contract object
         let addrM = contractAddrM deployStr
         let contractM = outputToVotingContract addrM
+        contract <- maybe (throwError $ error "Unable to get voting contract") pure contractM
         log $ "Contract deployed at: " <> (unsafePartial $ fromJust addrM)
+
+        -- check owner
+        votingOwner <- ballotPropHelperAff "owner" [] contract
+        coinbase <- either (throwError <<< error) pure (getAccount 0)
+        votingOwner `shouldEqual` coinbase
+
+        -- do erc20
+        let erc20AddrM = contractAddrM deployErc20Str
+        erc20Contract <- maybe (throwError $ error "erc20 contract was not created") pure (erc20AddrM >>= makeErc20Contract)
+        log $ "Erc20 deployed at: " <> (unsFromJ erc20AddrM)
+        erc20Owner <- ballotPropHelperAff "owner" [] erc20Contract
+        erc20Owner `shouldEqual` coinbase
+
+        -- give all voters some coins
+        balances <- genBalances voterIds
+        setBalanceTxs <- parTraverse (\{addr, newBal} -> ballotPropHelperAff "transfer" [addr, intToStr newBal] erc20Contract) balances
+        balancesMatch <- checkBalances erc20Contract balances
+        balancesMatch `shouldEqual` true
         
         -- create lots of ballots
         ballots <- createBallots contractM
@@ -104,15 +132,15 @@ completeBallotTest = do
 
         let encdBallots = encryptBallots (ui8PK) ballots
         log $ "Encrypted " <> (toStringAs decimal $ length encdBallots) <> " ballots."
+        nVotes `shouldEqual` (length encdBallots)
 
         -- publish ballots
-        let enumeratedBallots = zip (range 1 (length encdBallots)) encdBallots
+        let enumeratedBallots = zip voterIds encdBallots
         log "Casting ballots"
         ballotTxids <- castBallots enumeratedBallots contractM
         logUC $ head ballotTxids
 
         -- end the ballot
-        let contract = unsafePartial $ fromJust contractM
         setBallotTxid <- setBallotEndTime 1508822279 contract  -- corresponds to 2017/10/24 5:17:58 UTC
         logUC setBallotTxid
 
@@ -121,7 +149,7 @@ completeBallotTest = do
         logUC releaseSKTxid
 
         -- -- count ballot
-        ballotResultE <- runBallotCount contractM
+        ballotResultE <- runBallotCount contract erc20Contract
 
         -- -- check count results
         ballotSuccess <- logAndPrintResults ballotResultE
@@ -139,9 +167,9 @@ completeBallotTest = do
         getBallotEncPK contract
     
 
-compileSol :: forall e. AffAll e Buffer
-compileSol = do
-        affExec "yarn" ["sol-compile"]
+compileSol :: forall e. Array String -> AffAll e Buffer
+compileSol args = do
+        affExec "./bin/solidity/compile.sh" args
 
 
 deploySol :: forall e. AffAll e {pk :: String, sk :: String, outBuffer :: Buffer}
@@ -158,12 +186,42 @@ deploySol = do
         pure $ {pk, sk, outBuffer}
 
 
+deployArbitrary :: forall e. String -> AffAll e Buffer
+deployArbitrary contractName = do
+        outBuffer <- affExec "node" ["./bin/solidity/deploy.js", "--startTime", "0", 
+                "--endTime", "0", "--ballotEncPubkey", "0x00",
+                "--unsafeSkipChecks", "--deploy", "--web3Provider",
+                "http://localhost:" <> rpcPortStr, "--deployOther", contractName]
+        pure outBuffer
+
+
 extractContractAddr :: String -> Maybe String
 extractContractAddr output = addr
     where
       lineM = head $ dropWhile (not <<< lineMatches) $ lines output
       lineMatches str = "Contract Addr: 0x" == take 17 str
       addr = lineM >>= (\str' -> head $ drop 2 $ words str')
+
+
+type Balance = {addr :: String, newBal :: Int}
+genBalances :: forall e. Array Int -> AffAll e (Array Balance)
+genBalances voterIds = do
+        sequence $ map genBal voterIds
+    where
+        genBal voterId = do
+            newBal <- liftEff $ randomInt 10 1000
+            addr <- either (throwError <<< error) pure (getAccount voterId)
+            pure $ {addr, newBal}
+
+
+checkBalances :: forall e. Erc20Contract -> Array Balance -> AffAll e Boolean
+checkBalances erc20 balances = do
+        balanceChecks <- parTraverse checkBal balances
+        pure $ and balanceChecks
+    where
+        checkBal {addr, newBal} = do
+            bal <- ballotPropHelperAff "balanceOf" [addr] erc20
+            pure $ fromString bal == Just newBal
 
 
 createBallots :: forall e. Maybe SwmVotingContract -> AffAll e ((Array Uint8Array))
@@ -181,7 +239,7 @@ genBallots :: forall e. Int -> Eff (random :: RANDOM | e) (Array Uint8Array)
 genBallots 0 = pure []
 genBallots n = do
     setDelegate <- randomInt 0 1
-    delegateE <- if setDelegate == 1 then getAccount <$> randomInt 0 nVotes else pure $ Right "0x1111122222333334444411111222223333344444"
+    delegateE <- if setDelegate == 1 then getAccount <$> randomInt 1 nVotes else pure $ Right "0x1111122222333334444411111222223333344444"
     let (delegate :: String) = unsafePartial $ fromRight delegateE
     ballot <- makeBallot delegate
     ballots <- genBallots (n-1)

@@ -24,6 +24,7 @@ var accounts = [];
 
 exports.setWeb3ProviderImpl = function(host) {
     web3.setProvider(new Web3.providers.HttpProvider(host));
+    console.log("Set web3 provider to:", host);
     coinbase = web3.eth.coinbase;
     accounts = web3.eth.accounts;
 }
@@ -48,7 +49,27 @@ exports.makeSwmVotingContractImpl = function(just, nothing, addr) {
         const contract = web3.eth.contract(abi).at(addr);
         return just(contract);
     } catch (err) {
-        console.log("WARNING: Got error when creating Web3 contract instance:", err);
+        console.log("WARNING: Got error when creating Web3 voting contract instance:", err);
+        return nothing;
+    }
+    return nothing;
+}
+
+
+exports.makeErc20ContractImpl = function(just, nothing, addr) {
+    if (!ethUtils.isValidAddress(addr)) {
+        console.log("Invalid address provided for erc20 contract");
+        return nothing;
+    }
+
+    const erc20Deets = loadDetails('Erc20');
+    const erc20Abi = erc20Deets[0]
+
+    try {
+        const contract = web3.eth.contract(erc20Abi).at(addr);
+        return just(contract);
+    } catch (err) {
+        console.log("WARNING: Got error when creating Web3 erc20 contract instance:", err);
         return nothing;
     }
     return nothing;

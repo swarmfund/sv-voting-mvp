@@ -12,15 +12,6 @@ This repository contains three key items:
 * `yarn install` to install all JS dependencies.
 * `elm-package install` to install Elm packages
 
-## Solidity Contract
-
-The contract lives in `./contract` and uses truffle for development, though not for deployment.
-
-* `yarn sol-compile` to compile contract to `_solDist`
-* `yarn sol-deploy <args>` to deploy (after compiling) to the blockchain
-
-To play with a Web3-esq CLI run `yarn sol-compile && yarn sol-cli`
-
 ## Web UI
 
 Web code lives in `./web`
@@ -57,6 +48,31 @@ The Audit suite is built in Purescript.
 
 To compile / develop it:
 
-`npm install -g purescript pulp bower`
+* `npm install -g purescript pulp bower`
+* `yarn audit-prod` or `yarn admin-prod` (depending on which target you want to generate)
 
+To run the audit script:
 
+`node ./_pureDist/audit.js -e http://localhost:8545 --swmBallotAddr <address here>`
+
+To run the admin script (key generation)
+
+`node ./_pureDist/admin.js --genBallotKey`
+
+## Solidity Contract
+
+The contract lives in `./contract` and uses truffle for development, though not for deployment.
+
+* `yarn sol-compile` to compile contract to `_solDist`
+* `yarn sol-deploy <args>` to deploy (after compiling) to the blockchain
+
+To play with a Web3-esq CLI run `yarn sol-compile && yarn sol-cli`
+
+Example deployment:
+
+(see `yarn sol-deploy --help` for all arguments)
+
+```
+yarn sol-deploy --startTime 1508824035 --endTime 1509667200 \
+    --ballotEncPubkey 0xf13a7020b9d69380e8b91fc51acae296cf3368174edd6bfbd4edeac70bbca80f
+```
