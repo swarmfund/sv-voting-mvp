@@ -64,7 +64,7 @@ rpcPortStr = toString rpcPort
 -- Don't set this to more than 200 (we generate 210 accounts in testrpc during the auto-tests)
 -- Note: TestRPC seems to break between the 500 and 700 mark (500 works).
 nVotes :: Int
-nVotes = 10
+nVotes = 100
 
 
 logBuffer str = unsafePerformEff $ B.toString UTF8 str
