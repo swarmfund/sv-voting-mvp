@@ -19,7 +19,7 @@ import Data.ArrayBuffer.DataView (whole)
 import Data.ArrayBuffer.Typed (toArray, toIntArray)
 import Data.ArrayBuffer.Types (Uint8Array)
 import Data.Either (Either(..), either, fromRight)
-import Data.Int (decimal, fromNumber, fromStringAs)
+import Data.Int (decimal, fromNumber, fromStringAs, toStringAs)
 import Data.List (List(..))
 import Data.Maybe (Maybe(..), fromJust, maybe)
 import Data.Number as Num
@@ -84,6 +84,7 @@ completeBallotTest = do
         
         -- compile contract
         compileOut <- compileSol
+        log "Compiled contract."
         
         -- deploy it
         {pk: encPk, sk: encSk, outBuffer: deployOut} <- deploySol
@@ -94,15 +95,17 @@ completeBallotTest = do
         -- get contract object
         let addrM = contractAddrM deployStr
         let contractM = outputToVotingContract addrM
-        log $ "Contract found at: " <> (unsafePartial $ fromJust addrM)
+        log $ "Contract deployed at: " <> (unsafePartial $ fromJust addrM)
         
         -- create lots of ballots
         ballots <- createBallots contractM
-        logUC $ Array.take 5 $ map toHex ballots
+        log $ "5 sample ballots: " <> (joinWith ", " $ map toHex $ Array.take 5 ballots)
+
         let encdBallots = encryptBallots (ui8PK) ballots
+        log $ "Encrypted " <> (toStringAs decimal $ length encdBallots) <> " ballots."
 
         -- publish ballots
-        let enumeratedBallots = zip (range 1 9999) encdBallots
+        let enumeratedBallots = zip (range 1 (length encdBallots)) encdBallots
         log "Casting ballots"
         ballotTxids <- castBallots enumeratedBallots contractM
         logUC $ head ballotTxids
@@ -123,11 +126,10 @@ completeBallotTest = do
         -- ballotSuccess <- logAndPrintResults ballotResultE
         -- ballotSuccess `shouldEqual` true 
 
-        -- let (nVotesInContract :: Int) = unsFromJ $ (fromStringAs decimal) $ unsafePartial $ fromRight $ ballotPropHelper "nVotesCast" noArgs contract 
-        -- nVotesInContract `shouldEqual` nVotes
+        let (nVotesInContract :: Int) = unsFromJ $ (fromStringAs decimal) $ unsafePartial $ fromRight $ ballotPropHelper "nVotesCast" noArgs contract 
+        nVotesInContract `shouldEqual` nVotes
 
-        pure unit 
-    it "does something else" $ pure unit
+        pure unit
   where
     contractAddrM outputStr = Just outputStr >>= extractContractAddr
     outputToVotingContract addrM = addrM >>= makeSwmVotingContract

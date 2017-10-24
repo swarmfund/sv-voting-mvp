@@ -19,16 +19,18 @@ const bin = deets[1];
 
 
 var coinbase = "";
+var accounts = [];
 
 
 exports.setWeb3ProviderImpl = function(host) {
     web3.setProvider(new Web3.providers.HttpProvider(host));
     coinbase = web3.eth.coinbase;
+    accounts = web3.eth.accounts;
 }
 
 
 exports.getAccountImpl = function(left, right, n) {
-    const acc = web3.eth.accounts[n];
+    const acc = accounts[n];
     if (acc) {
         return right(acc)
     }
@@ -106,7 +108,7 @@ exports.submitBallotImpl = function(accN, encBallot, senderPk, contract) {
     return function(onErr, onSucc) {
         const eb = "0x" + Buffer.from(encBallot).toString('hex');
         const pk = "0x" + Buffer.from(senderPk).toString('hex');
-        contract.submitBallot(eb, pk, {from: web3.eth.accounts[accN + 1], gas: 999999}, function(err, txHash){
+        contract.submitBallot(eb, pk, {from: accounts[accN + 1], gas: 999999}, function(err, txHash){
             if (err) {
                 return onErr(err);
             }
