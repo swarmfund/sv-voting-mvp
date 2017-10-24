@@ -2,7 +2,7 @@ module SecureVote.Democs.SwarmMVP.BallotContract where
 
 import Prelude
 
-import Control.Monad.Aff (Aff)
+import Control.Monad.Aff (Aff, error, throwError)
 import Control.Monad.Aff.Compat (EffFnAff(..), fromEffFnAff)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
@@ -17,7 +17,7 @@ import Data.DateTime.Instant (toDateTime, unInstant)
 import Data.Either (Either(..))
 import Data.Function.Uncurried (Fn0, Fn1, Fn2, Fn3, Fn4, Fn5, Fn6, runFn0, runFn1, runFn2, runFn3, runFn4, runFn5, runFn6)
 import Data.Int (decimal, fromStringAs, toNumber, toStringAs)
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
 import Data.Number (fromString)
 import Data.Number.Format (toString)
 import Data.Time.Duration (Milliseconds(..))
@@ -103,39 +103,49 @@ web3CastBallot :: forall e. Int -> Tuple Uint8Array Uint8Array -> SwmVotingContr
 web3CastBallot accN (Tuple encBallot senderPk) contract = fromEffFnAff $ runFn4 submitBallotImpl accN encBallot senderPk contract
 
 
--- runBallotCount :: forall e. Maybe SwmVotingContract -> Aff (| e) (Either String BallotResult)
--- runBallotCount Nothing = pure $ Left "Contract is not initialized."
--- runBallotCount (Just contract) = 
---     do  -- Aff monad
---         nowTime <- liftEff currentTimestamp
---         endTime <- ballotPropHelperAff "endTime" noArgs contract
---         pure $ Left ""
+swmEndTime :: forall e. SwmVotingContract -> Aff (| e) Number
+swmEndTime contract = do
+    endTimeStr <- fromEffFnAff $ ballotPropHelperAff "endTime" noArgs contract
+    let endTimeM = fromString endTimeStr
+    when (isNothing endTimeM) do
+        throwError $ error $ "endTime could not be converted to a Number: " <> endTimeStr
+    pure $ fromMaybe 0.0 endTimeM
 
 
-runBallotCount :: forall e. Maybe SwmVotingContract -> Either String BallotResult
-runBallotCount Nothing = Left "Contract is not initialized."
+
+runBallotCount :: forall e. Maybe SwmVotingContract -> (Aff (now :: NOW | e) (Either String BallotResult))
+runBallotCount Nothing = pure $ Left "Contract is not initialized."
 runBallotCount (Just contract) = 
-    do  -- do in Either monad
-        -- check time of ballot
-        let nowTime = unsafePerformEff currentTimestamp
-        endTimeStr <- getBallotEndTime contract
-        endTime <- mToE "Could not convert endTime to Number" $ fromString endTimeStr
-        let _ = unsafePerformEff $ log $ "Ballot end time: " <> (toString endTime) <> "\nCurrent Time:    " <> (toString nowTime)
-        cont <- canContinue (nowTime > endTime) "The ballot has not ended yet!"
+    do  -- Aff monad
+        nowTime <- liftEff $ currentTimestamp
+        endTime <- swmEndTime contract 
+        pure $ Left ""
+
+
+-- runBallotCount' :: forall e. Maybe SwmVotingContract -> Either String BallotResult
+-- runBallotCount' Nothing = Left "Contract is not initialized."
+-- runBallotCount' (Just contract) = 
+--     do  -- do in Either monad
+--         -- check time of ballot
+--         let nowTime = unsafePerformEff currentTimestamp
+--         endTimeStr <- getBallotEndTime contract
+--         endTime <- mToE "Could not convert endTime to Number" $ fromString endTimeStr
+--         let _ = unsafePerformEff $ log $ "Ballot end time: " <> (toString endTime) <> "\nCurrent Time:    " <> (toString nowTime)
+--         cont <- canContinue (nowTime > endTime) "The ballot has not ended yet!"
         
-        -- get the secret key
-        ballotSecKey <- getBallotSK contract
+--         -- get the secret key
+--         ballotSecKey <- getBallotSK contract
 
-        -- get number of votes and then the votes
-        nVotes <- (fromMaybe 0 <<< fromStringAs decimal) <$> (ballotPropHelper "nVotesCast" noArgs contract)
-        ballots <- getBallots contract nVotes
-        decryptedBallots <- maybe (Left "Ballots failed decryption") Right $ decryptBallots ballotSecKey ballots 
+--         -- get number of votes and then the votes
+--         nVotes <- (fromMaybe 0 <<< fromStringAs decimal) <$> (ballotPropHelper "nVotesCast" noArgs contract)
+--         ballots <- getBallots contract nVotes
+--         decryptedBallots <- maybe (Left "Ballots failed decryption") Right $ decryptBallots ballotSecKey ballots 
 
 
 
-        pure ""
-    where
-        canContinue cond errMsg = if cond then Right true else Left errMsg
+--         pure ""
+--     where
+--         canContinue cond errMsg = if cond then Right true else Left errMsg
 
 
 getBallots :: SwmVotingContract -> Int -> Either String (Array EncBallot)

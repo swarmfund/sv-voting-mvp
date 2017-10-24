@@ -46,10 +46,7 @@ testHex someInts = fromMaybe false $ do
     -- let _ = unsafePerformEff $ log $ unsafeCoerce hex
     pure $ (arr1 :: Array Int) == arr2
   where
-    bs1 :: Uint8Array
     bs1 = asUint8Array $ map (flip mod 256 <<< round <<< abs <<< (*) 512.0) someInts
-    hex :: String
     hex = toHex bs1
-    bsBack :: Maybe (Uint8Array)
     bsBack = fromHex hex
       

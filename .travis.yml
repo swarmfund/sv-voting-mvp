@@ -8,6 +8,7 @@ install:
     - npm i -g bower
     - bower install
 before_script:
+    - ./bin/solidity/compile.sh
     - |
       testrpc -a 210 > /dev/null 2>&1 &
       TESTRPC_PID=$!
