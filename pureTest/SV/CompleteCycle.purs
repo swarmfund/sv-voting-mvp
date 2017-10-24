@@ -10,8 +10,9 @@ import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Now (NOW)
 import Control.Monad.Eff.Random (RANDOM, randomInt)
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
-import Crypt.NaCl (NACL_RANDOM, box, getBoxPublicKey, getBoxSecretKey, toUint8Array)
-import Data.Array (drop, dropWhile, head, range, replicate, slice, tail, zip, (:))
+import Control.Parallel (parTraverse)
+import Crypt.NaCl (BoxPublicKey, NACL_RANDOM, box, getBoxPublicKey, getBoxSecretKey, toUint8Array)
+import Data.Array (drop, dropWhile, head, length, range, replicate, slice, tail, zip, (:))
 import Data.Array as Array
 import Data.ArrayBuffer.ArrayBuffer (fromArray)
 import Data.ArrayBuffer.DataView (whole)
@@ -38,7 +39,7 @@ import Partial.Unsafe (unsafePartial)
 import SecureVote.Crypto.Curve25519 (genCurve25519Key, toNonce, toBoxPubkey, toMessage, encryptOneTimeBallot)
 import SecureVote.Crypto.NativeEd25519 (sha256)
 import SecureVote.Democs.SwarmMVP.Ballot (makeBallot)
-import SecureVote.Democs.SwarmMVP.BallotContract (SwmVotingContract(..), getAccount, noArgs, ballotPropHelper, ballotPropHelperAff, getBallotEncPK, makeSwmVotingContract, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, BallotResult)
+import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, SwmVotingContract(..), EncBallotWVoter, ballotPropHelper, ballotPropHelperAff, getAccount, getBallotEncPK, makeSwmVotingContract, noArgs, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot)
 import SecureVote.Democs.SwarmMVP.KeyGen (generateKey)
 import SecureVote.Utils.ArrayBuffer (fromHex, toHex)
 import SecureVote.Utils.Time (currentTimestamp)
@@ -60,7 +61,7 @@ rpcPortStr = toString rpcPort
 
 -- Don't set this to more than 199 (we generate 200 accounts in testrpc during the auto-tests)
 nVotes :: Int
-nVotes = 30
+nVotes = 50
 
 
 logBuffer str = unsafePerformEff $ B.toString UTF8 str
@@ -99,7 +100,6 @@ completeBallotTest = do
         ballots <- createBallots contractM
         logUC $ Array.take 5 $ map toHex ballots
         let encdBallots = encryptBallots (ui8PK) ballots
-        log $ unsafeCoerce $ Array.take 5 $ map (\(Tuple enc pk) -> Tuple (toHex enc) (toHex pk) ) encdBallots
 
         -- publish ballots
         let enumeratedBallots = zip (range 1 9999) encdBallots
@@ -185,27 +185,24 @@ genBallots n = do
     pure $ ballot : ballots
 
 
-encryptBallots :: forall e. Uint8Array -> Array Uint8Array -> (Array (Tuple Uint8Array Uint8Array))
+encryptBallots :: forall e. Uint8Array -> Array Uint8Array -> (Array EncBallotWVoter)
 encryptBallots _ [] = []
 encryptBallots encPk ballots = do
         ballot <- ballots
         let keypair = unsafePerformEff $ genCurve25519Key
-        let voterPK = getBoxPublicKey keypair
-        let voterSK = getBoxSecretKey keypair
-        let encBallot = toUint8Array $ encryptOneTimeBallot voterPK (toMessage ballot) (toBoxPubkey encPk) voterSK
-        pure $ (Tuple encBallot (toUint8Array voterPK))
+        let voterPk = getBoxPublicKey keypair
+        let voterSk = getBoxSecretKey keypair
+        let encBallot = toUint8Array $ encryptOneTimeBallot voterPk (toMessage ballot) (toBoxPubkey encPk) voterSk
+        pure $ {encBallot, voterPk}
 
 
-castBallots :: forall e. Array (Tuple Int (Tuple Uint8Array Uint8Array)) -> Maybe SwmVotingContract -> Aff (| e) (Array String)
+castBallots :: forall e. Array (Tuple Int EncBallotWVoter) -> Maybe SwmVotingContract -> Aff (| e) (Array String)
 castBallots _ Nothing = pure []
 castBallots [] _ = pure []
 castBallots allBallots (Just contract) = do
-    let (Tuple i (Tuple encBallot senderPk)) = unsafePartial $ fromJust $ head allBallots
-    let ballots = unsafePartial $ fromJust $ tail allBallots
-    ballotTxid <- web3CastBallot i (Tuple encBallot senderPk) contract 
-    ballotTxids <- castBallots ballots (Just contract)
-    pure $ ballotTxid : ballotTxids
-castBallots _ _ = pure []
+        parTraverse castBallot allBallots
+    where
+        castBallot (Tuple i ballotPack) = web3CastBallot i ballotPack contract
 
 
 logAndPrintResults :: forall e. Either String BallotResult -> Aff (console :: CONSOLE | e) Boolean

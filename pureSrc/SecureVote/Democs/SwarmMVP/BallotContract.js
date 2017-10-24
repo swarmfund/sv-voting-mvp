@@ -3,6 +3,7 @@
 const Web3 = require('web3');
 const TestRPC = require("ethereumjs-testrpc");
 const ethUtils = require('ethereumjs-util');
+const R = require('ramda');
 
 const web3 = new Web3();
 
@@ -17,8 +18,12 @@ const abi = deets[0];
 const bin = deets[1];
 
 
+var coinbase = "";
+
+
 exports.setWeb3ProviderImpl = function(host) {
     web3.setProvider(new Web3.providers.HttpProvider(host));
+    coinbase = web3.eth.coinbase;
 }
 
 
@@ -82,16 +87,17 @@ exports.getBallotPropImpl = function(left, right, prop, args, contract) {
 }
 
 
-exports.getBallotPropAsyncImpl = function(prop, args, contract) {
+exports.getBallotPropAsyncImpl = function(_prop, _args, contract) {
+    const prop = R.clone(_prop);
+    const args = R.clone(_args);
     return function(onErr, onSucc) {
-        console.log('ballot async running:', prop, args);
-        args.push({gas: 999999, from: web3.eth.coinbase});
-        args.push(function(err, res) {
-            console.log('ballot async got:', err, res);
+        args.push({gas: 999999, from: coinbase});
+        var ballotAsyncCB = function(err, res) {
             if (err) { onErr(err) }
             onSucc(res);
-        })
-        contract[prop].apply(this, args);
+        }
+        args.push(ballotAsyncCB);
+        contract[prop].apply(null, args);
     }
 }
 

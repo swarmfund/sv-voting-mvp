@@ -11,7 +11,7 @@ import Control.Monad.Eff.Now (NOW, now)
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Trans.Class (lift)
 import Control.Parallel (parTraverse)
-import Crypt.NaCl (BoxSecretKey, toUint8Array)
+import Crypt.NaCl (BoxPublicKey, BoxSecretKey, toUint8Array)
 import Data.Array (head, range, tail, (:))
 import Data.ArrayBuffer.Types (Uint8Array)
 import Data.DateTime.Instant (toDateTime, unInstant)
@@ -42,6 +42,7 @@ type BallotResult = String
 
 type Ballot = {ballot :: Uint8Array, voterPk :: Uint8Array, voterAddr :: String}
 type EncBallot = {encBallot :: Uint8Array, voterPk :: Uint8Array, voterAddr :: String}
+type EncBallotWVoter = {encBallot :: Uint8Array, voterPk :: BoxPublicKey}
 
 
 noArgs :: forall a. Array a
@@ -67,7 +68,7 @@ ballotPropHelperEffFnAff = runFn3 getBallotPropAsyncImpl
 ballotPropHelperAff :: forall a b eff. String -> (Array a) -> SwmVotingContract -> (Aff (| eff) b)
 ballotPropHelperAff prop args contract = fromEffFnAff (runFn3 getBallotPropAsyncImpl prop args contract)
 
-foreign import submitBallotImpl :: forall e. Fn4 Int Uint8Array Uint8Array SwmVotingContract (EffFnAff (| e) String)
+foreign import submitBallotImpl :: forall e. Fn4 Int Uint8Array BoxPublicKey SwmVotingContract (EffFnAff (| e) String)
 
 
 -- contract setup functions
@@ -106,8 +107,8 @@ releaseSecretKey :: forall e. String -> SwmVotingContract -> Aff (| e) String
 releaseSecretKey secKey contract = fromEffFnAff $ ballotPropHelperEffFnAff "revealSeckey" ["0x" <> secKey] contract
 
 
-web3CastBallot :: forall e. Int -> Tuple Uint8Array Uint8Array -> SwmVotingContract -> (Aff (| e) (String))
-web3CastBallot accN (Tuple encBallot senderPk) contract = fromEffFnAff $ runFn4 submitBallotImpl accN encBallot senderPk contract
+web3CastBallot :: forall e. Int -> EncBallotWVoter -> SwmVotingContract -> (Aff (| e) (String))
+web3CastBallot accN {encBallot, voterPk} contract = fromEffFnAff $ runFn4 submitBallotImpl accN encBallot voterPk contract
 
 
 swmEndTime :: forall e. SwmVotingContract -> Aff (| e) Number
@@ -134,22 +135,12 @@ runBallotCount (Just contract) =
         if nowTime < endTime 
             then pure $ Left "The ballot has not ended yet!"
             else do
-                ballotSecKey <- swmBallotSk contract
+                ballotSeckey <- swmBallotSk contract
                 nVotes <- swmNVotes contract 
                 encBallots <- getBallotsAff contract nVotes
-                log $ unsafeCoerce encBallots
-                pure $ Left ""
+                decryptedBallots <- decryptBallots ballotSeckey encBallots
 
-
--- runBallotCount' :: forall e. Maybe SwmVotingContract -> Either String BallotResult
--- runBallotCount' Nothing = Left "Contract is not initialized."
--- runBallotCount' (Just contract) =
-
---         -- get number of votes and then the votes
---         nVotes <- (fromMaybe 0 <<< fromStringAs decimal) <$> (ballotPropHelper "nVotesCast" noArgs contract)
---         ballots <- getBallots contract nVotes
---         decryptedBallots <- maybe (Left "Ballots failed decryption") Right $ decryptBallots ballotSecKey ballots 
---         pure ""
+                pure $ Right "done"
 
 
 getBallotsAff :: forall e. SwmVotingContract -> Int -> Aff (| e) (Array EncBallot)
@@ -169,29 +160,14 @@ getBallotsAff contract n
             either (throwError <<< error) pure (fromEthHexE ethHex)
 
 
-
--- getBallots :: SwmVotingContract -> Int -> Either String (Array EncBallot)
--- getBallots _ 0 = Right []
--- getBallots contract n = do
---     let currVote = n-1
---     encBallot <- fromEthHexE =<< ballotPropHelper "encryptedBallots" [currVote] contract
---     pubkey <- fromEthHexE =<< ballotPropHelper "associatedPubkeys" [currVote] contract
---     address <- ballotPropHelper "associatedAddresses" [currVote] contract
---     otherVotes <- getBallots contract currVote
---     Right $ {encBallot, pubkey, address} : otherVotes
-
-
--- decryptBallots :: Uint8Array -> Array EncBallot -> Maybe (Array Ballot)
--- decryptBallots _ [] = Just []
--- decryptBallots encSK ballots = do
---     {encBallot, pubkey, address} <- head ballots
---     let voterPK = pubkey
---     let _ = unsafePerformEff $ launchAff $ log $ "voterPK: " <> (unsafeCoerce voterPK)
---     ballot <- toUint8Array <$> decryptOneTimeBallot (toBox encBallot) (toBoxPubkey voterPK) (toBoxSeckey encSK)
---     let _ = unsafePerformEff $ launchAff $ log $ unsafeCoerce $ toHex ballot 
---     remBallots <- tail ballots
---     otherBallots <- decryptBallots encSK remBallots
---     pure $ {ballot, pubkey: voterPK, address} : otherBallots
+decryptBallots :: forall e. BoxSecretKey -> Array EncBallot -> Aff (| e) (Array Ballot)
+decryptBallots _ [] = pure []
+decryptBallots encSk ballots = do
+        parTraverse decryptOne ballots
+    where
+        decryptOne {encBallot, voterPk, voterAddr} = do
+            let ballotM = toUint8Array <$> (decryptOneTimeBallot (toBox encBallot) (toBoxPubkey voterPk) encSk)
+            maybe (throwError $ error $ "Unable to decrypt ballot from: " <> voterAddr) (\ballot -> pure $ {ballot, voterPk, voterAddr}) ballotM
 
 
 
