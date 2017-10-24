@@ -117,7 +117,7 @@ completeBallotTest = do
         logUC releaseSKTxid
 
         -- -- count ballot
-        -- let ballotResultE = runBallotCount contractM
+        _ <- runBallotCount contractM
 
         -- -- check count results
         -- ballotSuccess <- logAndPrintResults ballotResultE
