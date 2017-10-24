@@ -84,10 +84,10 @@ exports.getBallotPropImpl = function(left, right, prop, args, contract) {
 
 exports.getBallotPropAsyncImpl = function(prop, args, contract) {
     return function(onErr, onSucc) {
-        console.log('ballot async', prop, args);
+        console.log('ballot async running:', prop, args);
         args.push({gas: 999999, from: web3.eth.coinbase});
         args.push(function(err, res) {
-            console.log('ballot async got', err, res);
+            console.log('ballot async got:', err, res);
             if (err) { onErr(err) }
             onSucc(res);
         })

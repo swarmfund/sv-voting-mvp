@@ -65,7 +65,7 @@ ballotPropHelperEffFnAff :: forall a b eff. String -> Array a -> SwmVotingContra
 ballotPropHelperEffFnAff = runFn3 getBallotPropAsyncImpl
 
 ballotPropHelperAff :: forall a b eff. String -> (Array a) -> SwmVotingContract -> (Aff (| eff) b)
-ballotPropHelperAff prop args contract = fromEffFnAff $ runFn3 getBallotPropAsyncImpl prop args contract
+ballotPropHelperAff prop args contract = fromEffFnAff (runFn3 getBallotPropAsyncImpl prop args contract)
 
 foreign import submitBallotImpl :: forall e. Fn4 Int Uint8Array Uint8Array SwmVotingContract (EffFnAff (| e) String)
 
@@ -84,7 +84,7 @@ getAccount = runFn3 getAccountImpl Left Right
 -- contract functions
 swmBallotSk :: forall e. SwmVotingContract -> Aff (| e) (BoxSecretKey)
 swmBallotSk contract = do 
-    skStr <- fromEffFnAff $ ballotPropHelperEffFnAff "ballotEncryptionSeckey" noArgs contract
+    skStr <- ballotPropHelperAff "ballotEncryptionSeckey" noArgs contract
     if skStr == "0x0000000000000000000000000000000000000000000000000000000000000000" then
             throwError $ error "Ballot Encryption Secret Key has not yet been published"
         else either (throwError <<< error) (pure <<< toBoxSeckey) (fromEthHexE skStr)

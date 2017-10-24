@@ -146,7 +146,7 @@ deploySol = do
         nowTime <- liftEff currentTimestamp
         let endTime = toString $ nowTime + 60.0
         {sk, pk} <- liftEff generateKey
-        outBuffer <- affExec "yarn" ["sol-deploy", "--startTime", "0", 
+        outBuffer <- affExec "node" ["./bin/solidity/deploy.js", "--startTime", "0", 
                 "--endTime", endTime, "--ballotEncPubkey", "0x" <> pk,
                 "--unsafeSkipChecks", "--deploy", "--web3Provider",
                 "http://localhost:" <> rpcPortStr, "--testing"]
