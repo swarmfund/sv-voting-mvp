@@ -59,9 +59,10 @@ rpcPortStr :: String
 rpcPortStr = toString rpcPort
 
 
--- Don't set this to more than 199 (we generate 200 accounts in testrpc during the auto-tests)
+-- Don't set this to more than 200 (we generate 210 accounts in testrpc during the auto-tests)
+-- Note: TestRPC seems to break between the 500 and 700 mark (500 works).
 nVotes :: Int
-nVotes = 50
+nVotes = 100
 
 
 logBuffer str = unsafePerformEff $ B.toString UTF8 str
@@ -77,7 +78,7 @@ unsFromJ a = unsafePartial $ fromJust a
 
 completeBallotTest :: forall e. SpecType (e)
 completeBallotTest = do
-    it "should compile and deploy the contract" do
+    it "should compile and deploy the contract, cast randomised votes, retrived and decrypt them, and count those votes correctly." do
         -- setup rpc server
         -- testRpc <- testRpcServer rpcPort
         let _ = setWeb3Provider $ "http://localhost:" <> rpcPortStr
@@ -112,7 +113,7 @@ completeBallotTest = do
 
         -- end the ballot
         let contract = unsafePartial $ fromJust contractM
-        setBallotTxid <- setBallotEndTime 0 contract
+        setBallotTxid <- setBallotEndTime 1508822279 contract  -- corresponds to 2017/10/24 5:17:58 UTC
         logUC setBallotTxid
 
         -- release secret key
@@ -120,11 +121,11 @@ completeBallotTest = do
         logUC releaseSKTxid
 
         -- -- count ballot
-        _ <- runBallotCount contractM
+        ballotResultE <- runBallotCount contractM
 
         -- -- check count results
-        -- ballotSuccess <- logAndPrintResults ballotResultE
-        -- ballotSuccess `shouldEqual` true 
+        ballotSuccess <- logAndPrintResults ballotResultE
+        ballotSuccess `shouldEqual` true 
 
         let (nVotesInContract :: Int) = unsFromJ $ (fromStringAs decimal) $ unsafePartial $ fromRight $ ballotPropHelper "nVotesCast" noArgs contract 
         nVotesInContract `shouldEqual` nVotes

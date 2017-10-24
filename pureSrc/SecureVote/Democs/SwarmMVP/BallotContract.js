@@ -69,7 +69,6 @@ const eitherF = function(left, right, contract) {
     return function(prop, args) {
         try {
             const ans = contract[prop].apply(this, args);
-            console.log("eitherF got ans", ans)
             if (ans.s && ans.e && ans.c) {
                 return right(ans.toString(10));
             }
@@ -83,7 +82,6 @@ const eitherF = function(left, right, contract) {
 
 exports.getBallotPropImpl = function(left, right, prop, args, contract) {
     const runPropWithArgs = eitherF(left, right, contract);
-    console.log("Running", prop, "args:", args)
     const ans = runPropWithArgs(prop, args)
     return ans;
 }

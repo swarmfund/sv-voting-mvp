@@ -19,11 +19,6 @@ import SecureVote.Utils.ArrayBuffer (toHex)
 import Unsafe.Coerce (unsafeCoerce)
 
 
-data M a = M a
-
-fromM (M a) = a
-
-
 toMessage :: Uint8Array -> Message
 toMessage = unsafeCoerce
 
@@ -48,15 +43,8 @@ genOneTimeNonce senderPk = toNonce $ asUint8Array $ slice 0 24 $ toIntArray $ sh
 
 
 decryptOneTimeBallot :: Box -> BoxPublicKey -> BoxSecretKey -> Maybe Message
-decryptOneTimeBallot boxToOpen voterPk ballotEncSk = fromM $ do
-    -- let _ = unsafePerformEff $ log $ "Decrypting " <> (toStrUnsafe boxToOpen) <> " from " <> (toStrUnsafe voterPk)
-    M $ boxOpen boxToOpen (genOneTimeNonce voterPk) voterPk ballotEncSk 
+decryptOneTimeBallot boxToOpen voterPk ballotEncSk = boxOpen boxToOpen (genOneTimeNonce voterPk) voterPk ballotEncSk 
 
 
 encryptOneTimeBallot :: BoxPublicKey -> Message -> BoxPublicKey -> BoxSecretKey -> Box
-encryptOneTimeBallot senderPk msg encPk senderSk = fromM $ do
-    -- let _ = unsafePerformEff $ log $ "Encrypting " <> (toStrUnsafe msg) <> " from " <> (toStrUnsafe senderPk) <> " to " <> (toStrUnsafe encPk)
-    M $ box msg (genOneTimeNonce senderPk) encPk senderSk
-
-
-toStrUnsafe = unsafeCoerce <<< toHex <<< toUint8Array
+encryptOneTimeBallot senderPk msg encPk senderSk = box msg (genOneTimeNonce senderPk) encPk senderSk

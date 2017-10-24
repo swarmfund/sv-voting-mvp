@@ -46,11 +46,8 @@ function setCSodium() {
 }
 
 function setNodeSodium() {
-    verifyDetached = function(sig, msg, pk) {
-        return sodium.api.crypto_sign_verify_detached(sig, msg, pk);
-    }
-
-    signDetached = sodium.api.crypto_sign_detached;
+    // verifyDetached = sodium.api.crypto_sign_verify_detached;
+    // signDetached = sodium.api.crypto_sign_detached;
     sha256 = sodium.api.crypto_hash_sha256;
 }
 

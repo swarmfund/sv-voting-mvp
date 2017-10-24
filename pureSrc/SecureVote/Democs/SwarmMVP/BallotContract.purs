@@ -12,7 +12,7 @@ import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Trans.Class (lift)
 import Control.Parallel (parTraverse)
 import Crypt.NaCl (BoxPublicKey, BoxSecretKey, toUint8Array)
-import Data.Array (head, range, tail, (:))
+import Data.Array (head, length, range, tail, (:))
 import Data.ArrayBuffer.Types (Uint8Array)
 import Data.DateTime.Instant (toDateTime, unInstant)
 import Data.Either (Either(..), either)
@@ -128,7 +128,7 @@ swmNVotes contract = do
 runBallotCount :: forall e. Maybe SwmVotingContract -> (Aff (now :: NOW, console :: CONSOLE | e) (Either String BallotResult))
 runBallotCount Nothing = pure $ Left "Contract is not initialized."
 runBallotCount (Just contract) = 
-    do  -- Aff monad
+      do  -- Aff monad
         nowTime <- liftEff $ currentTimestamp
         endTime <- swmEndTime contract 
         log $ "Ballot end time: " <> (toString endTime) <> "\nCurrent Time:    " <> (toString nowTime)
@@ -136,15 +136,23 @@ runBallotCount (Just contract) =
             then pure $ Left "The ballot has not ended yet!"
             else do
                 ballotSeckey <- swmBallotSk contract
+                log $ "Ballot encryption secret key: " <> (toHex $ toUint8Array ballotSeckey)
                 nVotes <- swmNVotes contract 
-                encBallots <- getBallotsAff contract nVotes
+                log $ "Smart contract reports " <> (intToStr nVotes) <> " votes were cast"
+                encBallots <- getBallots contract nVotes
+                log $ "Retrieved " <> (lenStr encBallots) <> " ballots"
                 decryptedBallots <- decryptBallots ballotSeckey encBallots
-
+                log $ "Decrypted " <> (lenStr decryptedBallots) <> " ballots successfully"
+                
                 pure $ Right "done"
+    where
+      lenStr :: forall a. Array a -> String 
+      lenStr = intToStr <<< length
+      intToStr = toStringAs decimal
 
 
-getBallotsAff :: forall e. SwmVotingContract -> Int -> Aff (| e) (Array EncBallot)
-getBallotsAff contract n 
+getBallots :: forall e. SwmVotingContract -> Int -> Aff (| e) (Array EncBallot)
+getBallots contract n 
     | n <= 0 = pure []
     | otherwise = do
         let allVoteIds = range 0 (n-1)

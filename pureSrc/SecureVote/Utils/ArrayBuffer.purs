@@ -7,11 +7,13 @@ import Data.ArrayBuffer.ArrayBuffer (fromArray)
 import Data.ArrayBuffer.DataView as DV
 import Data.ArrayBuffer.Typed (asUint8Array, dataView, toArray, toIntArray)
 import Data.ArrayBuffer.Types (ArrayView, Uint8, Uint8Array)
+import Data.ByteString (Octet)
 import Data.Either (Either(..))
 import Data.Int (fromStringAs, hexadecimal, toNumber, toStringAs)
 import Data.Maybe (Maybe(..), maybe)
 import Data.String (fromCharArray, joinWith, length, take, drop) as String
 import Data.String.Yarn (reverse)
+import Data.TypedArray as TA
 import SecureVote.Utils.Monads (mToE)
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -75,3 +77,7 @@ hexToIntList str =
         b <- fromStringAs hexadecimal $ String.take 2 str
         bs <- hexToIntList $ String.drop 2 str 
         pure $ b `cons` bs
+
+
+ui8FromArray :: Array Int -> Uint8Array
+ui8FromArray = TA.asUint8Array
