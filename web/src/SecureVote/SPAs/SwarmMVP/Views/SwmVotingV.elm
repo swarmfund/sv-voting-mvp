@@ -1,7 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Views.SwmVotingV exposing (..)
 
 import Dict
-import Html exposing (Html, b, code, div, p, pre, span, text)
+import Html exposing (Html, b, code, div, p, pre, span, table, td, text, tr)
 import Html.Attributes exposing (class, style)
 import Json.Encode exposing (encode)
 import Material.Card as Card
@@ -25,9 +25,9 @@ votingView : Model -> Html Msg
 votingView model =
     let
         tableRow ( desc, value ) =
-            div []
-                [ b [] [ text <| desc ++ ": " ]
-                , text value
+            tr []
+                [ td [ class "b tr" ] [ text <| desc ++ ": " ]
+                , td [ class "tl", style [ ( "word-wrap", "break-word" ) ] ] [ text value ]
                 ]
 
         getResults { id, rSchedule, description } =
@@ -36,7 +36,7 @@ votingView model =
             )
 
         displayResults =
-            div [ class "mt2 tl" ]
+            table [ class "mt2 dt--fixed w-auto-l" ]
                 (List.map tableRow
                     (List.map getResults voteOptions)
                     ++ [ tableRow ( "Delegate", getDelegateAddress model ? "None" ) ]
