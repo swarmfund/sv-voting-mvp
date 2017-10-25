@@ -15,7 +15,7 @@ import SecureVote.SPAs.SwarmMVP.Ballot as Ballot exposing (BallotOption)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress, setSwmAddress, swmAddrId)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmVoteR))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmHowToVoteR))
 
 
 swmAddressV : Model -> Html Msg
@@ -38,7 +38,7 @@ swmAddressV model =
 
         msgs =
             MultiMsg <|
-                [ PageGoForward SwmVoteR
+                [ PageGoForward SwmHowToVoteR
                 , SetCandidateTx (setCandTxFrom <| getSwmAddress model ? "AddressView getSwmAddress error")
                 , ToWeb3 GetErc20Balance
                 ]
@@ -46,7 +46,7 @@ swmAddressV model =
 
         devMsgs =
             MultiMsg <|
-                [ PageGoForward SwmVoteR
+                [ PageGoForward SwmHowToVoteR
 
                 -- bitrex address holding golem
                 , setSwmAddress "0xFBb1b73C4f0BDa4f67dcA266ce6Ef42f520fBB98"
@@ -62,7 +62,7 @@ swmAddressV model =
         model
         []
         [ Card.text [ cs "center tc" ]
-            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2" ] [ text "Swarm Liquidity Vote" ]
+            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Swarm Liquidity Vote" ]
             , Options.styled span [ headline, cs "black db pa2 mv3" ] [ text "Please enter your Swarm address below" ]
             , Options.styled span [ body1, cs "black db pa2 mv3" ] [ text "(Dev) Example address: 0xFBb1b73C4f0BDa4f67dcA266ce6Ef42f520fBB98" ]
             , div [ class "center" ]

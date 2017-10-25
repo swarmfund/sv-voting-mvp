@@ -11,12 +11,12 @@ import Material.Typography exposing (display2, headline)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
-import SecureVote.Eth.Utils exposing (decimalTo18dps, formatBalance, rawTokenBalance18DpsToBalance, stripTrailingZeros)
+import SecureVote.Eth.Utils exposing (rawTokenBalance18DpsToBalance)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (renderReleaseScheduleTitle, voteOptions)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmSubmitR))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmDelegateR))
 
 
 castVoteView : Model -> Html Msg
@@ -84,16 +84,16 @@ castVoteView model =
         progressMsgs =
             MultiMsg
                 [ ConstructBallotPlaintext
-                , PageGoForward SwmSubmitR
+                , PageGoForward SwmDelegateR
                 ]
     in
-    fullPageSlide 657980946
+    fullPageSlide 123413553
         model
         []
         [ Card.text [ cs "center tc" ]
-            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2" ] [ text "Swarm Liquidity Vote" ]
+            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Swarm Liquidity Vote" ]
             , Options.styled span [ headline, cs "black dib ba pa3 ma3" ] [ text <| "SWM Balance: " ++ swmBalanceStr ]
             , div [ class "mw7 center black" ] optionList
-            , btn 894823489 model [ PriBtn, Attr (class "mv3"), Click progressMsgs ] [ text "Continue" ]
+            , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs ] [ text "Continue" ]
             ]
         ]
