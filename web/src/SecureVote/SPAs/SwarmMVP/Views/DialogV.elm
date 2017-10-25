@@ -1,7 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Views.DialogV exposing (..)
 
-import Html exposing (Html, b, div, li, p, pre, span, text, ul)
-import Html.Attributes exposing (class)
+import Html exposing (Html, a, b, div, img, li, p, pre, span, text, ul)
+import Html.Attributes exposing (class, href, src)
 import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
 import Material.Typography exposing (headline, menu)
@@ -11,6 +11,7 @@ import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRend
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getEthNodeTemp, setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(SetProvider))
+import SecureVote.SPAs.SwarmMVP.Views.SwmHowToVoteV exposing (combinedHowToVoteCopy)
 import SecureVote.SPAs.SwarmMVP.Views.SwmVotingV exposing (candTxText)
 
 
@@ -45,7 +46,36 @@ settingsDialogV model =
 
 infoDialogV : Html Msg
 infoDialogV =
-    div [] [ text "This is info Dialog Box" ]
+    let
+        codeSourceCopy =
+            [ "This voting tool was built by SecureVote for Swarm Fund. "
+            , "The source code can be found at https://github.com/swarmfund/sv-voting-mvp. "
+            , "All votes are validated through an auditing sutite."
+            , "Instructions on how to run your own version of the auditing suite can be found at https://github.com/swarmfund/sv-voting-mvp. "
+            ]
+
+        codeSourceSection =
+            div []
+                [ Options.styled span [ headline, cs "black db mv3" ] [ text "About this voting tool" ]
+                , text "This voting tool was built by SecureVote for Swarm Fund. The source code can be found at "
+                , a [ href "https://github.com/swarmfund/sv-voting-mvp" ] [ text "https://github.com/swarmfund/sv-voting-mvp" ]
+                , text ". All votes are validated through an auditing sutite. Instructions on how to run your own version of the auditing suite can be found at "
+                , a [ href "https://github.com/swarmfund/sv-voting-mvp" ] [ text "https://github.com/swarmfund/sv-voting-mvp" ]
+                , div [ class "mt4 tc" ]
+                    [ img [ src "img/SecureVote.svg", class "w-30" ] []
+                    , img [ src "img/SwarmFund.svg", class "w-40 ml4 v-btm" ] []
+                    ]
+                ]
+    in
+    div [] <|
+        combinedHowToVoteCopy
+            ++ [ codeSourceSection ]
+
+
+
+--  Made by SecureVote for Swarm
+--  Code is available on GitHub and has auditing software
+--
 
 
 gethDialogV : Model -> Html Msg
