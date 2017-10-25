@@ -17,6 +17,14 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(Mdl, PageGoForward))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 
+delegateExplanationCopy : List String
+delegateExplanationCopy =
+    [ "If instead you want to choose a delegate to vote on your behalf you may enter their address below. "
+    , "If your delegate casts a vote then your vote options will be replaced with the same vote options that your delegate chooses. "
+    , "If your delegate does not cast a vote then your vote will be cast with the options you have selected on the previous slide. "
+    ]
+
+
 delegateView : Model -> Html Msg
 delegateView model =
     let
@@ -32,10 +40,10 @@ delegateView model =
     fullPageSlide 3453456456
         model
         []
-        [ Card.text [ cs "center tc" ]
+        [ Card.text [ cs "center tc mw7" ]
             [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Swarm Liquidity Vote" ]
             , Options.styled span [ headline, cs "black db pa2 mv3" ] [ text "Choose a delegate" ]
-            , p [] [ text "Some text explaining delegation goes here.." ]
+            , p [] [ text <| String.concat delegateExplanationCopy ]
             , Textf.render Mdl
                 [ 7674564333 ]
                 model.mdl

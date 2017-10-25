@@ -11,6 +11,7 @@ import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRend
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getEthNodeTemp, setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(SetProvider))
+import SecureVote.SPAs.SwarmMVP.Views.SwmDelegateV exposing (delegateExplanationCopy)
 import SecureVote.SPAs.SwarmMVP.Views.SwmHowToVoteV exposing (combinedHowToVoteCopy)
 import SecureVote.SPAs.SwarmMVP.Views.SwmVotingV exposing (candTxText)
 
@@ -66,10 +67,18 @@ infoDialogV =
                     , img [ src "img/SwarmFund.svg", class "w-40 ml4 v-btm" ] []
                     ]
                 ]
+
+        delegateExplanationSection =
+            div []
+                [ Options.styled span [ headline, cs "black db mv3" ] [ text "What is Vote Delegation?" ]
+                , text <| String.concat delegateExplanationCopy
+                ]
     in
     div [] <|
         combinedHowToVoteCopy
-            ++ [ codeSourceSection ]
+            ++ [ delegateExplanationSection
+               , codeSourceSection
+               ]
 
 
 
