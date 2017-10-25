@@ -1,6 +1,6 @@
 module SecureVote.SPAs.SwarmMVP.Views.SwmHowToVoteV exposing (..)
 
-import Html exposing (Html, div, p, span, text)
+import Html exposing (Html, div, li, p, span, text, ul)
 import Html.Attributes exposing (class, style)
 import Material.Card as Card
 import Material.Color as Color
@@ -13,9 +13,45 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmVoteR))
 
 
-loremIpsum : String
-loremIpsum =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sagittis semper mi, sit amet laoreet mauris lobortis sed. Sed facilisis justo non sagittis sodales. Proin ornare interdum euismod. Cras ultricies ante vitae convallis viverra. Donec dapibus odio ac metus consequat consectetur vel quis massa. Nunc mattis feugiat erat at porta. Praesent varius felis non ullamcorper condimentum. Ut vitae posuere massa. Aenean vitae euismod mauris. Nunc turpis augue, porttitor at massa eget, gravida vehicula nisl.\n\n     Aliquam erat volutpat. Nunc viverra arcu velit, nec tincidunt purus pulvinar vitae. In nec felis scelerisque, condimentum purus laoreet, ornare mi. Sed rutrum feugiat fermentum. Nullam ut augue in urna fringilla maximus vel vitae mi. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed tincidunt consectetur quam, a placerat dui volutpat in. Fusce maximus tortor nec urna faucibus fringilla quis quis nibh. Sed felis ligula, lacinia sit amet ipsum in, tincidunt finibus orci. Integer nibh dui, porta non elit vitae, ornare maximus arcu. Vestibulum rutrum vulputate eleifend."
+combinedHowToVoteCopy : List (Html Msg)
+combinedHowToVoteCopy =
+    let
+        ballotExplanationCopy =
+            "This ballot is to decide on the release schedule of the SWM token."
+
+        rangeVotingCopy =
+            [ "Each vote option consists of a numerical score within the range '-3' to '+3'."
+            , "'+3' indicates best option and '-3' indicates the worst option."
+            , "When the voting has finished, the option with the highest average score wins."
+            ]
+
+        submitVoteCopy =
+            [ "Once you have finished selecting values for your vote options, your ballot will be encrypted. "
+            , "You will then have the option to submit your vote either via Geth or via MyEtherWallet."
+            ]
+
+        ballotExplanationSection =
+            div []
+                [ Options.styled span [ headline, cs "black db mv3" ] [ text "What is this Ballot?" ]
+                , text ballotExplanationCopy
+                ]
+
+        rangeVotingSection =
+            div []
+                [ Options.styled span [ headline, cs "black db mv3" ] [ text "How to use Range Voting" ]
+                , ul [] <| List.map (\copy -> li [] [ text copy ]) rangeVotingCopy
+                ]
+
+        submitVoteSection =
+            div []
+                [ Options.styled span [ headline, cs "black db mv3" ] [ text "How can I submit my vote?" ]
+                , text <| String.concat submitVoteCopy
+                ]
+    in
+    [ ballotExplanationSection
+    , rangeVotingSection
+    , submitVoteSection
+    ]
 
 
 howToVoteView : Model -> Html Msg
@@ -25,8 +61,8 @@ howToVoteView model =
         []
         [ Card.text [ cs "center tc" ]
             [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Swarm Liquidity Vote" ]
-            , Options.styled span [ headline, cs "black db pa2 mv3" ] [ text "How To Vote" ]
-            , div [ class "mw7 ph3 overflow-visible center" ] [ p [ class "tl" ] [ text loremIpsum ] ]
+            , div [ class "mw7 overflow-visible center tl" ]
+                combinedHowToVoteCopy
             , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmVoteR) ] [ text "Continue" ]
             ]
         ]
