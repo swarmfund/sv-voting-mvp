@@ -11,6 +11,19 @@ This repository contains three key items:
 * Install Elm-Package: https://guide.elm-lang.org/install.html
 * `yarn install` to install all JS dependencies.
 * `elm-package install` to install Elm packages
+* Install `solc`
+* `npm install -g purescript pulp bower` and `bower install` to install purescript dependencies
+
+### Output
+
+* `yarn build-web` outputs to `_dist`
+* `yarn sol-compile` outputs to `_solDist`
+* `yarn admin-prod` and `yarn audit-prod` output to `_pureDist`
+
+### Scripts
+
+* `yarn sol-compile` (`./bin/solidity/compile.sh`) for compiling `SwarmVotingMVP.sol`; use `-c <Contract.sol>` to compile another contract.
+* `yarn sol-deploy` (`node ./bin/solidity/deploy.js`) for deploying `SwarmVotingMVP.sol`; use `--deployOther <Contract>` (with dummy endTime, startTime, ballotEncPubkey arguments) - omit the `.sol`
 
 ## Web UI
 
@@ -24,7 +37,7 @@ It works similarly to React + Redux, though handles side effects very elegantly.
 We're using it because it guarantees no runtime errors and its strictness helps write code that runs correctly the first time.
 
 * `yarn web` to run Elm live-reloading dev
-* `yarn build-web` to build SPA in `_dist` (TODO)
+* `yarn build-web` to build SPA in `_dist`
 
 ### Elm-Format
 
@@ -53,7 +66,7 @@ To compile / develop it:
 
 To run the audit script:
 
-`node ./_pureDist/audit.js -e http://localhost:8545 --swmBallotAddr <address here>`
+`node ./_pureDist/audit.js -e http://localhost:8545 --swmBallotAddr <address here> --erc20Addr <address>`
 
 To run the admin script (key generation)
 

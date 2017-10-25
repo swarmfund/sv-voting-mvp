@@ -27,6 +27,7 @@ import SecureVote.Utils.ArrayBuffer (fromHex, padLeft, padRight, toHex)
 import Unsafe.Coerce (unsafeCoerce)
 
 
+
 delegateAddr = "0x1111111111111111111111111111111111111111"
 
 
@@ -36,7 +37,7 @@ arrayToUint8A = asUint8Array <<< whole <<< fromArray
 makeBallot :: forall e. String -> Eff (random :: RANDOM | e) Uint8Array
 makeBallot delegate = do
     ballots <- randInts 4
-    let ballotsBits = padRight '0' 16 $ joinWith "" $ map ballotToBitStr ballots
+    let ballotsBits = padRight '0' 16 $ joinWith "" $ map voteNToBitStr ballots
     let ballotsBytes = bitStrToBytes ballotsBits
     let finalBytes = arrayToUint8A $ ballotsBytes <> (asArray procDelegateA)
     pure $ finalBytes
@@ -53,8 +54,8 @@ randInts n = do
     pure $ r : rs
 
 
-ballotToBitStr :: Int -> String
-ballotToBitStr ballot = padLeft '0' 3 $ toStringAs binary ballot
+voteNToBitStr :: Int -> String
+voteNToBitStr ballot = padLeft '0' 3 $ toStringAs binary ballot
 
 
 bitStrToBytes :: String -> Array Number
@@ -76,6 +77,4 @@ bitStrToBytes str = case byteM of
 --         (bitsHexM :: Maybe String) = map (\bs -> toString bs Hex) $ fromString paddedBits Binary
 --         -- take first 14 bytes of address
 --         procDelegate = take (14 * 2) $ replace (Pattern "0x") (Replacement "") delegateAddr
-
-
 

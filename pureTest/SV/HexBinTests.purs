@@ -3,11 +3,13 @@ module Test.SV.HexBinTests where
 import Prelude
 
 import Data.ArrayBuffer.Types (Uint8Array)
-import Data.Int (round)
+import Data.Int (binary, fromStringAs, round)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Ord (abs)
+import Data.String as Str
 import Data.TypedArray (asArray, asUint8Array)
 import SecureVote.Utils.ArrayBuffer (UI8AShowable(..), fromHex, toHex)
+import SecureVote.Utils.Numbers (intByteToBitStr)
 import Test.SV.Types (SpecType)
 import Test.Spec (it)
 import Test.Spec.Assertions (shouldEqual)
@@ -50,3 +52,23 @@ testHex someInts = fromMaybe false $ do
     hex = toHex bs1
     bsBack = fromHex hex
       
+
+intBitTests :: forall e. SpecType e
+intBitTests = do
+    it "should pass quickcheck" do
+        quickCheck testIntToBits
+    it "should pass base cases" do
+        "00000000" `shouldEqual` (intByteToBitStr 0)
+        "10000000" `shouldEqual` (intByteToBitStr 128)
+        "00000001" `shouldEqual` (intByteToBitStr 1)
+        "11111111" `shouldEqual` (intByteToBitStr 255)
+        "00010000" `shouldEqual` (intByteToBitStr 16)
+        "10101010" `shouldEqual` (intByteToBitStr 170)
+
+
+testIntToBits :: forall e. Int -> Boolean
+testIntToBits anInt = do
+    let byteInt = abs $ anInt `mod` 256
+    let bitString = intByteToBitStr byteInt
+    let convByte = fromStringAs binary bitString
+    if Str.length bitString /= 8 then false else convByte == Just byteInt

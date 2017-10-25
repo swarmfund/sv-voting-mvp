@@ -3,6 +3,7 @@ module SecureVote.Utils.ArrayBuffer where
 import Prelude
 
 import Data.Array (cons, replicate)
+import Data.Array as A
 import Data.ArrayBuffer.ArrayBuffer (fromArray)
 import Data.ArrayBuffer.DataView as DV
 import Data.ArrayBuffer.Typed (asUint8Array, dataView, toArray, toIntArray)
@@ -81,3 +82,11 @@ hexToIntList str =
 
 ui8FromArray :: Array Int -> Uint8Array
 ui8FromArray = TA.asUint8Array
+
+
+take :: Int -> Uint8Array -> Uint8Array
+take n = ui8FromArray <<< A.take n <<< toIntArray
+
+
+drop :: Int -> Uint8Array -> Uint8Array
+drop n = ui8FromArray <<< A.drop n <<< toIntArray

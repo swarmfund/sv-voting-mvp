@@ -64,7 +64,10 @@ rpcPortStr = toString rpcPort
 -- Don't set this to more than 200 (we generate 210 accounts in testrpc during the auto-tests)
 -- Note: TestRPC seems to break between the 500 and 700 mark (500 works).
 nVotes :: Int
-nVotes = 20
+nVotes = 200
+
+extraVotes :: Int
+extraVotes = 5
 
 
 logBuffer str = unsafePerformEff $ B.toString UTF8 str
@@ -127,7 +130,7 @@ completeBallotTest = do
         balancesMatch `shouldEqual` true
         
         -- create lots of ballots
-        ballots <- createBallots contractM
+        ballots <- createBallots nVotes contractM
         log $ "5 sample ballots: " <> (joinWith ", " $ map toHex $ Array.take 5 ballots)
 
         let encdBallots = encryptBallots (ui8PK) ballots
@@ -140,23 +143,28 @@ completeBallotTest = do
         ballotTxids <- castBallots enumeratedBallots contractM
         logUC $ head ballotTxids
 
+        -- cast the first `extraVotes` ballots again -- doesn't matter that they're the same
+        -- only thing that matters is that they're removed
+        log $ "Casting " <> intToStr extraVotes <> " duplicate ballots"
+        dupBallotTxids <- castBallots (Array.take extraVotes enumeratedBallots) contractM
+
         -- end the ballot
-        setBallotTxid <- setBallotEndTime 1508822279 contract  -- corresponds to 2017/10/24 5:17:58 UTC
-        logUC setBallotTxid
+        setBallotEndTxid <- setBallotEndTime 1508822279 contract  -- corresponds to 2017/10/24 5:17:58 UTC
+        logUC setBallotEndTxid
 
         -- release secret key
         releaseSKTxid <- releaseSecretKey encSk contract
         logUC releaseSKTxid
 
         -- count ballot
-        ballotResultE <- runBallotCount contract erc20Contract
+        ballotResultE <- runBallotCount contract erc20Contract {silent: false}
 
         -- check count results
         ballotSuccess <- logAndPrintResults ballotResultE
         ballotSuccess `shouldEqual` true 
 
         let (nVotesInContract :: Int) = unsFromJ $ (fromStringAs decimal) $ unsafePartial $ fromRight $ ballotPropHelper "nVotesCast" noArgs contract 
-        nVotesInContract `shouldEqual` nVotes
+        nVotesInContract `shouldEqual` (nVotes + extraVotes)
 
         pure unit
   where
@@ -209,8 +217,9 @@ genBalances voterIds = do
         sequence $ map genBal voterIds
     where
         genBal voterId = do
-            giveCoins <- liftEff $ randomInt 0 10
-            newBal <- if giveCoins < 9 then liftEff $ randomInt 10 1000 else pure 0
+            giveCoins <- liftEff $ randomInt 0 9  -- random in [0, 9]
+            -- 80% chance to get coins
+            newBal <- if giveCoins < 8 then liftEff $ randomInt 10 1000 else pure 0
             addr <- either (throwError <<< error) pure (getAccount voterId)
             pure $ {addr, newBal}
 
@@ -225,13 +234,13 @@ checkBalances erc20 balances = do
             pure $ fromString bal == Just newBal
 
 
-createBallots :: forall e. Maybe SwmVotingContract -> AffAll e ((Array Uint8Array))
-createBallots cM = case cM of
+createBallots :: forall e. Int -> Maybe SwmVotingContract -> AffAll e ((Array Uint8Array))
+createBallots nVotes cM = case cM of
     Nothing -> throwError $ error "Contract is Nothing!"
     Just contract -> do
         let encPkM = getBallotEncPK contract
         case encPkM of 
-            Left _ -> pure []
+            Left _ -> throwError $ error "could not get encryption pubkey from contract"
             Right encPk -> do
                 liftEff $ genBallots nVotes
 
@@ -239,8 +248,8 @@ createBallots cM = case cM of
 genBallots :: forall e. Int -> Eff (random :: RANDOM | e) (Array Uint8Array)
 genBallots 0 = pure []
 genBallots n = do
-    setDelegate <- randomInt 0 1
-    delegateE <- if setDelegate == 1 then getAccount <$> randomInt 1 nVotes else pure $ Right "0x1111122222333334444411111222223333344444"
+    setDelegate <- randomInt 0 2  -- 1/3 chance to NOT delegate
+    delegateE <- if setDelegate /= 0 then getAccount <$> randomInt 1 nVotes else pure $ Right "0x1111122222333334444411111222223333344444"
     let (delegate :: String) = unsafePartial $ fromRight delegateE
     ballot <- makeBallot delegate
     ballots <- genBallots (n-1)
