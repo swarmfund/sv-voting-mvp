@@ -11,12 +11,19 @@ This repository contains three key items:
 * Install Elm-Package: https://guide.elm-lang.org/install.html
 * `yarn install` to install all JS dependencies.
 * `elm-package install` to install Elm packages
+* Install `solc`
+* `npm install -g purescript pulp bower` and `bower install` to install purescript dependencies
 
-## Solidity Contract
+### Output
 
-The contract lives in `./contract` and uses truffle for development.
+* `yarn build-web` outputs to `_dist`
+* `yarn sol-compile` outputs to `_solDist`
+* `yarn admin-prod` and `yarn audit-prod` output to `_pureDist`
 
-* `yarn solc` to compile contract via truffle to `./contract/build`
+### Scripts
+
+* `yarn sol-compile` (`./bin/solidity/compile.sh`) for compiling `SwarmVotingMVP.sol`; use `-c <Contract.sol>` to compile another contract.
+* `yarn sol-deploy` (`node ./bin/solidity/deploy.js`) for deploying `SwarmVotingMVP.sol`; use `--deployOther <Contract>` (with dummy endTime, startTime, ballotEncPubkey arguments) - omit the `.sol`
 
 ## Web UI
 
@@ -30,7 +37,7 @@ It works similarly to React + Redux, though handles side effects very elegantly.
 We're using it because it guarantees no runtime errors and its strictness helps write code that runs correctly the first time.
 
 * `yarn web` to run Elm live-reloading dev
-* `yarn build-web` to build SPA in `_dist` (TODO)
+* `yarn build-web` to build SPA in `_dist`
 
 ### Elm-Format
 
@@ -50,4 +57,35 @@ We use `elm-mdl` (material design light) for UI components.
 
 ## Audit Suite
 
-(TODO)
+The Audit suite is built in Purescript.
+
+To compile / develop it:
+
+* `npm install -g purescript pulp bower`
+* `yarn audit-prod` or `yarn admin-prod` (depending on which target you want to generate)
+
+To run the audit script:
+
+`node ./_pureDist/audit.js -e http://localhost:8545 --swmBallotAddr <address here> --erc20Addr <address>`
+
+To run the admin script (key generation)
+
+`node ./_pureDist/admin.js --genBallotKey`
+
+## Solidity Contract
+
+The contract lives in `./contract` and uses truffle for development, though not for deployment.
+
+* `yarn sol-compile` to compile contract to `_solDist`
+* `yarn sol-deploy <args>` to deploy (after compiling) to the blockchain
+
+To play with a Web3-esq CLI run `yarn sol-compile && yarn sol-cli`
+
+Example deployment:
+
+(see `yarn sol-deploy --help` for all arguments)
+
+```
+yarn sol-deploy --startTime 1508824035 --endTime 1509667200 \
+    --ballotEncPubkey 0xf13a7020b9d69380e8b91fc51acae296cf3368174edd6bfbd4edeac70bbca80f
+```

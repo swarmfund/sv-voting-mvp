@@ -1,0 +1,30 @@
+language: node_js
+node_js:
+    - "8"
+before_install: 
+    - sudo add-apt-repository -y ppa:ethereum/ethereum
+    - sudo apt-get -y update
+    - sudo apt-get -y install solc
+install:
+    - yarn install --non-interactive
+    - npm i -g bower
+    - bower install
+before_script:
+    - ./bin/solidity/compile.sh
+    - |
+      testrpc -a 210 > /dev/null 2>&1 &
+      TESTRPC_PID=$!
+script:
+    "yarn test-all"
+after_script:
+    - kill -s SIGTERM $TESTRPC_PID
+
+cache:
+    yarn: true
+    directories:
+        - tests/elm-stuff/build-artifacts
+        - node-modules
+        - output
+        - outputTest
+        - .pulp-cache
+        - bower_components

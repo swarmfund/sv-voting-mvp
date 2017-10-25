@@ -66,6 +66,7 @@ typings/
 # Output of 'webpack'
 _dist/*
 _dist
+_pureDist
 
 # Yarn Integrity file
 .yarn-integrity
@@ -81,3 +82,20 @@ web/elm-dev.js
 # smart contract stuff
 contract/build
 /web/sv-swarm.js
+_solDist
+
+
+# PureScript
+/bower_components/
+/node_modules/
+/.pulp-cache/
+/output/
+/generated-docs/
+/.psc-package/
+/.psc*
+/.purs*
+/.psa*
+
+
+# jetbrains
+.idea
