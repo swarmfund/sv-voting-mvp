@@ -12,6 +12,7 @@
 
     <link rel="stylesheet" type="text/css" href="css/vendor/dialog-polyfill.css" />
     <link rel="stylesheet" href="css/vendor/tachyons.min.css">
+    <link rel="stylesheet" href="css/cssload-spinner.css">
 
     <link rel="stylesheet" href="./css/securevote-swarm.css">
 </head>
@@ -305,6 +306,21 @@
     <script src="js/vendor/dialog-polyfill.js"></script>
 </div>
 
-<div id="sv-fullscreen" class="w-100 h-100 top-0 left-0 absolute z-999"></div>
+<div id="sv-fullscreen" class="w-100 h-100 top-0 left-0 absolute z-999">
+    <!-- Free Loading Spinner from icons8.com/cssload -->
+    <!-- https://icons8.com/cssload/en/terms_of_use -->
+    <div id='loading-screen' class="w-100 slider slide-in">
+        <div class="cssload-container">
+            <ul class="cssload-flex-container vh-100">
+                <li>
+                    <span class="cssload-loading cssload-one"></span>
+                    <span class="cssload-loading cssload-two"></span>
+                    <span class="cssload-loading-center"></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</div>
 </body>
 </html>

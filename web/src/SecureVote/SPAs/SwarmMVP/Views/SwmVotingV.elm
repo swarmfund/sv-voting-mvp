@@ -1,8 +1,8 @@
 module SecureVote.SPAs.SwarmMVP.Views.SwmVotingV exposing (..)
 
 import Dict
-import Html exposing (Html, b, code, div, p, pre, span, table, td, text, tr)
-import Html.Attributes exposing (class, style)
+import Html exposing (Html, b, code, div, li, p, pre, span, table, td, text, tr, ul)
+import Html.Attributes exposing (class, id, style)
 import Json.Encode exposing (encode)
 import Material.Card as Card
 import Material.Color as Color
@@ -41,6 +41,38 @@ votingView model =
                     (List.map getResults voteOptions)
                     ++ [ tableRow ( "Delegate", getDelegateAddress model ? "None" ) ]
                 )
+
+        ballotDetails =
+            div []
+                [ Options.styled div [ headline, cs "black" ] [ text "Ballot Transaction:" ]
+                , div [ class "mw7 ph3 overflow-visible center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
+                , div [ class "mv4" ]
+                    [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Link <| generateMewUri model ] [ text "Cast using MEW" ]
+                    , btn 785784536 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog "Cast using Geth" GethDialog) ] [ text "Cast using Geth" ]
+                    ]
+                , btn 987572349 model [ PriBtn, Attr (class "mv3"), OpenDialog, Click (SetDialog "Verify Your Ballot" VerifyDialog) ] [ text "Verify Ballot" ]
+                ]
+
+        loadingSpinner =
+            div [ id "loading-screen" ]
+                [ div [ class "cssload-container cssload-orange cssload-small" ]
+                    [ ul [ class "cssload-flex-container" ]
+                        [ li []
+                            [ span [ class "cssload-loading cssload-one" ] []
+                            , span [ class "cssload-loading cssload-two" ] []
+                            , span [ class "cssload-loading-center" ] []
+                            ]
+                        ]
+                    ]
+                ]
+
+        ballotDetailsSection =
+            case model.ballotAllDone of
+                True ->
+                    ballotDetails
+
+                False ->
+                    loadingSpinner
     in
     fullPageSlide 923844759
         model
@@ -53,13 +85,7 @@ votingView model =
                     [ text "Ballot Summary:" ]
                 , displayResults
                 ]
-            , Options.styled div [ headline, cs "black" ] [ text "Ballot Transaction:" ]
-            , div [ class "mw7 ph3 overflow-visible center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
-            , div [ class "mv4" ]
-                [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Link <| generateMewUri model ] [ text "Cast using MEW" ]
-                , btn 785784536 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog "Cast using Geth" GethDialog) ] [ text "Cast using Geth" ]
-                ]
-            , btn 987572349 model [ PriBtn, Attr (class "mv3"), OpenDialog, Click (SetDialog "Verify Your Ballot" VerifyDialog) ] [ text "Verify Ballot" ]
+            , ballotDetailsSection
             ]
         ]
 
