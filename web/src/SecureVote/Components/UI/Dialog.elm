@@ -26,7 +26,7 @@ dialog model =
                     infoDialogV
 
                 GethDialog ->
-                    gethDialogV
+                    gethDialogV model
 
                 VerifyDialog ->
                     verifyDialogV
@@ -40,7 +40,7 @@ dialog model =
     Dialog.view
         -- Tachyons has no Max-Height :(
         -- possible flex attrs: flex flex-column justify-between
-        [ cs "overflow-scroll w-75"
+        [ cs "overflow-scroll w-75 w-50-l"
         , css "max-height" "75%"
         ]
         -- span here fixes graphical error on safari

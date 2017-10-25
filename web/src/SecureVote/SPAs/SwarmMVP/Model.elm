@@ -20,6 +20,7 @@ type alias Model =
     , fields : Dict String String
     , ballotRange : Dict Int Int
     , ballotBits : Dict Int (Result String RangeBallot3Bits)
+    , ballotAllDone : Bool
     , route : Route
     , history : List Route
     , lastPageDirection : LastPageDirection
@@ -45,6 +46,7 @@ initModel =
     , fields = Dict.empty
     , ballotRange = Dict.empty
     , ballotBits = Dict.empty
+    , ballotAllDone = False
     , route = SwmAddressR
     , history = []
     , lastRoute = Nothing

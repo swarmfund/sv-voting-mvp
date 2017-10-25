@@ -23,6 +23,21 @@ setSwmAddress =
     SetField swmAddrId
 
 
+delegateAddrId : String
+delegateAddrId =
+    "delegateAddress"
+
+
+getDelegateAddress : Model -> Maybe String
+getDelegateAddress model =
+    Dict.get delegateAddrId model.fields
+
+
+setDelegateAddress : String -> Msg
+setDelegateAddress =
+    SetField delegateAddrId
+
+
 ethNodeTemp : String
 ethNodeTemp =
     "ethNodeUrl"
