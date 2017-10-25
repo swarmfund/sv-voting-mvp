@@ -15,3 +15,5 @@ const app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-
 
 web3Ports(web3, app);
 curve25519Ports(app);
+
+document.getElementById("loading-screen").classList.add('slide-out');
