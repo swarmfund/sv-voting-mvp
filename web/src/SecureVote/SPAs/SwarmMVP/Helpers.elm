@@ -1,6 +1,8 @@
 module SecureVote.SPAs.SwarmMVP.Helpers exposing (..)
 
 import Dict
+import Html exposing (Html, pre)
+import Html.Attributes exposing (class)
 import ParseInt exposing (parseIntRadix, toRadix)
 import Result.Extra exposing (isOk)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
@@ -120,3 +122,8 @@ ballotValToBytes value =
 
         Err msg ->
             Err <| "Ballot failed reencoding check: " ++ msg
+
+
+codeSection : List (Html Msg) -> Html Msg
+codeSection code =
+    pre [ class "ba pa3" ] code

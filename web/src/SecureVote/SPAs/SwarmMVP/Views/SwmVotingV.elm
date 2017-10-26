@@ -45,7 +45,7 @@ votingView model =
         ballotDetails =
             div []
                 [ Options.styled div [ headline, cs "black" ] [ text "Ballot Transaction:" ]
-                , div [ class "mw7 ph3 overflow-visible center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
+                , div [ class "mw7 ph3 center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
                 , div [ class "mv4" ]
                     [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Link <| generateMewUri model ] [ text "Cast using MEW" ]
                     , btn 785784536 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog "Cast using Geth" GethDialog) ] [ text "Cast using Geth" ]

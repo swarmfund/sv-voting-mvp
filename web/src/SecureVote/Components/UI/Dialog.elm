@@ -1,6 +1,6 @@
 module SecureVote.Components.UI.Dialog exposing (..)
 
-import Html exposing (Attribute, Html, div, h1, span, text)
+import Html exposing (Attribute, Html, div, h1, h3, span, text)
 import Html.Attributes exposing (class)
 import Material.Dialog as Dialog
 import Material.Options as Options exposing (cs, css)
@@ -44,7 +44,7 @@ dialog model =
         , css "max-height" "75%"
         ]
         -- span here fixes graphical error on safari
-        [ Dialog.title [] [ span [] [ text model.dialogHtml.title ] ]
+        [ Dialog.title [] [ h3 [ class "mv0" ] [ text model.dialogHtml.title ] ]
         , Dialog.content [ cs "" ]
             [ innerHtml
             ]
