@@ -128,9 +128,8 @@ generateMewUri model =
         --        tokenSymbol =
         --            "&tokenSymbol=" ++ candTx.tokenSymbol ? ""
         --
-        -- Hard coded Gas Limit of 200,000
         gasLimit =
-            "&gasLimit=" ++ "0x030d40"
+            "&gasLimit=" ++ candTx.gasLimit ? ""
 
         data =
             "&data=" ++ candTx.data ? ""
