@@ -30,7 +30,7 @@ type alias Model =
     , swarmErc20Address : String
     , swmBalance : Maybe Decimal
     , keypair : Maybe Curve25519KeyPair
-    , encBytes : Maybe (List Int)
+    , encBytes : Maybe String
     , ballotPlaintext : Maybe (List Int)
     , remoteHexPk : Maybe String
     }
@@ -51,7 +51,7 @@ initModel =
     , history = []
     , lastRoute = Nothing
     , lastPageDirection = PageForward
-    , candidateTx = { nullCandidateEthTx | to = Just "SWARM VOTING SMART CONTRACT ADDRESS" }
+    , candidateTx = { nullCandidateEthTx | to = Just "0x0000000000000000000000000000000000000000" }
     , ethNode = "https://mainnet.infura.io"
 
     -- golem address

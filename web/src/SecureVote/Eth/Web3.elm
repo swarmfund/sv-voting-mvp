@@ -22,6 +22,16 @@ port implErc20Balance : (Value -> msg) -> Sub msg
 port gotWeb3Error : (Value -> msg) -> Sub msg
 
 
+type alias ConsDataParamReq =
+    { encBallot : String, voterPubkey : String, votingContractAddr : String }
+
+
+port constructDataParam : ConsDataParamReq -> Cmd msg
+
+
+port implDataParam : (Value -> msg) -> Sub msg
+
+
 onIncomingErc20Balance : Value -> Msg
 onIncomingErc20Balance encodedBalance =
     let
@@ -43,4 +53,22 @@ onIncomingWeb3Error err =
             LogErr err
 
         Err _ ->
-            LogErr (Debug.log (toString err) "Unable to decode error!!! Check console.log")
+            let
+                errStr =
+                    toString err
+            in
+            LogErr (Debug.log errStr <| "Unable to decode error!!! Check console.log: " ++ errStr)
+
+
+onRecieveDataParam : Value -> Msg
+onRecieveDataParam dataVal =
+    case Decode.decodeValue string dataVal of
+        Ok data ->
+            FromWeb3 <| GotDataParam data
+
+        Err err ->
+            let
+                errStr =
+                    toString err
+            in
+            LogErr (Debug.log errStr <| "Unable to decode data param from web3! Check console.log: " ++ errStr)

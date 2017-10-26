@@ -1,11 +1,13 @@
 import Web3 = require("web3");
 import ERC20ABI from "./ERC20ABI";
+import SwmVotingMVPABI from "./SwmVotingMVP.abi";
 import BigNumber from "bignumber.js";
 
 const web3Ports = (web3: Web3, app) => {
     // "Global" constants
     console.log("ERC20ABI is", ERC20ABI)
     const Erc20Contract = web3.eth.contract(ERC20ABI);
+    const SwmVotingContract = web3.eth.contract(SwmVotingMVPABI);
 
 
     // Implementation of port sends
@@ -41,6 +43,15 @@ const web3Ports = (web3: Web3, app) => {
         console.log("getErc20Balance got params", {contractAddress, userAddress});
         const tokenContract = Erc20Contract.at(contractAddress);
         tokenContract.balanceOf.call(userAddress, handleErrOr(implSendErc20Balance))
+    })
+
+
+    app.ports.constructDataParam.subscribe(({encBallot, voterPubkey, votingContractAddr}) => {
+        console.log("constructDataParam got params:", {encBallot, voterPubkey, votingContractAddr});
+        const voteC = SwmVotingContract.at(votingContractAddr);
+        const data = voteC.submitBallot.getData("0x" + encBallot, "0x" + voterPubkey);
+        app.ports.implDataParam.send(data);
+        console.log("constructDataParam sent: ", data);
     })
 
 };

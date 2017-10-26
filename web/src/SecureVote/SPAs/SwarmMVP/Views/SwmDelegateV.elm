@@ -13,15 +13,15 @@ import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Utils exposing (isValidEthAddress)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getDelegateAddress, setDelegateAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(Mdl, PageGoForward))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToCurve25519Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 
 delegateExplanationCopy : List String
 delegateExplanationCopy =
-    [ "If instead you want to choose a delegate to vote on your behalf you may enter their address below. "
-    , "If your delegate casts a vote then your vote options will be replaced with the same vote options that your delegate chooses. "
-    , "If your delegate does not cast a vote then your vote will be cast with the options you have selected on the previous slide. "
+    [ "You may optionally select a delegate to vote on your behalf. If you would like to, please enter their SWM token address below. "
+    , "If your delegate casts a vote, your votes will be replaced with the votes that your delegate chooses. "
+    , "If your delegate does not cast a vote, your vote will be cast with the options you have selected. "
     ]
 
 
@@ -36,6 +36,12 @@ delegateView model =
 
         ( addrErr, addrErrMsg ) =
             validAddress model
+
+        clickMsgs =
+            MultiMsg
+                [ ConstructBallotPlaintext
+                , PageGoForward SwmSubmitR
+                ]
     in
     fullPageSlide 3453456456
         model
@@ -56,7 +62,7 @@ delegateView model =
                 , cs "db center"
                 ]
                 []
-            , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmSubmitR), btnDisabled ] [ text "Continue" ]
+            , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click clickMsgs, btnDisabled ] [ text "Continue" ]
             ]
         ]
 
@@ -75,6 +81,6 @@ validAddress model =
             if isValidEthAddress addr then
                 ( False, "Address valid!" )
             else if addr == "" then
-                ( False, "Use Default Address" )
+                ( False, "You will have no delegate" )
             else
                 ( True, "Invalid address" )

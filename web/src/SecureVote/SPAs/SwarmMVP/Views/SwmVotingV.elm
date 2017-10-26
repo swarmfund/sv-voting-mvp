@@ -67,12 +67,10 @@ votingView model =
                 ]
 
         ballotDetailsSection =
-            case model.ballotAllDone of
-                True ->
-                    ballotDetails
-
-                False ->
-                    loadingSpinner
+            if model.ballotAllDone then
+                ballotDetails
+            else
+                loadingSpinner
     in
     fullPageSlide 923844759
         model

@@ -2,7 +2,7 @@ module SecureVote.SPAs.SwarmMVP.Main exposing (..)
 
 import Html exposing (Html)
 import SecureVote.Crypto.Curve25519 exposing (genKeyPair, onIncomingCurve25519Error, onIncomingEncBytes, onIncomingKeyPair, receiveCurve25519Error, receiveEncryptedBytes, receiveKeyPair)
-import SecureVote.Eth.Web3 exposing (gotWeb3Error, implErc20Balance, onIncomingErc20Balance, onIncomingWeb3Error, setWeb3Provider)
+import SecureVote.Eth.Web3 exposing (gotWeb3Error, implDataParam, implErc20Balance, onIncomingErc20Balance, onIncomingWeb3Error, onRecieveDataParam, setWeb3Provider)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), Msg(..))
@@ -18,6 +18,7 @@ subscriptions model =
         , receiveKeyPair <| onIncomingKeyPair (FromCurve25519 << GotKey) LogErr
         , receiveEncryptedBytes <| onIncomingEncBytes (FromCurve25519 << GotEncBytes) LogErr
         , receiveCurve25519Error <| onIncomingCurve25519Error LogErr
+        , implDataParam <| onRecieveDataParam
         ]
 
 

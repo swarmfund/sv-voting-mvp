@@ -56,11 +56,11 @@ port encryptBytes : { hexSk : String, hexRemotePk : String, bytesToSign : List I
 port receiveEncryptedBytes : (Value -> msg) -> Sub msg
 
 
-onIncomingEncBytes : (List Int -> msg) -> (String -> msg) -> Value -> msg
+onIncomingEncBytes : (String -> msg) -> (String -> msg) -> Value -> msg
 onIncomingEncBytes successMsg errMsg encBytes =
     let
         decoded =
-            Json.Decode.decodeValue (list int) encBytes
+            Json.Decode.decodeValue string encBytes
     in
     case decoded of
         Ok encBs ->

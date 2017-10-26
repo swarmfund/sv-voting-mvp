@@ -10,28 +10,29 @@ import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute, Route)
 
 type
     Msg
-    -- UI Maintenance msgs
+    -- ** UI Maintenance msgs
     = SetElevation Int Bool
     | SetField String String
     | PageGoForward Route
     | PageGoBack
     | SetDialog String (DialogRoute Msg)
-      -- Voting msgs
+      -- ** Voting msgs
     | SetBallotRange Int Float
     | ConstructBallotPlaintext
-      -- Eth related msgs
+      -- ** Eth related msgs
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)
     | SetEthNode String
-      -- Utility msgs
+      -- ** Utility msgs
     | MultiMsg (List Msg)
-      -- Port msgs
+      -- ** Port msgs
     | ToWeb3 ToWeb3Msg
     | FromWeb3 FromWeb3Msg
     | FromCurve25519 FromCurve25519Msg
-      -- Errors
+      -- | ToCurve25519 ToCurve25519Msg
+      -- ** Errors
     | LogErr String
     | Snackbar (Snackbar.Msg String)
-      -- Elm Mdl
+      -- ** Elm Mdl
     | Mdl (Material.Msg Msg)
 
 
@@ -42,8 +43,13 @@ type ToWeb3Msg
 
 type FromWeb3Msg
     = GotBalance Decimal
+    | GotDataParam String
 
 
 type FromCurve25519Msg
     = GotKey Curve25519KeyPair
-    | GotEncBytes (List Int)
+    | GotEncBytes String
+
+
+type ToCurve25519Msg
+    = GenerateSignedBallot
