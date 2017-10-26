@@ -81,12 +81,6 @@ infoDialogV =
                ]
 
 
-
---  Made by SecureVote for Swarm
---  Code is available on GitHub and has auditing software
---
-
-
 gethDialogV : Model -> Html Msg
 gethDialogV model =
     div []
@@ -106,7 +100,16 @@ gethDialogV model =
 
 verifyDialogV : Html Msg
 verifyDialogV =
-    div [] [ text "This is verify ballot dialog box" ]
+    div []
+        [ p [] [ text loremIpsum ]
+        , b [] [ text "Example Code Snippet:" ]
+
+        -- Might want to use elm-markdown package for code snippets.
+        , codeSection
+            [ p [] [ text "geth --datadir ~/.ethereum_private init ~/dev/genesis.json" ]
+            , p [] [ text "geth --fast --cache 512 --ipcpath ~/Library/Ethereum/geth.ipc --networkid 1234 --datadir ~/.ethereum_private  console" ]
+            ]
+        ]
 
 
 customDialogV : DialogHtml msg -> Html msg
