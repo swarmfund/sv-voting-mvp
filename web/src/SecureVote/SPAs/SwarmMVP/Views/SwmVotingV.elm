@@ -126,8 +126,9 @@ generateMewUri model =
         --        tokenSymbol =
         --            "&tokenSymbol=" ++ candTx.tokenSymbol ? ""
         --
-        --        gasLimit =
-        --            "&gasLimit=" ++ candTx.gasLimit ? ""
+        gas =
+            "&gas=" ++ candTx.gas
+
         data =
             "&data=" ++ candTx.data ? ""
 
