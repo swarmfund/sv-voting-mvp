@@ -30,10 +30,10 @@ processCandidateTx candTx =
         data =
             candTx.data
 
-        gasLimit =
-            candTx.gasLimit
+        gas =
+            candTx.gas
     in
-    Maybe.map5 MinEthTx from to data gasLimit (intToHexEth value)
+    Maybe.map5 MinEthTx from to data (Just gas) (intToHexEth value)
 
 
 hexRegex : Regex

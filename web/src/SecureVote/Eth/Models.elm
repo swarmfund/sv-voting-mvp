@@ -6,13 +6,14 @@ type alias CandidateEthTx =
     , value : Int
     , to : Maybe String
     , data : Maybe String
-    , gasLimit : Maybe String
+    , gas : String
     }
 
 
 nullCandidateEthTx : CandidateEthTx
 nullCandidateEthTx =
-    CandidateEthTx Nothing 0 Nothing (Just "") Nothing
+    -- Gas set to 200,000
+    CandidateEthTx Nothing 0 Nothing (Just "") "0x030d40"
 
 
 type alias MinEthTx =
@@ -20,5 +21,5 @@ type alias MinEthTx =
     , to : String
     , data : String
     , value : String
-    , gasLimit : String
+    , gas : String
     }
