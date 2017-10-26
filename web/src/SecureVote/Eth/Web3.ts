@@ -54,6 +54,13 @@ const web3Ports = (web3: Web3, app) => {
         console.log("constructDataParam sent: ", data);
     })
 
+
+    app.ports.getEncryptionPublicKey.subscribe(contractAddr => {
+        const voteC = SwmVotingContract.at(contractAddr);
+        const pubkey = voteC.getEncPubkey();
+        app.ports.gotEncPubkey.send(pubkey);
+    })
+
 };
 
 

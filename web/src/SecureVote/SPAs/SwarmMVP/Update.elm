@@ -163,6 +163,9 @@ updateFromWeb3 msg model =
             in
             { model | ballotAllDone = True, candidateTx = { candTx | data = Just data } } ! []
 
+        GotEncPubkey encPk ->
+            { model | remoteHexPk = Just encPk } ! []
+
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )
 updateFromCurve25519 msg model =

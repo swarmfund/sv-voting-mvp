@@ -20,7 +20,7 @@ import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetDialog))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(GethDialog, VerifyDialog), Route(SwmSubmitR))
 
-
+git
 votingView : Model -> Html Msg
 votingView model =
     let

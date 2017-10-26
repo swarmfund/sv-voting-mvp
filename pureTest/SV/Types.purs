@@ -7,6 +7,8 @@ import Control.Monad.Eff.Random (RANDOM)
 import Crypt.NaCl (NACL_RANDOM)
 import Node.Buffer (BUFFER)
 import Node.ChildProcess (CHILD_PROCESS)
+import Node.Process (PROCESS)
+import Node.Process as NP
 import Prelude (Unit)
 import Test.Spec (Spec)
 

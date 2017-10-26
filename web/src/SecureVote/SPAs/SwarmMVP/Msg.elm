@@ -44,6 +44,7 @@ type ToWeb3Msg
 type FromWeb3Msg
     = GotBalance Decimal
     | GotDataParam String
+    | GotEncPubkey String
 
 
 type FromCurve25519Msg

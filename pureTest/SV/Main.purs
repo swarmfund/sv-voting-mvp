@@ -18,7 +18,7 @@ import Test.Spec.Reporter.Console (consoleReporter)
 import Test.Spec.Runner (run')
 
 
-main = run' { slow: 120000, timeout: Just 120000 } [consoleReporter] do
+main = run' { slow: 120000, timeout: Just 180000 } [consoleReporter] do
   describe "Voting Auditor Tests" do
     describe "Hex / Binary tests" hexBinTests
     describe "BitString tests" intBitTests

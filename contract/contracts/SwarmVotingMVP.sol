@@ -57,29 +57,41 @@ contract SwarmVotingMVP {
     event SuccessfulVote(address voter, bytes32 ballot, bytes32 pubkey);
     event SeckeyRevealed(bytes32 secretKey);
     event TestingEnabled();
+    event Error(string error);
 
 
     //// ** Modifiers
 
     modifier notBanned {
-        require(!bannedAddresses[msg.sender]);  // ensure banned addresses cannot vote
-        _;
+        if (!bannedAddresses[msg.sender]) {  // ensure banned addresses cannot vote
+            _;
+        } else {
+            Error("Banned address");
+        }
     }
 
     modifier onlyOwner {
-        require(msg.sender == owner);  // fail if msg.sender is not the owner
-        _;
+        if (msg.sender == owner) {  // fail if msg.sender is not the owner
+            _;
+        } else {
+            Error("Not owner");
+        }
     }
 
     modifier ballotOpen {
-        require(block.timestamp > startTime);
-        require(block.timestamp < endTime);
-        _;
+        if (block.timestamp > startTime && block.timestamp < endTime) {
+            _;
+        } else {
+            Error("Ballot not open");
+        }
     }
 
     modifier onlyTesting {
-        require(testMode);
-        _;
+        if (testMode) {
+            _;
+        } else {
+            Error("Testing disabled");
+        }
     }
 
     //// ** Functions

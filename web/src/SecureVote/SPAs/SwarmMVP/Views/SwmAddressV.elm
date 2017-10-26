@@ -49,8 +49,8 @@ swmAddressV model =
                 [ PageGoForward SwmHowToVoteR
 
                 -- bitrex address holding golem
-                , setSwmAddress "0xFBb1b73C4f0BDa4f67dcA266ce6Ef42f520fBB98"
-                , SetCandidateTx <| setCandTxFrom "0xFBb1b73C4f0BDa4f67dcA266ce6Ef42f520fBB98"
+                , setSwmAddress "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
+                , SetCandidateTx <| setCandTxFrom "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
                 , ToWeb3 GetErc20Balance
                 ]
                     ++ setBallotDefaultMsgs
@@ -64,7 +64,7 @@ swmAddressV model =
         [ Card.text [ cs "center tc" ]
             [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Swarm Liquidity Vote" ]
             , Options.styled span [ headline, cs "black db pa2 mv3" ] [ text "Please enter your Swarm address below" ]
-            , Options.styled span [ body1, cs "black db pa2 mv3" ] [ text "(Dev) Example address: 0xFBb1b73C4f0BDa4f67dcA266ce6Ef42f520fBB98" ]
+            , Options.styled span [ body1, cs "black db pa2 mv3" ] [ text "(Dev) Example address: 0x71c1c1a30f07017f3278333c996ca4e4d71f2092" ]
             , div [ class "center" ]
                 [ div [ class "flex flex-column items-center" ]
                     [ div [ class "flex flex-column items-start" ]
