@@ -42,6 +42,7 @@ dialog model =
         -- possible flex attrs: flex flex-column justify-between
         [ cs "overflow-scroll w-75 w-50-l"
         , css "max-height" "75%"
+        , css "top" "10%"
         ]
         -- span here fixes graphical error on safari
         [ Dialog.title [] [ span [] [ text model.dialogHtml.title ] ]
