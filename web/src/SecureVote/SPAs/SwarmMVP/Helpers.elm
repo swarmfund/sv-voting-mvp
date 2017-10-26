@@ -120,3 +120,8 @@ ballotValToBytes value =
 
         Err msg ->
             Err <| "Ballot failed reencoding check: " ++ msg
+
+
+codepointToBinary : Int -> Result ParseInt.Error String
+codepointToBinary =
+    Result.map (String.padLeft 8 '0') << toRadix 2

@@ -34,9 +34,10 @@ const curve25519Ports = (app) => {
             const nonce = nacl.crypto_hash_sha256(ourPk).slice(0,24);
             // note: leading zeros already trimmed - length will be 16 + msg.length
             const encrypted = nacl.crypto_box(msg, nonce, theirPk, sk);
-            const arrayToReturn = Array.prototype.slice.call(encrypted);
-            app.ports.receiveEncryptedBytes.send(arrayToReturn);
-            console.log("encryptBytes sent via receiveEncryptedBytes:", arrayToReturn);
+            const encryptedHex = nacl.to_hex(encrypted);
+            // const arrayToReturn = Array.prototype.slice.call(encrypted);
+            app.ports.receiveEncryptedBytes.send(encryptedHex);
+            console.log("encryptBytes sent via receiveEncryptedBytes:", encryptedHex);
         }));
     })
 

@@ -7,9 +7,9 @@ import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Web3 exposing (..)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getSwmAddress)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getDelegateAddress, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
 
 
@@ -51,7 +51,8 @@ update msg model =
         ConstructBallotPlaintext ->
             let
                 plainBytesM =
-                    orderedBallotBits model.ballotBits |> Maybe.andThen (flip constructBallot "0xa74476443119A942dE498590Fe1f2454d7D4aC0d")
+                    orderedBallotBits model.ballotBits
+                        |> Maybe.andThen (flip constructBallot <| getDelegateAddress model ? "0x9999999999999999999999999999999999999999")
 
                 skM =
                     Maybe.map .hexSk model.keypair
@@ -97,6 +98,8 @@ update msg model =
         FromCurve25519 msg ->
             updateFromCurve25519 msg model
 
+        -- ToCurve25519 msg ->
+        --     updateToCurve25519 msg model
         -- Boilerplate: Mdl action handler.
         Mdl msg_ ->
             Material.update Mdl msg_ model
@@ -153,6 +156,13 @@ updateFromWeb3 msg model =
         GotBalance bal ->
             { model | swmBalance = Just bal } ! []
 
+        GotDataParam data ->
+            let
+                candTx =
+                    model.candidateTx
+            in
+            { model | ballotAllDone = True, candidateTx = { candTx | data = Just data } } ! []
+
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )
 updateFromCurve25519 msg model =
@@ -161,4 +171,25 @@ updateFromCurve25519 msg model =
             { model | keypair = Just kp } ! []
 
         GotEncBytes bs ->
-            { model | encBytes = Just bs } ! []
+            let
+                model_ =
+                    { model | encBytes = Just bs }
+            in
+            case ( model_.encBytes, model_.keypair, model_.candidateTx.to ) of
+                ( Just encBytes, Just keypair, Just voteCAddr ) ->
+                    model_ ! [ constructDataParam { encBallot = encBytes, voterPubkey = keypair.hexPk, votingContractAddr = voteCAddr } ]
+
+                _ ->
+                    update (LogErr "Unable to create Ethereum tx data parameter - missing encrypted ballot, keypair, or voting contract address.") model_
+
+
+
+-- updateToCurve25519 : ToCurve25519Msg -> Model -> ( Model, Cmd Msg )
+-- updateToCurve25519 msg model =
+--     case msg of
+--         GenerateSignedBallot ->
+--             case ( model.ballotPlaintext, model.keypair, model.remoteHexPk ) of
+--                 ( Just bytes, Just keypair, Just hexRemotePk ) ->
+--                     model ! [ encryptBytes { bytesToSign = bytes, hexSk = keypair.hexSk, hexRemotePk = hexRemotePk } ]
+--                 _ ->
+--                     update (LogErr "App does not have all of: ballot plaintext, keypair, and encryption public key. Unable to generate encrypted ballot.") model
