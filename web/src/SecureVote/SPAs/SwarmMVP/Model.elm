@@ -35,6 +35,7 @@ type alias Model =
     , encBytes : Maybe String
     , ballotPlaintext : Maybe (List Int)
     , remoteHexPk : Maybe String
+    , miniVotingAbi : String
     }
 
 
@@ -54,7 +55,7 @@ initModel =
     , lastRoute = Nothing
     , lastPageDirection = PageForward
     , candidateTx = { nullCandidateEthTx | to = Just votingContractAddr }
-    , ethNode = "http://localhost:8545"
+    , ethNode = "https://mainnet.infura.io"
     , swarmErc20Address = erc20Addr
     , swarmVotingAddress = votingContractAddr
     , swmBalance = Nothing
@@ -62,6 +63,7 @@ initModel =
     , encBytes = Nothing
     , ballotPlaintext = Nothing
     , remoteHexPk = Nothing
+    , miniVotingAbi = "Error: Web3 has not initialized correctly"
     }
 
 

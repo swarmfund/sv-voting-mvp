@@ -18,9 +18,9 @@ import SecureVote.SPAs.SwarmMVP.Ballot exposing (renderReleaseScheduleTitle, vot
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getDelegateAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetDialog))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(GethDialog, VerifyDialog), Route(SwmSubmitR))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(GethDialog, MEWDialog, VerifyDialog), Route(SwmSubmitR))
 
-git
+
 votingView : Model -> Html Msg
 votingView model =
     let
@@ -47,8 +47,8 @@ votingView model =
                 [ Options.styled div [ headline, cs "black" ] [ text "Ballot Transaction:" ]
                 , div [ class "mw7 ph3 center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
                 , div [ class "mv4" ]
-                    [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Link <| generateMewUri model ] [ text "Cast using MEW" ]
-                    , btn 785784536 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog "Cast using Geth" GethDialog) ] [ text "Cast using Geth" ]
+                    [ btn 758678435 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog "Cast your vote using MyEtherWallet" MEWDialog) ] [ text "Cast using M.E.W." ]
+                    , btn 785784536 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog "Cast using Other" GethDialog) ] [ text "Cast using Other" ]
                     ]
                 , btn 987572349 model [ PriBtn, Attr (class "mv3"), OpenDialog, Click (SetDialog "Verify Your Ballot" VerifyDialog) ] [ text "Verify Ballot" ]
                 ]
@@ -102,37 +102,32 @@ candTxText candTx =
             encode 2 <| minEthTxEncoder rec
 
 
-generateMewUri : Model -> String
-generateMewUri model =
-    let
-        candTx =
-            model.candidateTx
 
-        baseUrl =
-            "https://www.myetherwallet.com/?"
-
-        from =
-            "from=" ++ candTx.from ? ""
-
-        to =
-            "&to=" ++ candTx.to ? ""
-
-        value =
-            "&value=" ++ toString candTx.value
-
-        --        sendMode =
-        --            "&sendMode=" ++ candTx.sendMode ? ""
-        --
-        --        tokenSymbol =
-        --            "&tokenSymbol=" ++ candTx.tokenSymbol ? ""
-        --
-        gas =
-            "&gas=" ++ candTx.gas
-
-        data =
-            "&data=" ++ candTx.data ? ""
-
-        tail =
-            "#send-transaction"
-    in
-    baseUrl ++ from ++ to ++ value ++ data ++ tail
+--generateMewUri : Model -> String
+--generateMewUri model =
+--    let
+--        candTx =
+--            model.candidateTx
+--
+--        baseUrl =
+--            "https://www.myetherwallet.com/?"
+--
+--        from =
+--            "from=" ++ candTx.from ? ""
+--
+--        to =
+--            "&to=" ++ candTx.to ? ""
+--
+--        value =
+--            "&value=" ++ toString candTx.value
+--
+--        gas =
+--            "&gas=" ++ candTx.gas
+--
+--        data =
+--            "&data=" ++ candTx.data ? ""
+--
+--        tail =
+--            "#send-transaction"
+--    in
+--    baseUrl ++ from ++ to ++ value ++ data ++ tail

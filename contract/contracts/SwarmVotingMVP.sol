@@ -35,6 +35,9 @@ contract SwarmVotingMVP {
     mapping(uint256 => address) public associatedAddresses;
     uint256 public nVotesCast = 0;
 
+    // Use a map for voters to look up their ballot
+    mapping(address => uint256) public voterToBallotID;
+
     // Public key with which to encrypt ballots - curve25519
     bytes32 public ballotEncryptionPubkey;
 
@@ -123,6 +126,7 @@ contract SwarmVotingMVP {
         encryptedBallots[ballotNumber] = encryptedBallot;
         associatedPubkeys[ballotNumber] = senderPubkey;
         associatedAddresses[ballotNumber] = msg.sender;
+        voterToBallotID[msg.sender] = ballotNumber;
         nVotesCast += 1;
         SuccessfulVote(msg.sender, encryptedBallot, senderPubkey);
     }

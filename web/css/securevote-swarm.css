@@ -56,7 +56,6 @@
     }
 }
 
-
 @keyframes slide-in-back {
     0% {
         opacity: 0;
@@ -103,12 +102,11 @@
         visibility: visible;
     }
     100% {
-        transform:  scale(0.5, 0.5);
+        transform: scale(0.5, 0.5);
         opacity: 0;
         visibility: hidden;
     }
 }
-
 
 #sv-background {
     background-color: #ffaf03;
@@ -135,3 +133,4 @@
 pre {
     overflow: scroll;
 }
+

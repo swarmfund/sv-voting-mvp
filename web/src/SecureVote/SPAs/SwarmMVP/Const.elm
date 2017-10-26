@@ -3,9 +3,9 @@ module SecureVote.SPAs.SwarmMVP.Const exposing (..)
 
 votingContractAddr : String
 votingContractAddr =
-    "0x3d036ddfafdae5805705c086877c801027393c51"
+    "0x05a9c812f36bed24f68dcAFE74C665F00f084244"
 
 
 erc20Addr : String
 erc20Addr =
-    "0x5e017130bb1106929f899bb6577517d67272c4ec"
+    "0x5806948a0abebaee3aa73daef5cdc05db4f71ce5"

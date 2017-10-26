@@ -36,19 +36,21 @@ dialog model =
 
                 NotFoundDialog ->
                     h1 [ class "red" ] [ text "Not Found" ]
+
+                MEWDialog ->
+                    mewDialog model
     in
     Dialog.view
         -- Tachyons has no Max-Height :(
         -- possible flex attrs: flex flex-column justify-between
-        [ cs "overflow-scroll w-75 w-50-l"
-        , css "max-height" "75%"
+        [ cs "w-75 w-50-l"
+        , css "max-height" "80%"
         , css "top" "10%"
+        , cs "overflow-auto"
         ]
         -- span here fixes graphical error on safari
         [ Dialog.title [] [ h3 [ class "mv0" ] [ text model.dialogHtml.title ] ]
-        , Dialog.content [ cs "" ]
-            [ innerHtml
-            ]
+        , Dialog.content [] [ div [ class "overflow-scroll" ] [ innerHtml ] ]
         , Dialog.actions [ cs "v-btm" ]
             [ btn 976565675 model [ SecBtn, CloseDialog, Attr (class "fr") ] [ text "Close" ]
             ]

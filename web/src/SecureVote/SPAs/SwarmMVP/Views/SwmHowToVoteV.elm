@@ -20,14 +20,14 @@ combinedHowToVoteCopy =
             "This ballot is to decide on the release schedule of the SWM token."
 
         rangeVotingCopy =
-            [ "Each vote option consists of a numerical score within the range '-3' to '+3'."
-            , "'+3' indicates best option and '-3' indicates the worst option."
-            , "When the voting has finished, the option with the highest average score wins."
+            [ "Each vote consists of a choosing a score within the range -3 to +3."
+            , "+3 indicates best option and -3 indicates the worst option."
+            , "When the voting has finished, all votes are weighted and summed, and the option with the highest weighted score wins."
             ]
 
         submitVoteCopy =
             [ "Once you have finished selecting values for your vote options, your ballot will be encrypted. "
-            , "You will then have the option to submit your vote either via Geth or via MyEtherWallet."
+            , "You will then be presented with instructions to submit your vote either via MyEtherWallet or another wallet, and to validate the integrity of your ballot if you wish."
             ]
 
         ballotExplanationSection =

@@ -2,7 +2,9 @@ port module SecureVote.Eth.Web3 exposing (..)
 
 import Debug
 import Decimal
-import Json.Decode as Decode exposing (Decoder, Value, int, string)
+import Json.Decode as Decode exposing (Decoder, Value, decodeValue, int, string)
+import Json.Decode.Pipeline exposing (decode, required)
+import SecureVote.Eth.Types exposing (InitRecord)
 import SecureVote.Eth.Utils exposing (dropEthPrefix)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 
@@ -37,6 +39,12 @@ port constructDataParam : ConsDataParamReq -> Cmd msg
 
 
 port implDataParam : (Value -> msg) -> Sub msg
+
+
+port getInit : Bool -> Cmd msg
+
+
+port implInit : (Value -> msg) -> Sub msg
 
 
 onIncomingErc20Balance : Value -> Msg
@@ -90,3 +98,18 @@ onGotPubkey pubkeyVal =
 
         Err err ->
             errHelper "Error while retrieving encryption public key: " err
+
+
+onInit : (InitRecord -> Msg) -> Value -> Msg
+onInit msgConstructor initStuff =
+    let
+        decoder =
+            decode InitRecord
+                |> required "miniAbi" string
+    in
+    case decodeValue decoder initStuff of
+        Ok init ->
+            msgConstructor init
+
+        Err err ->
+            errHelper "Error while getting initial parameters from Web3: " err

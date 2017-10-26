@@ -47,8 +47,6 @@ swmAddressV model =
         devMsgs =
             MultiMsg <|
                 [ PageGoForward SwmHowToVoteR
-
-                -- bitrex address holding golem
                 , setSwmAddress "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
                 , SetCandidateTx <| setCandTxFrom "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
                 , ToWeb3 GetErc20Balance
