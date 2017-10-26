@@ -9,7 +9,7 @@ import Maybe.Extra exposing ((?))
 import ParseInt exposing (toRadix)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRender)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (codepointToBinary, getEthNodeTemp, setEthNodeTemp)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary, getEthNodeTemp, setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(SetProvider))
 import SecureVote.SPAs.SwarmMVP.Views.SwmDelegateV exposing (delegateExplanationCopy)
@@ -82,23 +82,17 @@ infoDialogV =
                ]
 
 
-
---  Made by SecureVote for Swarm
---  Code is available on GitHub and has auditing software
---
-
-
 gethDialogV : Model -> Html Msg
 gethDialogV model =
     div []
         [ Options.styled div [ headline, cs "black" ] [ text "Ballot Transaction:" ]
-        , div [ class "mw7 ph3 overflow-visible center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
+        , div [ class "mw7 ph3 center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
         , Options.styled div [ headline, cs "black" ] [ text "How to send via GETH CLI" ]
         , p [] [ text loremIpsum ]
         , b [] [ text "Example Code Snippet:" ]
 
         -- Might want to use elm-markdown package for code snippets.
-        , div [ class "ba pa3 overflow-scroll nowrap" ]
+        , codeSection
             [ p [] [ text "geth --datadir ~/.ethereum_private init ~/dev/genesis.json" ]
             , p [] [ text "geth --fast --cache 512 --ipcpath ~/Library/Ethereum/geth.ipc --networkid 1234 --datadir ~/.ethereum_private  console" ]
             ]
@@ -107,7 +101,16 @@ gethDialogV model =
 
 verifyDialogV : Html Msg
 verifyDialogV =
-    div [] [ text "This is verify ballot dialog box" ]
+    div []
+        [ p [] [ text loremIpsum ]
+        , b [] [ text "Example Code Snippet:" ]
+
+        -- Might want to use elm-markdown package for code snippets.
+        , codeSection
+            [ p [] [ text "geth --datadir ~/.ethereum_private init ~/dev/genesis.json" ]
+            , p [] [ text "geth --fast --cache 512 --ipcpath ~/Library/Ethereum/geth.ipc --networkid 1234 --datadir ~/.ethereum_private  console" ]
+            ]
+        ]
 
 
 customDialogV : DialogHtml msg -> Html msg
