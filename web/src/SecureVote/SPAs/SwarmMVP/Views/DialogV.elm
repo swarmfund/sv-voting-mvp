@@ -57,10 +57,12 @@ infoDialogV =
                 [ Options.styled span [ headline, cs "black db mv3" ] [ text "About this voting tool" ]
                 , text "This voting tool was built by "
                 , a [ href "https://secure.vote", target "_blank" ] [ text "SecureVote" ]
-                , text " for Swarm Fund. The source code can be found at "
-                , a [ href "https://github.com/swarmfund/sv-voting-mvp" ] [ text "https://github.com/swarmfund/sv-voting-mvp" ]
+                , text " for "
+                , a [ href "https://swarm.fund", target "_blank" ] [ text "Swarm Fund" ]
+                , text ". The source code can be found at "
+                , a [ href "https://github.com/swarmfund/sv-voting-mvp", target "_blank" ] [ text "https://github.com/swarmfund/sv-voting-mvp" ]
                 , text ". All votes are validated through an auditing suite. Instructions on how to run your own version of the auditing suite can be found at "
-                , a [ href "https://github.com/swarmfund/sv-voting-mvp" ] [ text "https://github.com/swarmfund/sv-voting-mvp" ]
+                , a [ href "https://github.com/swarmfund/sv-voting-mvp", target "_blank" ] [ text "https://github.com/swarmfund/sv-voting-mvp" ]
                 , div [ class "mt4 tc" ]
                     [ a [ href "https://secure.vote", target "_blank" ]
                         [ img [ src "img/SecureVote.svg", class "w-30" ] [] ]
