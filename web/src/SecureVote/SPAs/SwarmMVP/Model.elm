@@ -30,7 +30,7 @@ type alias Model =
     , swarmErc20Address : String
     , swmBalance : Maybe Decimal
     , keypair : Maybe Curve25519KeyPair
-    , encBytes : Maybe (List Int)
+    , encBytes : Maybe String
     , ballotPlaintext : Maybe (List Int)
     , remoteHexPk : Maybe String
     }
@@ -51,16 +51,16 @@ initModel =
     , history = []
     , lastRoute = Nothing
     , lastPageDirection = PageForward
-    , candidateTx = { nullCandidateEthTx | to = Just "SWARM VOTING SMART CONTRACT ADDRESS" }
-    , ethNode = "https://mainnet.infura.io"
+    , candidateTx = { nullCandidateEthTx | to = Just "0x76a2ddedc76ab65eda35955e8f1bb5569675238c" }
+    , ethNode = "http://localhost:8545"
 
     -- golem address
-    , swarmErc20Address = "0xa74476443119A942dE498590Fe1f2454d7D4aC0d"
+    , swarmErc20Address = "0x1bf9dd536d4f95eae4ad79f96b7e495050c917c3"
     , swmBalance = Nothing
     , keypair = Nothing
     , encBytes = Nothing
     , ballotPlaintext = Nothing
-    , remoteHexPk = Just "ef524153a1a69d4a1644fabf34177bd24caa7ae09909574d25098c9f376e123f"
+    , remoteHexPk = Just "c11348fc9c94b761b2b34345b68280672738655b2ce45d6b9b038797d015f801"
     }
 
 

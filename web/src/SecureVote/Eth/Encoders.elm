@@ -1,6 +1,6 @@
 module SecureVote.Eth.Encoders exposing (..)
 
-import Json.Encode exposing (Value, object, string)
+import Json.Encode exposing (Value, int, object, string)
 import SecureVote.Eth.Models exposing (MinEthTx)
 
 
@@ -9,6 +9,7 @@ minEthTxEncoder minTx =
     object
         [ ( "from", string minTx.from )
         , ( "to", string minTx.to )
-        , ( "value", string minTx.value )
+        , ( "value", int minTx.value )
         , ( "data", string minTx.data )
+        , ( "gas", string minTx.gas )
         ]

@@ -6,9 +6,10 @@ import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
 import Material.Typography exposing (headline, menu)
 import Maybe.Extra exposing ((?))
+import ParseInt exposing (toRadix)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRender)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, getEthNodeTemp, setEthNodeTemp)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary, getEthNodeTemp, setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(SetProvider))
 import SecureVote.SPAs.SwarmMVP.Views.SwmDelegateV exposing (delegateExplanationCopy)
@@ -125,7 +126,12 @@ debugDialogV model =
     in
     ul [ class "" ]
         [ liE "Add whatever you want here for debug"
-        , liE <| toString model.ballotBits
+        , liE <| toString model.candidateTx
+        , liE <| toString model.encBytes
+        , liE <| toString <| Maybe.map String.length model.encBytes
+        , liE <| toString model.ballotPlaintext
+        , liE <| toString <| Maybe.map List.length model.ballotPlaintext
+        , liE <| toString <| Maybe.map (List.map codepointToBinary) model.ballotPlaintext
         ]
 
 

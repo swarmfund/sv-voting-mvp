@@ -127,3 +127,8 @@ ballotValToBytes value =
 codeSection : List (Html Msg) -> Html Msg
 codeSection code =
     pre [ class "ba pa3" ] code
+    
+    
+codepointToBinary : Int -> Result ParseInt.Error String
+codepointToBinary =
+    Result.map (String.padLeft 8 '0') << toRadix 2

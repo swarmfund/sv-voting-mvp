@@ -29,8 +29,12 @@ processCandidateTx candTx =
 
         data =
             candTx.data
+
+        gas =
+            candTx.gas
     in
-    Maybe.map4 MinEthTx from to data (intToHexEth value)
+    -- Warning : because most of these are strings we must be very careful with ordering
+    Maybe.map5 MinEthTx from to (Just value) data (Just gas)
 
 
 hexRegex : Regex

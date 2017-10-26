@@ -67,12 +67,10 @@ votingView model =
                 ]
 
         ballotDetailsSection =
-            case model.ballotAllDone of
-                True ->
-                    ballotDetails
-
-                False ->
-                    loadingSpinner
+            if model.ballotAllDone then
+                ballotDetails
+            else
+                loadingSpinner
     in
     fullPageSlide 923844759
         model
@@ -128,8 +126,9 @@ generateMewUri model =
         --        tokenSymbol =
         --            "&tokenSymbol=" ++ candTx.tokenSymbol ? ""
         --
-        --        gasLimit =
-        --            "&gasLimit=" ++ candTx.gasLimit ? ""
+        gas =
+            "&gas=" ++ candTx.gas
+
         data =
             "&data=" ++ candTx.data ? ""
 
