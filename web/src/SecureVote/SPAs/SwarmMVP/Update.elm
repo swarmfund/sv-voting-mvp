@@ -1,6 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 
 import Dict
+import Dom.Scroll exposing (toTop)
 import Material
 import Material.Helpers as MHelp exposing (map1st, map2nd)
 import Material.Snackbar as Snackbar
@@ -11,11 +12,20 @@ import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getDelegateA
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
+import Task exposing (attempt)
+
+
+scrollToTop : Cmd Msg
+scrollToTop =
+    attempt (\_ -> NoOp) (toTop "sv-main")
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NoOp ->
+            model ! []
+
         SetElevation id isOn ->
             { model | elevations = Dict.insert id isOn model.elevations } ! []
 
@@ -23,7 +33,7 @@ update msg model =
             { model | fields = Dict.insert fieldName value model.fields } ! []
 
         PageGoForward route ->
-            { model | route = route, history = model.route :: model.history, lastPageDirection = PageForward } ! []
+            { model | route = route, history = model.route :: model.history, lastPageDirection = PageForward, lastRoute = Nothing } ! [ scrollToTop ]
 
         PageGoBack ->
             { model
@@ -32,7 +42,7 @@ update msg model =
                 , lastPageDirection = PageBack
                 , lastRoute = Just model.route
             }
-                ! []
+                ! [ scrollToTop ]
 
         SetDialog title route ->
             { model | dialogHtml = { title = title, route = route } } ! []
@@ -52,7 +62,11 @@ update msg model =
             let
                 plainBytesM =
                     orderedBallotBits model.ballotBits
-                        |> Maybe.andThen (flip constructBallot <| getDelegateAddress model ? "0x9999999999999999999999999999999999999999")
+                        |> Maybe.andThen
+                            (flip constructBallot <|
+                                getDelegateAddress model
+                                    ? "0x9999999999999999999999999999999999999999"
+                            )
 
                 skM =
                     Maybe.map .hexSk model.keypair
@@ -139,7 +153,7 @@ updateToWeb3 : ToWeb3Msg -> Model -> List (Cmd msg)
 updateToWeb3 web3msg model =
     case web3msg of
         SetProvider ->
-            [ setWeb3Provider model.ethNode ]
+            [ setWeb3Provider model.ethNode, getEncryptionPublicKey model.swarmVotingAddress ]
 
         GetErc20Balance ->
             let
@@ -162,6 +176,12 @@ updateFromWeb3 msg model =
                     model.candidateTx
             in
             { model | ballotAllDone = True, candidateTx = { candTx | data = Just data } } ! []
+
+        GotEncPubkey encPk ->
+            { model | remoteHexPk = Just encPk } ! []
+
+        Web3Init init ->
+            { model | miniVotingAbi = init.miniAbi } ! []
 
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )

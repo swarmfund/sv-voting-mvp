@@ -112,6 +112,24 @@ fromHexEth str =
         Nothing
 
 
+dropEthPrefix : String -> String
+dropEthPrefix str =
+    let
+        shortStr =
+            String.slice 0 2 str
+
+        longStr =
+            String.dropLeft 2 str
+
+        hasPrefix =
+            shortStr == "0x"
+    in
+    if hasPrefix then
+        longStr
+    else
+        str
+
+
 intToHexEth : Int -> Maybe String
 intToHexEth input =
     let

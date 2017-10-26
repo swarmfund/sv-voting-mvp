@@ -35,6 +35,9 @@ contract SwarmVotingMVP {
     mapping(uint256 => address) public associatedAddresses;
     uint256 public nVotesCast = 0;
 
+    // Use a map for voters to look up their ballot
+    mapping(address => uint256) public voterToBallotID;
+
     // Public key with which to encrypt ballots - curve25519
     bytes32 public ballotEncryptionPubkey;
 
@@ -57,29 +60,41 @@ contract SwarmVotingMVP {
     event SuccessfulVote(address voter, bytes32 ballot, bytes32 pubkey);
     event SeckeyRevealed(bytes32 secretKey);
     event TestingEnabled();
+    event Error(string error);
 
 
     //// ** Modifiers
 
     modifier notBanned {
-        require(!bannedAddresses[msg.sender]);  // ensure banned addresses cannot vote
-        _;
+        if (!bannedAddresses[msg.sender]) {  // ensure banned addresses cannot vote
+            _;
+        } else {
+            Error("Banned address");
+        }
     }
 
     modifier onlyOwner {
-        require(msg.sender == owner);  // fail if msg.sender is not the owner
-        _;
+        if (msg.sender == owner) {  // fail if msg.sender is not the owner
+            _;
+        } else {
+            Error("Not owner");
+        }
     }
 
     modifier ballotOpen {
-        require(block.timestamp > startTime);
-        require(block.timestamp < endTime);
-        _;
+        if (block.timestamp > startTime && block.timestamp < endTime) {
+            _;
+        } else {
+            Error("Ballot not open");
+        }
     }
 
     modifier onlyTesting {
-        require(testMode);
-        _;
+        if (testMode) {
+            _;
+        } else {
+            Error("Testing disabled");
+        }
     }
 
     //// ** Functions
@@ -111,6 +126,7 @@ contract SwarmVotingMVP {
         encryptedBallots[ballotNumber] = encryptedBallot;
         associatedPubkeys[ballotNumber] = senderPubkey;
         associatedAddresses[ballotNumber] = msg.sender;
+        voterToBallotID[msg.sender] = ballotNumber;
         nVotesCast += 1;
         SuccessfulVote(msg.sender, encryptedBallot, senderPubkey);
     }

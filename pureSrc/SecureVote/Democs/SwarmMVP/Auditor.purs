@@ -10,11 +10,12 @@ import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Now (NOW)
 import Crypt.NaCl.Types (NACL_RANDOM)
-import Data.Either (Either(..), either, isRight)
+import Data.Either (Either(..), either, fromRight, isRight)
 import Data.Maybe (Maybe(..), maybe)
 import Node.Process (PROCESS, exit)
 import Node.Yargs.Applicative (runY, yarg)
 import Node.Yargs.Setup (defaultHelp, usage)
+import Partial.Unsafe (unsafePartial)
 import SecureVote.Democs.SwarmMVP.BallotContract (makeErc20Contract, makeSwmVotingContract, runBallotCount, setWeb3Provider)
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -28,7 +29,7 @@ app ethUrl swmAddress erc20Address =
         ballotAns <- runBallotCount contract erc20Contract {silent: false}
         let exitC = exitCode ballotAns
         let msgStart = exitMsgHeader exitC
-        let msgBody = unsafeCoerce $ ballotAns
+        let msgBody = unsafeCoerce $ unsafePartial $ fromRight ballotAns
         log $ "\n" <> msgStart <> "\n"
         log $ msgBody
         liftEff $ exit exitC

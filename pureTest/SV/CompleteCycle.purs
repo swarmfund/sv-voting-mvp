@@ -2,7 +2,7 @@ module Test.SV.CompleteCycle where
   
 import Prelude
 
-import Control.Monad.Aff (Aff, Canceler(..), error, makeAff, throwError)
+import Control.Monad.Aff (Aff, Canceler(..), Milliseconds(..), delay, error, makeAff, throwError)
 import Control.Monad.Aff.Console (log)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
@@ -21,12 +21,11 @@ import Data.ArrayBuffer.Types (Uint8Array)
 import Data.Either (Either(..), either, fromRight)
 import Data.Int (decimal, fromNumber, fromString, fromStringAs, toStringAs)
 import Data.List (List(..))
-import Data.Maybe (Maybe(..), fromJust, maybe)
+import Data.Maybe (Maybe(..), fromJust, fromMaybe, maybe)
 import Data.Number as Num
 import Data.Number.Format (toString)
 import Data.Ord (abs)
-import Data.String (joinWith)
-import Data.String.CodePoints (take)
+import Data.String (joinWith, take)
 import Data.String.Utils (lines, words)
 import Data.Traversable (and, sequence)
 import Data.Tuple (Tuple(..))
@@ -36,6 +35,7 @@ import Node.Buffer (Buffer)
 import Node.Buffer as B
 import Node.ChildProcess (CHILD_PROCESS, defaultExecOptions, execFile)
 import Node.Encoding (Encoding(..))
+import Node.Process (lookupEnv, PROCESS)
 import Partial.Unsafe (unsafePartial)
 import SecureVote.Crypto.Curve25519 (genCurve25519Key, toNonce, toBoxPubkey, toMessage, encryptOneTimeBallot)
 import SecureVote.Crypto.NativeEd25519 (sha256)
@@ -81,6 +81,10 @@ unsFromJ :: forall a. Maybe a -> a
 unsFromJ a = unsafePartial $ fromJust a
 
 
+waitTime :: Number
+waitTime = 60.0
+
+
 completeBallotTest :: forall e. SpecType (e)
 completeBallotTest = do
     it "should compile and deploy the contract, cast randomised votes, retrived and decrypt them, and count those votes correctly." do
@@ -109,7 +113,7 @@ completeBallotTest = do
         let addrM = contractAddrM deployStr
         let contractM = outputToVotingContract addrM
         contract <- maybe (throwError $ error "Unable to get voting contract") pure contractM
-        log $ "Contract deployed at: " <> (unsafePartial $ fromJust addrM)
+        log $ "Voting contract deployed at: " <> (unsafePartial $ fromJust addrM)
 
         -- check owner
         votingOwner <- ballotPropHelperAff "owner" [] contract
@@ -124,10 +128,12 @@ completeBallotTest = do
         erc20Owner `shouldEqual` coinbase
 
         -- give all voters some coins
+        log $ "Sending ERC20 tokens to users"
         balances <- genBalances voterIds
         setBalanceTxs <- parTraverse (\{addr, newBal} -> ballotPropHelperAff "transfer" [addr, intToStr newBal] erc20Contract) balances
         balancesMatch <- checkBalances erc20Contract balances
         balancesMatch `shouldEqual` true
+        log $ "Distributed ERC20 tokens"
         
         -- create lots of ballots
         ballots <- createBallots nVotes contractM
@@ -148,11 +154,20 @@ completeBallotTest = do
         log $ "Casting " <> intToStr extraVotes <> " duplicate ballots"
         dupBallotTxids <- castBallots (Array.take extraVotes enumeratedBallots) contractM
 
-        -- end the ballot
-        setBallotEndTxid <- setBallotEndTime 1508822279 contract  -- corresponds to 2017/10/24 5:17:58 UTC
-        logUC setBallotEndTxid
+        -- end the ballot or wait depending on ENV variables
+        let shouldWaitStr = unsafePerformEff $ (lookupEnv "SV_MANUAL_TEST")
+        let (shouldWait :: Boolean) = shouldWaitStr == Just "true"
+        if shouldWait 
+            then
+                log "Waiting for 90s for ballot to finish and manual testing..."
+                *> delay (Milliseconds $ 1000.0 * waitTime)
+            else
+                log "Setting endTime to the past"
+                *> setBallotEndTime 1508822279 contract  -- corresponds to 2017/10/24 5:17:58 UTC
+                >>= logUC
 
         -- release secret key
+        log $ "Releasing Secret Key:"
         releaseSKTxid <- releaseSecretKey encSk contract
         logUC releaseSKTxid
 
@@ -164,7 +179,10 @@ completeBallotTest = do
         ballotSuccess `shouldEqual` true 
 
         let (nVotesInContract :: Int) = unsFromJ $ (fromStringAs decimal) $ unsafePartial $ fromRight $ ballotPropHelper "nVotesCast" noArgs contract 
-        nVotesInContract `shouldEqual` (nVotes + extraVotes)
+        if shouldWait then
+                (nVotesInContract >= (nVotes + extraVotes)) `shouldEqual` true
+            else 
+                nVotesInContract `shouldEqual` (nVotes + extraVotes)
 
         pure unit
   where
@@ -183,7 +201,7 @@ compileSol args = do
 deploySol :: forall e. AffAll e {pk :: String, sk :: String, outBuffer :: Buffer}
 deploySol = do
         nowTime <- liftEff currentTimestamp
-        let endTime = toString $ nowTime + 60.0
+        let endTime = toString $ nowTime + waitTime
         {sk, pk} <- liftEff generateKey
         outBuffer <- affExec "node" ["./bin/solidity/deploy.js", "--startTime", "0", 
                 "--endTime", endTime, "--ballotEncPubkey", "0x" <> pk,

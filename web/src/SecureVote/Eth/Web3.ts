@@ -1,13 +1,19 @@
 import Web3 = require("web3");
 import ERC20ABI from "./ERC20ABI";
-import SwmVotingMVPABI from "./SwmVotingMVP.abi";
+import SwmVotingMVPABIs from "./SwmVotingMVP.abi";
 import BigNumber from "bignumber.js";
 
 const web3Ports = (web3: Web3, app) => {
     // "Global" constants
-    console.log("ERC20ABI is", ERC20ABI)
     const Erc20Contract = web3.eth.contract(ERC20ABI);
-    const SwmVotingContract = web3.eth.contract(SwmVotingMVPABI);
+    const SwmVotingContract = web3.eth.contract(SwmVotingMVPABIs.fullAbi);
+
+
+    app.ports.getInit.subscribe((meh: boolean) => {
+        app.ports.implInit.send({
+            miniAbi: JSON.stringify(SwmVotingMVPABIs.miniAbi)
+        })
+    })
 
 
     // Implementation of port sends
@@ -15,6 +21,7 @@ const web3Ports = (web3: Web3, app) => {
         const toRet = balance.toString(10);
         console.log('implSendErc20Balance got:', toRet);
         app.ports.implErc20Balance.send(toRet);
+
     };
 
     const implNotifyErr = (err) => {
@@ -35,7 +42,7 @@ const web3Ports = (web3: Web3, app) => {
 
     // Port subscriptions
     app.ports.setWeb3Provider.subscribe((web3Provider) => {
-        web3.setProvider(new web3.providers.HttpProvider(web3Provider));
+        web3.setProvider(new Web3.providers.HttpProvider(web3Provider));
         console.log("Web3 provider set to:", web3.currentProvider);
     });
 
@@ -52,6 +59,13 @@ const web3Ports = (web3: Web3, app) => {
         const data = voteC.submitBallot.getData("0x" + encBallot, "0x" + voterPubkey);
         app.ports.implDataParam.send(data);
         console.log("constructDataParam sent: ", data);
+    })
+
+
+    app.ports.getEncryptionPublicKey.subscribe(contractAddr => {
+        const voteC = SwmVotingContract.at(contractAddr);
+        const pubkey = voteC.getEncPubkey();
+        app.ports.gotEncPubkey.send(pubkey);
     })
 
 };

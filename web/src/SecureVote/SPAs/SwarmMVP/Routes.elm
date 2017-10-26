@@ -17,6 +17,7 @@ type DialogRoute msg
     | BallotDialog (DialogHtml msg)
     | InfoDialog
     | GethDialog
+    | MEWDialog
     | VerifyDialog
     | DebugDialog
     | NotFoundDialog

@@ -5,13 +5,14 @@ import Material
 import Material.Snackbar as Snackbar
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
+import SecureVote.Eth.Types exposing (InitRecord)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute, Route)
 
 
-type
-    Msg
-    -- ** UI Maintenance msgs
-    = SetElevation Int Bool
+type Msg
+    = NoOp
+      -- ** UI Maintenance msgs
+    | SetElevation Int Bool
     | SetField String String
     | PageGoForward Route
     | PageGoBack
@@ -44,6 +45,8 @@ type ToWeb3Msg
 type FromWeb3Msg
     = GotBalance Decimal
     | GotDataParam String
+    | GotEncPubkey String
+    | Web3Init InitRecord
 
 
 type FromCurve25519Msg

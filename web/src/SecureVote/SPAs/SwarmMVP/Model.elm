@@ -6,6 +6,7 @@ import Material
 import Material.Snackbar
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
+import SecureVote.SPAs.SwarmMVP.Const exposing (erc20Addr, votingContractAddr)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(NotFoundR, SwmAddressR))
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits)
@@ -28,11 +29,13 @@ type alias Model =
     , candidateTx : CandidateEthTx
     , ethNode : String
     , swarmErc20Address : String
+    , swarmVotingAddress : String
     , swmBalance : Maybe Decimal
     , keypair : Maybe Curve25519KeyPair
     , encBytes : Maybe String
     , ballotPlaintext : Maybe (List Int)
     , remoteHexPk : Maybe String
+    , miniVotingAbi : String
     }
 
 
@@ -51,16 +54,16 @@ initModel =
     , history = []
     , lastRoute = Nothing
     , lastPageDirection = PageForward
-    , candidateTx = { nullCandidateEthTx | to = Just "0x76a2ddedc76ab65eda35955e8f1bb5569675238c" }
-    , ethNode = "http://localhost:8545"
-
-    -- golem address
-    , swarmErc20Address = "0x1bf9dd536d4f95eae4ad79f96b7e495050c917c3"
+    , candidateTx = { nullCandidateEthTx | to = Just votingContractAddr }
+    , ethNode = "https://mainnet.infura.io"
+    , swarmErc20Address = erc20Addr
+    , swarmVotingAddress = votingContractAddr
     , swmBalance = Nothing
     , keypair = Nothing
     , encBytes = Nothing
     , ballotPlaintext = Nothing
-    , remoteHexPk = Just "c11348fc9c94b761b2b34345b68280672738655b2ce45d6b9b038797d015f801"
+    , remoteHexPk = Nothing
+    , miniVotingAbi = "Error: Web3 has not initialized correctly"
     }
 
 

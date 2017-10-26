@@ -1,7 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Views.RootV exposing (..)
 
 import Html exposing (Attribute, Html, div, h1, h2, h3, img, p, span, text)
-import Html.Attributes exposing (class, src, style)
+import Html.Attributes exposing (class, id, src, style)
 import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Dialog exposing (dialog)
@@ -72,4 +72,4 @@ slideHost model slideParis extraHtml =
         slides =
             List.map drawSlide slideParis
     in
-    div [ class "w-100" ] (slides ++ extraHtml)
+    div [ class "w-100", id "sv-main" ] (slides ++ extraHtml)
