@@ -201,11 +201,32 @@ decimalFrom18dps toMul =
 stripTrailingZeros : String -> String
 stripTrailingZeros str =
     let
-        isZero =
+        endsWithZero =
             String.endsWith "0" str
+
+        isNotInt =
+            String.contains "." str
     in
-    if isZero then
+    if endsWithZero && isNotInt then
         stripTrailingZeros <| String.dropRight 1 str
+    else
+        str
+
+
+stripLeadingZeros : String -> String
+stripLeadingZeros str =
+    let
+        startsWithZero =
+            String.startsWith "0" str
+
+        isNotZero =
+            str /= "0"
+
+        isNotLessThanOne =
+            not <| String.startsWith "0." str
+    in
+    if startsWithZero && isNotZero && isNotLessThanOne then
+        stripLeadingZeros <| String.dropLeft 1 str
     else
         str
 
@@ -242,7 +263,7 @@ addCommasToBalance str =
         firstLot =
             String.dropRight 3 pre
     in
-    if String.length str <= 3 then
+    if String.length pre <= 3 then
         str
     else
         String.join "." <| (addCommasToBalance firstLot ++ "," ++ last3) :: post
@@ -250,7 +271,7 @@ addCommasToBalance str =
 
 formatBalance : String -> String
 formatBalance =
-    addCommasToBalance << stripTrailingDecimalPoint << stripTrailingZeros
+    addCommasToBalance << stripTrailingDecimalPoint << stripTrailingZeros << stripLeadingZeros
 
 
 rawTokenBalance18DpsToBalance : Decimal -> String
