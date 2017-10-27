@@ -55,7 +55,7 @@ initModel =
     , lastRoute = Nothing
     , lastPageDirection = PageForward
     , candidateTx = { nullCandidateEthTx | to = Just votingContractAddr }
-    , ethNode = "https://mainnet.infura.io"
+    , ethNode = "https://mainnet.infura.io/securevote"
     , swarmErc20Address = erc20Addr
     , swarmVotingAddress = votingContractAddr
     , swmBalance = Nothing
