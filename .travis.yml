@@ -7,13 +7,15 @@ before_install:
     - sudo apt-get -y install solc
 install:
     - yarn install --non-interactive
-    - npm i -g bower
+    - npm i -g bower truffle@beta
     - bower install
+    - rm -r contract/build || echo ''
 before_script:
     - ./bin/solidity/compile.sh
     - |
       testrpc -a 210 > /dev/null 2>&1 &
       TESTRPC_PID=$!
+    - cd contract && truffle migrate --reset --compile-all && cd ..  # fix for weird truffle bug re: invalid number of args
 script:
     "yarn test-all"
 after_script:

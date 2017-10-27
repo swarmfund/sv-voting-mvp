@@ -8,4 +8,4 @@ votingContractAddr =
 
 erc20Addr : String
 erc20Addr =
-    "0x5806948a0abebaee3aa73daef5cdc05db4f71ce5"
+    "0x9e88613418cF03dCa54D6a2cf6Ad934A78C7A17A"
