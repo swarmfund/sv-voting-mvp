@@ -10,7 +10,7 @@ install:
     - npm i -g bower truffle@beta
     - bower install
     - rm -r contract/build || echo ''
-    - truffle migrate --reset --compile-all   # fix for weird truffle bug re: invalid number of args
+    - cd contract && truffle migrate --reset --compile-all   # fix for weird truffle bug re: invalid number of args
 before_script:
     - ./bin/solidity/compile.sh
     - |

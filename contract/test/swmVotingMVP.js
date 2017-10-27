@@ -125,7 +125,8 @@ contract('SwarmVotingMVP', function(_accounts) {
       throw err;
     }
   });
-  it("pending", function() {
+  it("should not allow testing functions if testing mode is false", async function() {
+    
   });
   it("pending2", function() {
   });
