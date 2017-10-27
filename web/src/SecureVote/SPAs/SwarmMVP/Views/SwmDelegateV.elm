@@ -46,10 +46,10 @@ delegateView model =
     fullPageSlide 3453456456
         model
         []
-        [ Card.text [ cs "center tc mw7" ]
+        [ Card.text [ cs "center tc" ]
             [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Swarm Liquidity Vote" ]
             , Options.styled span [ headline, cs "black db pa2 mv3" ] [ text "Choose a delegate" ]
-            , p [] [ text <| String.concat delegateExplanationCopy ]
+            , p [ class "mw7 center" ] [ text <| String.concat delegateExplanationCopy ]
             , Textf.render Mdl
                 [ 7674564333 ]
                 model.mdl
