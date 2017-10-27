@@ -442,6 +442,10 @@ async-each@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/async-each/-/async-each-1.0.1.tgz#19d386a1d9edc6e7c1c85d388aedbcc56d33602d"
 
+async-parallel@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/async-parallel/-/async-parallel-1.2.3.tgz#0b90550aeffb7a365d8cee881eb0618f656a3450"
+
 async@^1.5.2, async@~1.5:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
@@ -7149,6 +7153,17 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
 
+truffle-error@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/truffle-error/-/truffle-error-0.0.2.tgz#01b189b78505566ae1689c239c7ca2dd121cfe4c"
+
+truffle-provider@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/truffle-provider/-/truffle-provider-0.0.3.tgz#97e8ef03b0e55496f73ce349e1ce60442d229648"
+  dependencies:
+    truffle-error "^0.0.2"
+    web3 "^0.20.1"
+
 truffle@^4.0.0-beta.2:
   version "4.0.0-beta.2"
   resolved "https://registry.yarnpkg.com/truffle/-/truffle-4.0.0-beta.2.tgz#2c6ee893615a90eeea32f370a790edc26cd840ee"
@@ -7507,7 +7522,7 @@ web3-typescript-typings@^0.6.2:
   dependencies:
     bignumber.js "^4.0.2"
 
-web3@0.20.2:
+web3@0.20.2, web3@^0.20.1:
   version "0.20.2"
   resolved "https://registry.yarnpkg.com/web3/-/web3-0.20.2.tgz#c54dac5fc0e377399c04c1a6ecbb12e4513278d6"
   dependencies:
