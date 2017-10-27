@@ -134,7 +134,19 @@ async function testInstantiation(accounts, contractFactory) {
 }
 
 
+async function testTestMode(accounts, contractFactory) {
+  var startTime = Math.round(Date.now() / 1000);
+  var endTime = startTime + 600;
+  var shortEndTime = 0;
+  
+  var vc = await contractFactory.new(startTime, endTime, hexPk, false);
 
+  const _setEndTimeTx = await vc.setEndTime(0);
+  assertOnlyEvent('Error', _setEndTimeTx);
+
+  const _banAddrTx = await vc.banAddress(accounts[1]);
+  assertOnlyEvent('Error', _banAddrTx);
+}
 
 
 
@@ -215,10 +227,8 @@ function sleep(s) {return new Promise(res => setTimeout(res, s * 1000))};
 contract('SwarmVotingMVP', function(_accounts) {
   accounts = _accounts;
 
+  it("should not allow testing functions if testing mode is false", wrapTest(testTestMode));
   it("should instantiate correctly", wrapTest(testInstantiation));
-  it("should not allow testing functions if testing mode is false", async function() {
-      
-  });
   it("pending2", function() {
   });
 });
