@@ -52,7 +52,7 @@ contract SwarmVotingMVP {
     // Banned addresses - necessary to ban Swarm Fund from voting in their own ballot
     mapping(address => bool) public bannedAddresses;
     // TODO: Is this the right address?
-    address public swarmFundAddress = 0x8bf7b2d536d286b9c5ad9d99f608e9e214de63f0;
+    address public swarmFundAddress = 0x8Bf7b2D536D286B9c5Ad9d99F608e9E214DE63f0;
 
 
     //// ** Events

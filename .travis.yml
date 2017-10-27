@@ -7,8 +7,10 @@ before_install:
     - sudo apt-get -y install solc
 install:
     - yarn install --non-interactive
-    - npm i -g bower
+    - npm i -g bower truffle@beta
     - bower install
+    - rm -r contract/build || echo ''
+    - truffle migrate --reset --compile-all   # fix for weird truffle bug re: invalid number of args
 before_script:
     - ./bin/solidity/compile.sh
     - |
