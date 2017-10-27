@@ -51,7 +51,8 @@ contract SwarmVotingMVP {
 
     // Banned addresses - necessary to ban Swarm Fund from voting in their own ballot
     mapping(address => bool) public bannedAddresses;
-    address public swarmFundAddress = 0x0;
+    // TODO: Is this the right address?
+    address public swarmFundAddress = 0x8bf7b2d536d286b9c5ad9d99f608e9e214de63f0;
 
 
     //// ** Events
@@ -139,13 +140,6 @@ contract SwarmVotingMVP {
         seckeyRevealed = true;  // this flag allows the contract to be locked
         SeckeyRevealed(_secKey);
     }
-
-    // Finalize ballot, allow no further interactions
-    // TODO : Do we want to lock the ballot? Any reason?
-//    function finalizeBallot() onlyOwner public {
-//        require(block.timestamp > endTime);
-//        require(seckeyRevealed);
-//    }
 
     // Helpers
     function getEncPubkey() public constant returns (bytes32) {

@@ -34,6 +34,7 @@
     "purescript": "^0.11.6",
     "purs-loader": "^3.1.2",
     "ramda": "^0.25.0",
+    "sanctuary": "^0.13.2",
     "sodium": "^2.0.1",
     "style-loader": "^0.19.0",
     "text-encoding": "^0.6.4",
@@ -41,6 +42,7 @@
     "ts-loader": "^3.0.2",
     "typescript": "^2.5.3",
     "url-loader": "^0.6.2",
+    "watch": "^1.0.2",
     "web3": "0.20.2",
     "webpack": "^3.7.1",
     "webpack-dev-server": "^2.9.2",
@@ -55,6 +57,7 @@
   "scripts": {
     "----- SMART CONTRACT COMMANDS": "",
     "sol-test": "cd contract && truffle test",
+    "sol-test-watch": "cd contract && watch 'truffle test' ./test",
     "_testrpc": "testrpc -a 201",
     "sol-compile": "./bin/solidity/compile.sh",
     "sol-deploy": "node ./bin/solidity/deploy.js",
@@ -75,6 +78,6 @@
     "----- FULL SYSTEM / HELPER COMMANDS": "",
     "dry-run": "run-p _sc_testrpc_deploy",
     "node": "node",
-    "test-all": "elm-test && yarn purs-test-no-watch && cd contract && truffle test"
+    "test-all": "elm-test && yarn purs-test-no-watch && yarn sol-test"
   }
 }
