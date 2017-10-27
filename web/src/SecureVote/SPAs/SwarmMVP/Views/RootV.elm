@@ -41,7 +41,7 @@ slideHost model slideParis extraHtml =
                 if model.lastPageDirection == PageForward then
                     "slide-out"
                 else
-                    "slide-out-back"
+                    ""
             else if Just route == model.lastRoute then
                 "slide-out-back"
             else
