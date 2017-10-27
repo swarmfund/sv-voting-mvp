@@ -160,9 +160,10 @@ function init() {
 
     initComputeRenderer();
 
-    document.addEventListener('mousemove', onDocumentMouseMove, false);
-    document.addEventListener('touchstart', onDocumentTouchStart, false);
-    document.addEventListener('touchmove', onDocumentTouchMove, false);
+    // [TS] These event listeners override default functionality on iOS and cause all buttons to become unresponsive.
+    // document.addEventListener('mousemove', onDocumentMouseMove, false);
+    // document.addEventListener('touchstart', onDocumentTouchStart, false);
+    // document.addEventListener('touchmove', onDocumentTouchMove, false);
 
     //
 
