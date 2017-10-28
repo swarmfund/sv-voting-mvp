@@ -8,6 +8,7 @@ import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Web3 exposing (..)
+import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getDelegateAddress, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
@@ -15,9 +16,9 @@ import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBall
 import Task exposing (attempt)
 
 
-scrollToTop : Cmd Msg
-scrollToTop =
-    attempt (\_ -> NoOp) (toTop "sv-main")
+scrollToTop : String -> Cmd Msg
+scrollToTop id =
+    attempt (\_ -> NoOp) (toTop id)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -33,7 +34,7 @@ update msg model =
             { model | fields = Dict.insert fieldName value model.fields } ! []
 
         PageGoForward route ->
-            { model | route = route, history = model.route :: model.history, lastPageDirection = PageForward, lastRoute = Nothing } ! [ scrollToTop ]
+            { model | route = route, history = model.route :: model.history, lastPageDirection = PageForward, lastRoute = Nothing } ! [ scrollToTop "sv-main" ]
 
         PageGoBack ->
             { model
@@ -42,10 +43,10 @@ update msg model =
                 , lastPageDirection = PageBack
                 , lastRoute = Just model.route
             }
-                ! [ scrollToTop ]
+                ! [ scrollToTop "sv-main" ]
 
         SetDialog title route ->
-            { model | dialogHtml = { title = title, route = route } } ! []
+            { model | dialogHtml = { title = title, route = route } } ! [ scrollToTop "dialog-container" ]
 
         SetBallotRange id value ->
             let
@@ -182,6 +183,24 @@ updateFromWeb3 msg model =
 
         Web3Init init ->
             { model | miniVotingAbi = init.miniAbi } ! []
+
+        GetBallotOpts resp ->
+            let
+                mFail errMsg =
+                    { model | ballotVerificationPassed = Just False, verificationError = Just errMsg }
+            in
+            case resp of
+                ( Just opts, _ ) ->
+                    if doBallotOptsMatch opts then
+                        { model | ballotVerificationPassed = Just True } ! []
+                    else
+                        mFail "Release schedule options in voting front end do not match smart contract!" ! []
+
+                ( _, Just errMsg ) ->
+                    mFail errMsg ! []
+
+                ( Nothing, Nothing ) ->
+                    mFail "Unknown error" ! []
 
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )

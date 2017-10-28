@@ -115,3 +115,22 @@ voteOptions =
         , BallotOption 1337000003 (ReleaseSchedule 16 42) <| wrapP "This release will occur over 2 years."
         , BallotOption 1337000004 (ReleaseSchedule 1 42) <| DlogP [ DlogTxt "This will result in the ", DlogEm "full", DlogTxt " release of all tokens at 42 days" ]
         ]
+
+
+doBallotOptsMatch : List (List Int) -> Bool
+doBallotOptsMatch optsFromEth =
+    let
+        extractRelSched { rSchedule } =
+            let
+                { nReleases, releaseLength } =
+                    rSchedule
+            in
+            [ nReleases, releaseLength ]
+
+        releaseSchedules =
+            List.map extractRelSched voteOptions
+
+        matches =
+            List.map2 (\ethOpt ourOpt -> ethOpt == ourOpt) optsFromEth releaseSchedules
+    in
+    List.all (\b -> b) matches

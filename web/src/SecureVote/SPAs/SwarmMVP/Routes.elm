@@ -5,6 +5,7 @@ import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml)
 
 type Route
     = SwmAddressR
+    | OpeningSlideR
     | SwmHowToVoteR
     | SwmVoteR
     | SwmDelegateR

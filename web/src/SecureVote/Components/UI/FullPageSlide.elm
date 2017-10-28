@@ -54,8 +54,7 @@ fullPageSlide id model attrs innerHtmls =
             ([ Card.actions []
                 [ btn 885338576 model backOpts [ Icon.view "arrow_back" [ Icon.size24 ] ]
                 , div [ class "fr dib" ]
-                    [ btn 133498391 model [ SecBtn, Click (SetDialog "Debug" DebugDialog), OpenDialog ] [ text "Debug" ]
-                    , btn 130572984 model infoOpts [ Icon.view "info_outline" [ Icon.size24 ] ]
+                    [ btn 130572984 model infoOpts [ Icon.view "info_outline" [ Icon.size24 ] ]
                     , btn 345647875 model settingsOpts [ Icon.view "settings" [ Icon.size24 ] ]
                     ]
                 ]
@@ -66,3 +65,7 @@ fullPageSlide id model attrs innerHtmls =
             [ class "dtc w-10" ]
             []
         ]
+
+
+
+-- btn 133498391 model [ SecBtn, Click (SetDialog "Debug" DebugDialog), OpenDialog ] [ text "Debug" ]

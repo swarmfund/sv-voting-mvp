@@ -19,7 +19,7 @@ import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 delegateExplanationCopy : List String
 delegateExplanationCopy =
-    [ "You may optionally select a delegate to vote on your behalf. If you would like to, please enter their SWM token address below. "
+    [ "You may optionally select a delegate, though this isn't required. If you would like to, please enter their SWM token address below. "
     , "If your delegate casts a vote, your votes will be replaced with the votes that your delegate chooses. "
     , "If your delegate does not cast a vote, your vote will be cast with the options you have selected. "
     ]
