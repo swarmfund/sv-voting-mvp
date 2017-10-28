@@ -47,6 +47,7 @@ dialog model =
         , css "max-height" "80%"
         , css "top" "10%"
         , cs "overflow-auto"
+        , Options.id "dialog-container"
         ]
         -- span here fixes graphical error on safari
         [ Dialog.title [] [ h3 [ class "mv0" ] [ text model.dialogHtml.title ] ]

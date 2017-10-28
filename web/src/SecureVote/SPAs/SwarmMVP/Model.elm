@@ -8,7 +8,7 @@ import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Const exposing (erc20Addr, votingContractAddr)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
-import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(NotFoundR, SwmAddressR))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(NotFoundR, OpeningSlideR, SwmAddressR))
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits)
 
 
@@ -36,6 +36,7 @@ type alias Model =
     , ballotPlaintext : Maybe (List Int)
     , remoteHexPk : Maybe String
     , miniVotingAbi : String
+    , verificationError : Maybe String
     }
 
 
@@ -50,7 +51,7 @@ initModel =
     , ballotRange = Dict.empty
     , ballotBits = Dict.empty
     , ballotAllDone = False
-    , route = SwmAddressR
+    , route = OpeningSlideR
     , history = []
     , lastRoute = Nothing
     , lastPageDirection = PageForward
@@ -64,6 +65,7 @@ initModel =
     , ballotPlaintext = Nothing
     , remoteHexPk = Nothing
     , miniVotingAbi = "Error: Web3 has not initialized correctly"
+    , verificationError = Just "Hi"
     }
 
 

@@ -9,13 +9,53 @@ import SecureVote.Eth.Utils exposing (dropEthPrefix)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 
 
-port setWeb3Provider : String -> Cmd msg
+type alias ConsDataParamReq =
+    { encBallot : String, voterPubkey : String, votingContractAddr : String }
 
 
-port getEncryptionPublicKey : String -> Cmd msg
+type alias PerformRead =
+    { addr : String
+    , method : String
+    , args : Value
+    }
 
 
-port gotEncPubkey : (Value -> msg) -> Sub msg
+port performContractRead : PerformRead -> Cmd msg
+
+
+type alias ReadResponse =
+    { success : Bool
+    , response : Value
+    , errMsg : String
+    }
+
+
+port contractReadResponse : (Value -> msg) -> Sub msg
+
+
+onContractReadResponse : (Value -> Result String a) -> (a -> msg) -> (String -> msg) -> Value -> msg
+onContractReadResponse respValDecoder msg errMsg val =
+    let
+        decoder =
+            decode ReadResponse
+                |> required "success" Decode.bool
+                |> required "response" Decode.value
+                |> required "errMsg" Decode.string
+    in
+    case Decode.decodeValue decoder val of
+        Ok secVal ->
+            if secVal.success then
+                case respValDecoder secVal.response of
+                    Ok resp ->
+                        msg resp
+
+                    Err err ->
+                        errMsg err
+            else
+                errMsg secVal.errMsg
+
+        Err err ->
+            errMsg err
 
 
 type alias GetErc20BalanceReq =
@@ -26,25 +66,6 @@ port getErc20Balance : GetErc20BalanceReq -> Cmd msg
 
 
 port implErc20Balance : (Value -> msg) -> Sub msg
-
-
-port gotWeb3Error : (Value -> msg) -> Sub msg
-
-
-type alias ConsDataParamReq =
-    { encBallot : String, voterPubkey : String, votingContractAddr : String }
-
-
-port constructDataParam : ConsDataParamReq -> Cmd msg
-
-
-port implDataParam : (Value -> msg) -> Sub msg
-
-
-port getInit : Bool -> Cmd msg
-
-
-port implInit : (Value -> msg) -> Sub msg
 
 
 onIncomingErc20Balance : Value -> Msg
@@ -59,6 +80,12 @@ onIncomingErc20Balance encodedBalance =
 
         Err _ ->
             LogErr <| "Got bad balance back from Web3 " ++ toString encodedBalance
+
+
+port setWeb3Provider : String -> Cmd msg
+
+
+port gotWeb3Error : (Value -> msg) -> Sub msg
 
 
 errHelper : String -> a -> Msg
@@ -80,6 +107,12 @@ onIncomingWeb3Error err =
             errHelper "Unable to decode error!!! Check console.log: " err
 
 
+port constructDataParam : ConsDataParamReq -> Cmd msg
+
+
+port implDataParam : (Value -> msg) -> Sub msg
+
+
 onRecieveDataParam : Value -> Msg
 onRecieveDataParam dataVal =
     case Decode.decodeValue string dataVal of
@@ -90,6 +123,12 @@ onRecieveDataParam dataVal =
             errHelper "Unable to decode data param from web3! Check console.log: " err
 
 
+port getEncryptionPublicKey : String -> Cmd msg
+
+
+port gotEncPubkey : (Value -> msg) -> Sub msg
+
+
 onGotPubkey : Value -> Msg
 onGotPubkey pubkeyVal =
     case Decode.decodeValue string pubkeyVal of
@@ -98,6 +137,12 @@ onGotPubkey pubkeyVal =
 
         Err err ->
             errHelper "Error while retrieving encryption public key: " err
+
+
+port getInit : Bool -> Cmd msg
+
+
+port implInit : (Value -> msg) -> Sub msg
 
 
 onInit : (InitRecord -> Msg) -> Value -> Msg

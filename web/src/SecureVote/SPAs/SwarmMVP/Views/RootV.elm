@@ -8,6 +8,7 @@ import SecureVote.Components.UI.Dialog exposing (dialog)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageForward), Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
+import SecureVote.SPAs.SwarmMVP.Views.OpeningSlideV exposing (openingSlide)
 import SecureVote.SPAs.SwarmMVP.Views.SwmAddressV exposing (swmAddressV)
 import SecureVote.SPAs.SwarmMVP.Views.SwmCastVoteV exposing (castVoteView)
 import SecureVote.SPAs.SwarmMVP.Views.SwmDelegateV exposing (delegateView)
@@ -23,6 +24,7 @@ rootView model =
         , ( SwmVoteR, castVoteView model )
         , ( SwmDelegateR, delegateView model )
         , ( SwmSubmitR, votingView model )
+        , ( OpeningSlideR, openingSlide model )
         ]
         [ img [ src "img/swarm-logo-white-sm.png", class "mv1 mh4-l center db" ] []
         , dialog model

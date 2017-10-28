@@ -15,9 +15,9 @@ import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBall
 import Task exposing (attempt)
 
 
-scrollToTop : Cmd Msg
-scrollToTop =
-    attempt (\_ -> NoOp) (toTop "sv-main")
+scrollToTop : String -> Cmd Msg
+scrollToTop id =
+    attempt (\_ -> NoOp) (toTop id)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -33,7 +33,7 @@ update msg model =
             { model | fields = Dict.insert fieldName value model.fields } ! []
 
         PageGoForward route ->
-            { model | route = route, history = model.route :: model.history, lastPageDirection = PageForward, lastRoute = Nothing } ! [ scrollToTop ]
+            { model | route = route, history = model.route :: model.history, lastPageDirection = PageForward, lastRoute = Nothing } ! [ scrollToTop "sv-main" ]
 
         PageGoBack ->
             { model
@@ -42,10 +42,10 @@ update msg model =
                 , lastPageDirection = PageBack
                 , lastRoute = Just model.route
             }
-                ! [ scrollToTop ]
+                ! [ scrollToTop "sv-main" ]
 
         SetDialog title route ->
-            { model | dialogHtml = { title = title, route = route } } ! []
+            { model | dialogHtml = { title = title, route = route } } ! [ scrollToTop "dialog-container" ]
 
         SetBallotRange id value ->
             let
