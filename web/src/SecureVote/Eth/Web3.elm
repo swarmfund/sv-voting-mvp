@@ -2,11 +2,34 @@ port module SecureVote.Eth.Web3 exposing (..)
 
 import Debug
 import Decimal
-import Json.Decode as Decode exposing (Decoder, Value, decodeValue, int, string)
+import Json.Decode as Decode exposing (Decoder, Value, bool, decodeValue, int, string)
 import Json.Decode.Pipeline exposing (decode, required)
 import SecureVote.Eth.Types exposing (InitRecord)
 import SecureVote.Eth.Utils exposing (dropEthPrefix)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
+import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
+
+
+port checkTxid : String -> Cmd msg
+
+
+port gotTxidCheckStatus : (Value -> msg) -> Sub msg
+
+
+onGotTxidStatus : Value -> Msg
+onGotTxidStatus val =
+    let
+        decoder =
+            decode GotTxidResp
+                |> required "data" string
+                |> required "confirmed" bool
+    in
+    case Decode.decodeValue decoder val of
+        Ok resp ->
+            FromWeb3 <| GotTxidStatus <| Ok resp
+
+        Err err ->
+            MultiMsg [ LogErr err, FromWeb3 <| GotTxidStatus (Err "Decoding Error") ]
 
 
 type alias ConsDataParamReq =
@@ -37,6 +60,9 @@ port contractReadResponse : (Value -> msg) -> Sub msg
 onContractReadResponse : (ReadResponse -> msg) -> (String -> msg) -> Value -> msg
 onContractReadResponse msgGen errMsg val =
     let
+        _ =
+            Debug.log ("contract read got back err: " ++ toString val) True
+
         decoder =
             decode ReadResponse
                 |> required "success" Decode.bool

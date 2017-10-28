@@ -32,13 +32,19 @@ const web3Ports = (web3: Web3, app) => {
         })
 
         const voteC = SwmVotingContract.at(contractAddr);
-        voteC.getBallotOptions(implRecieveBallotOptsCB);
+        try {
+            voteC.getBallotOptions(implRecieveBallotOptsCB);
+        } catch (err) {
+            implRecieveBallotOptsCB(err, null);
+        }
     }))
 
 
     // Implementation of port sends
     const implRecieveBallotOptsCB = (err, ballotOpts) => {
+        console.log('implRecieveBallotOptsCB got:', err, ballotOpts)
         if (err) {
+            console.log('implRecieveBallotOptsCB error got:', err);
             app.ports.contractReadResponse.send({
                 success: false,
                 errMsg: err.toString(),
@@ -77,6 +83,7 @@ const web3Ports = (web3: Web3, app) => {
     // Help with error handling boilerplate
     const handleErrOr = <T>(f: ((T) => void)) => (err, resp: T) => {
         if (err) {
+            console.log('handleErrOr got err:', err);
             implNotifyErr(err)
         } else {
             f(resp);
@@ -120,6 +127,18 @@ const web3Ports = (web3: Web3, app) => {
             app.ports.contractReadResponse.send(failF(err.toString()));
         }
     }))
+
+    app.ports.checkTxid.subscribe(wrapper((txid) => {
+        web3.eth.getTransaction(txid, (err, resp) => {
+            console.log('checkTxid response:', resp);
+            if (err) {
+                implNotifyErr(err.toString());
+            } else {
+                const ret = resp == null ? {data: "", confirmed: false} : {data: resp.input, confirmed: resp.blockNumber !== null};
+                app.ports.gotTxidCheckStatus.send(ret);
+            }
+        });
+    }));
 };
 
 export default web3Ports;

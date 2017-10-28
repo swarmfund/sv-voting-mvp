@@ -47,7 +47,7 @@ delegateView model =
         model
         []
         [ Card.text [ cs "center tc" ]
-            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Swarm Liquidity Vote" ]
+            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Choose a Delegate" ]
             , Options.styled span [ headline, cs "black db pa2 mv3" ] [ text "Choose a delegate" ]
             , p [ class "mw7 center" ] [ text <| String.concat delegateExplanationCopy ]
             , Textf.render Mdl

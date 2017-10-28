@@ -47,6 +47,16 @@ addrRegex =
     regex "^0x[0-9a-fA-F]{40}$"
 
 
+txidRegex : Regex
+txidRegex =
+    regex "^0x[0-9a-fA-F]{64}$"
+
+
+isValidTxid : String -> Bool
+isValidTxid str =
+    contains txidRegex str
+
+
 upperCaseHexRegex : Regex
 upperCaseHexRegex =
     regex "[A-F]"

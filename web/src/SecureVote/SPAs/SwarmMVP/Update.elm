@@ -12,6 +12,7 @@ import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getDelegateAddress, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
+import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidFail, TxidInProgress, TxidSuccess))
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
 import Task exposing (attempt)
 
@@ -105,7 +106,7 @@ update msg model =
 
         -- PORTS
         ToWeb3 msg ->
-            model ! updateToWeb3 msg model
+            updateToWeb3 msg model
 
         FromWeb3 msg ->
             updateFromWeb3 msg model
@@ -150,11 +151,11 @@ multiUpdate msgs model cmds =
             ( model, Cmd.batch cmds )
 
 
-updateToWeb3 : ToWeb3Msg -> Model -> List (Cmd msg)
+updateToWeb3 : ToWeb3Msg -> Model -> ( Model, Cmd Msg )
 updateToWeb3 web3msg model =
     case web3msg of
         SetProvider ->
-            [ setWeb3Provider model.ethNode, getEncryptionPublicKey model.swarmVotingAddress ]
+            model ! [ setWeb3Provider model.ethNode, getEncryptionPublicKey model.swarmVotingAddress ]
 
         GetErc20Balance ->
             let
@@ -162,7 +163,10 @@ updateToWeb3 web3msg model =
                     -- probs okay because it will return 0
                     getSwmAddress model ? "0x00"
             in
-            [ getErc20Balance <| GetErc20BalanceReq model.swarmErc20Address swmAddr ]
+            model ! [ getErc20Balance <| GetErc20BalanceReq model.swarmErc20Address swmAddr ]
+
+        CheckTxid txid ->
+            { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]
 
 
 updateFromWeb3 : FromWeb3Msg -> Model -> ( Model, Cmd Msg )
@@ -187,7 +191,10 @@ updateFromWeb3 msg model =
         GetBallotOpts resp ->
             let
                 mFail errMsg =
-                    { model | ballotVerificationPassed = Just False, verificationError = Just errMsg }
+                    { model
+                        | ballotVerificationPassed = Just False
+                        , verificationError = Just errMsg
+                    }
             in
             case resp of
                 ( Just opts, _ ) ->
@@ -201,6 +208,20 @@ updateFromWeb3 msg model =
 
                 ( Nothing, Nothing ) ->
                     mFail "Unknown error" ! []
+
+        GotTxidStatus txidE ->
+            case txidE of
+                Ok { data, confirmed } ->
+                    if confirmed then
+                        if Just data == model.candidateTx.data then
+                            { model | txidCheck = TxidSuccess } ! []
+                        else
+                            { model | txidCheck = TxidFail "Warning! Data mismatch!" } ! []
+                    else
+                        { model | txidCheck = TxidFail "Transaction not yet confirmed" } ! []
+
+                Err msg ->
+                    { model | txidCheck = TxidFail msg } ! []
 
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )

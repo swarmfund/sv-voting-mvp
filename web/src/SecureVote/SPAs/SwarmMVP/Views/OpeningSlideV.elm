@@ -38,53 +38,52 @@ openingSlide model =
         model
         []
         [ Card.text [ cs "center tc" ]
-            [ Options.styled div [ display2, Color.text Color.black, cs "pa2 heading-text" ] [ text "Welcome to the Swarm Release Schedule Vote" ]
+            [ Options.styled div [ display2, Color.text Color.black, cs "pa2 heading-text" ] [ text "Welcome to the SWM Release Schedule Vote" ]
             , Options.styled div [ headline, cs "black pa2 mv3" ] [ text "This vote is open to all Swarm token holders." ]
             , introParagraphs
             , div [ class "mv3" ]
-                [ ballotIntegrity model
-                    [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmAddressR) ] [ text "Continue" ]
-                    ]
+                [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmAddressR) ] [ text "Continue" ]
                 ]
             ]
         ]
 
 
-ballotIntegrity : Model -> List (Html Msg) -> Html Msg
-ballotIntegrity model successHtml =
-    let
-        pgraph innerHtmls =
-            Options.styled p
-                [ body1, cs "black db pa2 mv2" ]
-                innerHtmls
 
-        verifyingHtml =
-            Options.styled
-                div
-                [ headline, Color.text Color.black, cs "mv2" ]
-                [ text "Verifying Integrity of Vote..." ]
-
-        failHtml errMsg =
-            div []
-                [ Options.styled
-                    div
-                    [ headline, Color.text <| Color.color Red S500 ]
-                    [ text "Verification Failed!" ]
-                , pgraph
-                    [ text "Failure reason: "
-                    , text errMsg
-                    ]
-                ]
-
-        rendered =
-            case model.ballotVerificationPassed of
-                Just True ->
-                    [ pgraph [ text "Ballot integrity verified." ] ] ++ successHtml
-
-                Just False ->
-                    [ failHtml <| model.verificationError ? "Verification error not found :(" ]
-
-                _ ->
-                    [ verifyingHtml ]
-    in
-    div [ class "mv1" ] rendered
+--ballotIntegrity : Model -> List (Html Msg) -> List (Html Msg) -> Html Msg
+--ballotIntegrity model successHtml failHtml =
+--    let
+--        pgraph innerHtmls =
+--            Options.styled p
+--                [ body1, cs "black db pa2 mv2" ]
+--                innerHtmls
+--
+--        verifyingHtml =
+--            Options.styled
+--                div
+--                [ headline, Color.text Color.black, cs "mv2" ]
+--                [ text "Verifying Integrity of Vote..." ]
+--
+--        failMsg errMsg =
+--            div []
+--                [ Options.styled
+--                    div
+--                    [ headline, Color.text <| Color.color Red S500 ]
+--                    [ text "Verification Failed!" ]
+--                , pgraph
+--                    [ text "Failure reason: "
+--                    , text errMsg
+--                    ]
+--                ]
+--
+--        rendered =
+--            case model.ballotVerificationPassed of
+--                Just True ->
+--                    [ pgraph [ text "Ballot integrity verified." ] ] ++ successHtml
+--
+--                Just False ->
+--                    [ failMsg <| model.verificationError ? "Verification error not found :(" ] ++ failHtml
+--
+--                _ ->
+--                    [ verifyingHtml ]
+--    in
+--    div [ class "mv1" ] rendered

@@ -10,7 +10,7 @@ const curve25519Ports = (app) => {
             try {
                 f(...args);
             } catch (err) {
-                const _err = err.message ? JSON.stringify(err.message) : JSON.stringify(err);
+                const _err = err.message ? err.message.toString() : err.toString();
                 console.log('Caught curve25519 error:', _err)
                 app.ports.receiveCurve25519Error.send(_err);
             }
@@ -24,6 +24,7 @@ const curve25519Ports = (app) => {
         }));
 
         app.ports.encryptBytes.subscribe(catchErrors(({hexSk, hexRemotePk, bytesToSign}: SignBytesIncoming) => {
+            console.log("encryptBytes got:", hexSk, hexRemotePk, bytesToSign)
             const msg = new Uint8Array(bytesToSign);
             const sk = nacl.from_hex(hexSk);
             const ourPk = nacl.crypto_box_keypair_from_raw_sk(sk).boxPk;
