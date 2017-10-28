@@ -37,6 +37,7 @@ type alias Model =
     , remoteHexPk : Maybe String
     , miniVotingAbi : String
     , verificationError : Maybe String
+    , ballotVerificationPassed : Maybe Bool
     }
 
 
@@ -66,6 +67,7 @@ initModel =
     , remoteHexPk = Nothing
     , miniVotingAbi = "Error: Web3 has not initialized correctly"
     , verificationError = Just "Hi"
+    , ballotVerificationPassed = Nothing
     }
 
 

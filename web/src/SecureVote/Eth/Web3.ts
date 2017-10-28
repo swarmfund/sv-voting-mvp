@@ -2,6 +2,8 @@ import Web3 = require("web3");
 import ERC20ABI from "./ERC20ABI";
 import SwmVotingMVPABIs from "./SwmVotingMVP.abi";
 
+import {create, env} from 'sanctuary';
+const S = create({checkTypes: true, env});
 
 
 const web3Ports = (web3: Web3, app) => {
@@ -24,14 +26,41 @@ const web3Ports = (web3: Web3, app) => {
     const SwmVotingContract = web3.eth.contract(SwmVotingMVPABIs.fullAbi);
 
 
-    app.ports.getInit.subscribe(wrapper((meh: boolean) => {
+    app.ports.getInit.subscribe(wrapper((contractAddr) => {
         app.ports.implInit.send({
             miniAbi: JSON.stringify(SwmVotingMVPABIs.miniAbi)
         })
+
+        const voteC = SwmVotingContract.at(contractAddr);
+        voteC.getBallotOptions(implRecieveBallotOptsCB);
     }))
 
 
     // Implementation of port sends
+    const implRecieveBallotOptsCB = (err, ballotOpts) => {
+        if (err) {
+            app.ports.contractReadResponse.send({
+                success: false,
+                errMsg: err.toString(),
+                method: "getBallotOptions",
+                response: []
+            })
+        } else {
+            const bOpts = S.map(([a, b]) => ([a.toNumber(), b.toNumber()]), ballotOpts);
+            console.log('ballot opts returning', bOpts);
+            app.ports.contractReadResponse.send({
+                success: true,
+                errMsg: "",
+                method: "getBallotOptions",
+                response: bOpts
+            })
+        }
+    };
+
+    const implSendReadResp = ({success, errMsg, method, response}) => {
+        app.ports.contractReadResponse.send({success, errMsg, method, response});
+    };
+
     const implSendErc20Balance = wrapper((balance) => {
         const toRet = balance.toString(10);
         console.log('implSendErc20Balance got:', toRet);
@@ -79,8 +108,7 @@ const web3Ports = (web3: Web3, app) => {
 
     app.ports.getEncryptionPublicKey.subscribe(wrapper(contractAddr => {
         const voteC = SwmVotingContract.at(contractAddr);
-        const pubkey = voteC.getEncPubkey();
-        app.ports.gotEncPubkey.send(pubkey);
+        voteC.getEncPubkey(handleErrOr(app.ports.gotEncPubkey.send));
     }))
 
     app.ports.performContractRead.subscribe(wrapper((successF, failF, contractAddr, methodName, args) => {

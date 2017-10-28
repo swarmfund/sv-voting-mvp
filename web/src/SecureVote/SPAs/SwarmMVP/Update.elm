@@ -8,6 +8,7 @@ import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Web3 exposing (..)
+import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getDelegateAddress, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
@@ -182,6 +183,24 @@ updateFromWeb3 msg model =
 
         Web3Init init ->
             { model | miniVotingAbi = init.miniAbi } ! []
+
+        GetBallotOpts resp ->
+            let
+                mFail errMsg =
+                    { model | ballotVerificationPassed = Just False, verificationError = Just errMsg }
+            in
+            case resp of
+                ( Just opts, _ ) ->
+                    if doBallotOptsMatch opts then
+                        { model | ballotVerificationPassed = Just True } ! []
+                    else
+                        mFail "Release schedule options in voting front end do not match smart contract!" ! []
+
+                ( _, Just errMsg ) ->
+                    mFail errMsg ! []
+
+                ( Nothing, Nothing ) ->
+                    mFail "Unknown error" ! []
 
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )

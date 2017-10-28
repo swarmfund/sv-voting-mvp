@@ -27,30 +27,27 @@ type alias ReadResponse =
     { success : Bool
     , response : Value
     , errMsg : String
+    , method : String
     }
 
 
 port contractReadResponse : (Value -> msg) -> Sub msg
 
 
-onContractReadResponse : (Value -> Result String a) -> (a -> msg) -> (String -> msg) -> Value -> msg
-onContractReadResponse respValDecoder msg errMsg val =
+onContractReadResponse : (ReadResponse -> msg) -> (String -> msg) -> Value -> msg
+onContractReadResponse msgGen errMsg val =
     let
         decoder =
             decode ReadResponse
                 |> required "success" Decode.bool
                 |> required "response" Decode.value
                 |> required "errMsg" Decode.string
+                |> required "method" Decode.string
     in
     case Decode.decodeValue decoder val of
         Ok secVal ->
             if secVal.success then
-                case respValDecoder secVal.response of
-                    Ok resp ->
-                        msg resp
-
-                    Err err ->
-                        errMsg err
+                msgGen secVal
             else
                 errMsg secVal.errMsg
 
@@ -139,7 +136,7 @@ onGotPubkey pubkeyVal =
             errHelper "Error while retrieving encryption public key: " err
 
 
-port getInit : Bool -> Cmd msg
+port getInit : String -> Cmd msg
 
 
 port implInit : (Value -> msg) -> Sub msg

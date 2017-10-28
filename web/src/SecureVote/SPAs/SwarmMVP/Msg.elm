@@ -47,6 +47,7 @@ type FromWeb3Msg
     | GotDataParam String
     | GotEncPubkey String
     | Web3Init InitRecord
+    | GetBallotOpts ( Maybe (List (List Int)), Maybe String )
 
 
 type FromCurve25519Msg

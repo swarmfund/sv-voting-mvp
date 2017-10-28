@@ -53,14 +53,16 @@ openingSlide model =
 ballotIntegrity : Model -> List (Html Msg) -> Html Msg
 ballotIntegrity model successHtml =
     let
+        pgraph innerHtmls =
+            Options.styled p
+                [ body1, cs "black db pa2 mv2" ]
+                innerHtmls
+
         verifyingHtml =
             Options.styled
                 div
                 [ headline, Color.text Color.black, cs "mv2" ]
                 [ text "Verifying Integrity of Vote..." ]
-
-        ballotVerificationPassed =
-            Just False
 
         failHtml errMsg =
             div []
@@ -68,18 +70,16 @@ ballotIntegrity model successHtml =
                     div
                     [ headline, Color.text <| Color.color Red S500 ]
                     [ text "Verification Failed!" ]
-                , Options.styled
-                    p
-                    [ body1, cs "black db pa2 mv2" ]
+                , pgraph
                     [ text "Failure reason: "
                     , text errMsg
                     ]
                 ]
 
         rendered =
-            case ballotVerificationPassed of
+            case model.ballotVerificationPassed of
                 Just True ->
-                    successHtml
+                    [ pgraph [ text "Ballot integrity verified." ] ] ++ successHtml
 
                 Just False ->
                     [ failHtml <| model.verificationError ? "Verification error not found :(" ]
@@ -87,4 +87,4 @@ ballotIntegrity model successHtml =
                 _ ->
                     [ verifyingHtml ]
     in
-    div [ class "mv2" ] rendered
+    div [ class "mv1" ] rendered
