@@ -1,10 +1,11 @@
 module SecureVote.Components.UI.Dialog exposing (..)
 
 import Html exposing (Attribute, Html, div, h1, h3, span, text)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, style)
 import Material.Dialog as Dialog
+import Material.Icon as MIcon
 import Material.Options as Options exposing (cs, css)
-import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
+import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(Mdl))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(..))
@@ -43,16 +44,24 @@ dialog model =
     Dialog.view
         -- Tachyons has no Max-Height :(
         -- possible flex attrs: flex flex-column justify-between
-        [ cs "w-80 w-700-l"
+        [ cs "w-80 w-70-l"
+        , cs "overflow-y-scroll"
         , css "max-height" "80%"
-        , css "top" "10%"
-        , cs "overflow-auto"
         , Options.id "dialog-container"
         ]
         -- span here fixes graphical error on safari
-        [ Dialog.title [] [ h3 [ class "mv0" ] [ text model.dialogHtml.title ] ]
-        , Dialog.content [] [ div [ class "overflow-scroll" ] [ innerHtml ] ]
-        , Dialog.actions [ cs "v-btm" ]
+        [ Dialog.title
+            [ cs "" ]
+            [ h3 [ class "mv0 dib fl" ] [ text model.dialogHtml.title ]
+            , btn 384394893 model [ Btn.Icon, CloseDialog, Attr (class "fr") ] [ MIcon.view "close" [ MIcon.size24 ] ]
+            ]
+        , Dialog.content
+            [ cs "overflow-y-hidden dib" ]
+            [ div
+                [ class "dib overflow-y-scroll" ]
+                [ innerHtml ]
+            ]
+        , Dialog.actions [ cs "v-btm mb3" ]
             [ btn 976565675 model [ SecBtn, CloseDialog, Attr (class "fr") ] [ text "Close" ]
             ]
         ]

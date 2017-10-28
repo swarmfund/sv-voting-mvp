@@ -39,7 +39,7 @@ swmAddressV model =
         msgs =
             MultiMsg <|
                 [ PageGoForward SwmHowToVoteR
-                , SetCandidateTx (setCandTxFrom <| getSwmAddress model ? "AddressView getSwmAddress error")
+                , SetCandidateTx (setCandTxFrom <| getSwmAddress model ? "")
                 , ToWeb3 GetErc20Balance
                 ]
                     ++ setBallotDefaultMsgs
@@ -62,7 +62,8 @@ swmAddressV model =
         [ Card.text [ cs "center tc" ]
             [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Your SWM Address" ]
             , Options.styled span [ headline, cs "black db pa2 mv3" ] [ text "Please enter your Swarm address below" ]
-            , Options.styled span [ body1, cs "black db pa2 mv3" ] [ text "(Dev) Example address: 0x71c1c1a30f07017f3278333c996ca4e4d71f2092" ]
+
+            --            , Options.styled span [ body1, cs "black db pa2 mv3" ] [ text "(Dev) Example address: 0x71c1c1a30f07017f3278333c996ca4e4d71f2092" ]
             , div [ class "center" ]
                 [ div [ class "flex flex-column items-center" ]
                     [ div [ class "flex flex-column items-start" ]
@@ -80,8 +81,14 @@ swmAddressV model =
                         ]
                     ]
                 , div [ class "mv3" ]
-                    [ btn 894823489 model [ PriBtn, Attr (class "ph2"), Click msgs, btnDisabled ] [ text "Continue" ]
-                    , devBtn
+                    [ btn 394893489
+                        model
+                        [ SecBtn, Attr (class "ph2"), Click msgs ]
+                        [ text "Skip" ]
+                    , btn 894823489
+                        model
+                        [ PriBtn, Attr (class "ph2"), Click msgs, btnDisabled ]
+                        [ text "Continue" ]
                     ]
                 ]
             ]

@@ -30,6 +30,12 @@ settingsDialogV model =
                 [ SetEthNode <| getEthNodeTemp model ? ""
                 , ToWeb3 SetProvider
                 ]
+
+        btnDisabled =
+            if model.ethNode == getEthNodeTemp model ? "" then
+                Disabled
+            else
+                BtnNop
     in
     div []
         [ div []
@@ -46,7 +52,7 @@ settingsDialogV model =
                 , css "min-width" "400px"
                 ]
                 []
-            , btn 456467568 model [ PriBtn, Click <| setEthNodeMsgs ] [ text "Update" ]
+            , btn 456467568 model [ PriBtn, Click <| setEthNodeMsgs, btnDisabled ] [ text "Update" ]
             ]
         ]
 

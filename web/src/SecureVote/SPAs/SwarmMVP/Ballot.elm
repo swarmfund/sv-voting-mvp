@@ -113,7 +113,7 @@ voteOptions =
         [ BallotOption 1337000001 (ReleaseSchedule 8 42) <| wrapP "This is the proposal in the whitepaper. The release will take approximately 1 year."
         , BallotOption 1337000002 (ReleaseSchedule 42 8) <| wrapP "This is like the release schedule in the whitepaper, but smaller chunks will be released more frequently."
         , BallotOption 1337000003 (ReleaseSchedule 16 42) <| wrapP "This release will occur over 2 years."
-        , BallotOption 1337000004 (ReleaseSchedule 1 42) <| DlogP [ DlogTxt "This will result in the ", DlogEm "full", DlogTxt " release of all tokens at 42 days" ]
+        , BallotOption 1337000004 (ReleaseSchedule 4 84) <| DlogP [ DlogTxt "This is similar to option 1 (8 releases of 42 days), but less frequent." ]
         ]
 
 
