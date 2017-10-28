@@ -29,7 +29,7 @@ dialog model =
                     gethDialogV model
 
                 VerifyDialog ->
-                    verifyDialogV
+                    verifyDialogV model
 
                 DebugDialog ->
                     debugDialogV model
@@ -43,7 +43,7 @@ dialog model =
     Dialog.view
         -- Tachyons has no Max-Height :(
         -- possible flex attrs: flex flex-column justify-between
-        [ cs "w-75 w-50-l"
+        [ cs "w-80 w-700-l"
         , css "max-height" "80%"
         , css "top" "10%"
         , cs "overflow-auto"

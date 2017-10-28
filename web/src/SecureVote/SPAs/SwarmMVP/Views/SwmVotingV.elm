@@ -76,7 +76,7 @@ votingView model =
         model
         []
         [ Card.text [ cs "center tc" ]
-            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Swarm Liquidity Vote" ]
+            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Cast Your Vote" ]
             , div [ class "ba dib pa3 ma3", style [ ( "min-width", "50%" ) ] ]
                 [ Options.styled span
                     [ headline, cs "black" ]

@@ -6,11 +6,13 @@ import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
 import Material.Typography exposing (headline, menu, title)
 import Maybe.Extra exposing ((?))
-import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
+import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
+import SecureVote.Eth.Utils exposing (isValidTxid)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRender)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary, getEthNodeTemp, setEthNodeTemp)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary, getBallotTxid, getEthNodeTemp, setBallotTxid, setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(SetProvider))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(CheckTxid, SetProvider))
+import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(..))
 import SecureVote.SPAs.SwarmMVP.Views.SwmDelegateV exposing (delegateExplanationCopy)
 import SecureVote.SPAs.SwarmMVP.Views.SwmHowToVoteV exposing (combinedHowToVoteCopy)
 
@@ -157,11 +159,63 @@ mewDialog model =
         ]
 
 
-verifyDialogV : Html Msg
-verifyDialogV =
+verifyDialogV : Model -> Html Msg
+verifyDialogV model =
+    let
+        txidFieldVal =
+            getBallotTxid model ? ""
+
+        txidErrMsg =
+            if "0x" /= String.slice 0 2 txidFieldVal then
+                "Txid must start with 0x"
+            else if 66 /= String.length txidFieldVal then
+                "Incorrect length"
+            else if not (isValidTxid txidFieldVal) then
+                "Not a valid txid"
+            else
+                ""
+
+        txidErr =
+            txidErrMsg /= "" && txidFieldVal /= ""
+
+        btnDisabled =
+            if not txidErr && txidFieldVal /= "" then
+                Btn.BtnNop
+            else
+                Btn.Disabled
+
+        checkStatusTxt =
+            case model.txidCheck of
+                TxidSuccess ->
+                    "Transaction confirmed and recorded correctly!"
+
+                TxidNotMade ->
+                    "Waiting for txid..."
+
+                TxidFail msg ->
+                    "Fail! " ++ msg
+
+                TxidInProgress ->
+                    "Loading..."
+    in
     div []
-        [ subhead "1. Open up your wallet and go to the send screen."
-        , text "If you're sending via the Geth CLI"
+        [ subhead "Check your transaction"
+        , text "Paste in your transaction ID to confirm your ballot was cast correct:"
+        , div []
+            [ Textf.render Mdl
+                [ 7658765856 ]
+                model.mdl
+                [ Options.onInput <| setBallotTxid
+                , Textf.label "Ballot Txid"
+                , Textf.floatingLabel
+                , Textf.value <| getBallotTxid model ? ""
+                , Textf.error txidErrMsg |> Options.when txidErr
+                , css "min-width" "400px"
+                ]
+                []
+            ]
+        , btn 3984938349 model [ PriBtn, Attr (class "ph2"), Click (ToWeb3 <| CheckTxid txidFieldVal), btnDisabled ] [ text "Check Txid" ]
+        , div [ class "mt3" ] [ text "Transaction status: ", text checkStatusTxt ]
         ]
 
 

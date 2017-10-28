@@ -7,6 +7,7 @@ import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Types exposing (InitRecord)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute, Route)
+import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
 
 
 type Msg
@@ -40,6 +41,7 @@ type Msg
 type ToWeb3Msg
     = SetProvider
     | GetErc20Balance
+    | CheckTxid String
 
 
 type FromWeb3Msg
@@ -48,6 +50,7 @@ type FromWeb3Msg
     | GotEncPubkey String
     | Web3Init InitRecord
     | GetBallotOpts ( Maybe (List (List Int)), Maybe String )
+    | GotTxidStatus (Result String GotTxidResp)
 
 
 type FromCurve25519Msg

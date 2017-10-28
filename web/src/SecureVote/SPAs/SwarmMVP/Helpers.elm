@@ -25,6 +25,21 @@ setSwmAddress =
     SetField swmAddrId
 
 
+txidCheckId : String
+txidCheckId =
+    "ballotTxid"
+
+
+getBallotTxid : Model -> Maybe String
+getBallotTxid model =
+    Dict.get txidCheckId model.fields
+
+
+setBallotTxid : String -> Msg
+setBallotTxid =
+    SetField txidCheckId
+
+
 delegateAddrId : String
 delegateAddrId =
     "delegateAddress"

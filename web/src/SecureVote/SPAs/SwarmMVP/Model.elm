@@ -9,6 +9,7 @@ import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Const exposing (erc20Addr, votingContractAddr)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(NotFoundR, OpeningSlideR, SwmAddressR))
+import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidNotMade))
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits)
 
 
@@ -38,6 +39,7 @@ type alias Model =
     , miniVotingAbi : String
     , verificationError : Maybe String
     , ballotVerificationPassed : Maybe Bool
+    , txidCheck : TxidCheckStatus
     }
 
 
@@ -68,6 +70,7 @@ initModel =
     , miniVotingAbi = "Error: Web3 has not initialized correctly"
     , verificationError = Just "Hi"
     , ballotVerificationPassed = Nothing
+    , txidCheck = TxidNotMade
     }
 
 

@@ -7,15 +7,15 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 
 decodeRead : ReadResponse -> Msg
 decodeRead { success, errMsg, response, method } =
-    if success then
-        case method of
-            "getBallotOptions" ->
+    case method of
+        "getBallotOptions" ->
+            if success then
                 decodeBallotOpts response
+            else
+                MultiMsg [ LogErr errMsg, FromWeb3 <| GetBallotOpts ( Nothing, Just errMsg ) ]
 
-            _ ->
-                NoOp
-    else
-        LogErr errMsg
+        _ ->
+            LogErr "Unknown method returned from web3"
 
 
 decodeBallotOpts : Value -> Msg
@@ -30,3 +30,8 @@ decodeBallotOpts val =
 
         Err err ->
             MultiMsg [ LogErr err, FromWeb3 <| GetBallotOpts ( Nothing, Just err ) ]
+
+
+readBallotOptsErr : String -> Msg
+readBallotOptsErr errMsg =
+    MultiMsg [ LogErr errMsg, FromWeb3 <| GetBallotOpts ( Nothing, Just errMsg ) ]
