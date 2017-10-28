@@ -47,10 +47,10 @@ votingView model =
                 [ Options.styled div [ headline, cs "black" ] [ text "Ballot Transaction:" ]
                 , div [ class "mw7 ph3 center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
                 , div [ class "mv4" ]
-                    [ btn 758678435 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog "Cast your vote using MyEtherWallet" MEWDialog) ] [ text "Cast using M.E.W." ]
-                    , btn 785784536 model [ SecBtn, Attr (class "ph3"), OpenDialog, Click (SetDialog "Cast using Other" GethDialog) ] [ text "Cast using Other" ]
+                    [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Click (SetDialog "Cast your vote using MyEtherWallet" MEWDialog), OpenDialog ] [ text "Cast using M.E.W." ]
+                    , btn 785784536 model [ SecBtn, Attr (class "ph3"), Click (SetDialog "Cast using Other" GethDialog), OpenDialog ] [ text "Cast using Other" ]
                     ]
-                , btn 987572349 model [ PriBtn, Attr (class "mv3"), OpenDialog, Click (SetDialog "Verify Your Ballot" VerifyDialog) ] [ text "Verify Ballot" ]
+                , btn 987572349 model [ PriBtn, Attr (class "mv3"), Click (SetDialog "Verify Your Ballot" VerifyDialog), OpenDialog ] [ text "Verify Ballot" ]
                 ]
 
         loadingSpinner =

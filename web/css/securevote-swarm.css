@@ -134,3 +134,13 @@ pre {
     overflow: scroll;
 }
 
+body,
+html {
+    position: fixed;
+}
+
+dialog {
+    position: fixed;
+    top: 50%;
+    transform: translate(0, -50%);
+}

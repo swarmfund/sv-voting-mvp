@@ -138,7 +138,7 @@ if (TARGET_ENV === 'development') {
                     ],
                     use: [
                         "elm-hot-loader",
-                        "elm-webpack-loader?verbose=true&warn=true&debug=true&maxInstances=2"
+                        "elm-webpack-loader?verbose=true&warn=true&maxInstances=2"
                     ]
                 }
             ]

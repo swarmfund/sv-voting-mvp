@@ -1,7 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Views.OpeningSlideV exposing (..)
 
 import Html exposing (Html, a, div, em, p, span, text)
-import Html.Attributes exposing (class, href, style)
+import Html.Attributes exposing (class, href, style, target)
 import Material.Card as Card
 import Material.Color as Color exposing (Hue(Red), Shade(S500))
 import Material.Options as Options exposing (cs, css)
@@ -20,11 +20,11 @@ openingSlide model =
         introText =
             [ [ text "This ballot is to decide the release schedule for SWM tokens." ]
             , [ text "You will be presented with a number of options in the form "
-              , em [] [ text "X releases over Y days." ]
+              , em [] [ text "X releases of Y days." ]
               , text " If X were 8, this would mean that tokens will be released in 8 distinct events, with each releasing 12.5% of all tokens. If Y were 42, that means that each release event will occur every 42 days. Each option has a 'details' button that will give you specifc information about the proposed release schedule."
               ]
             , [ text "When you vote, you allocate each option a number from -3 to +3 (inclusive). It's important to choose a vote for each option. (This method of voting is called 'Range Voting'.)" ]
-            , [ text "If you'd like, ", a [ href "https://youtube.com" ] [ text "here is a video" ], text " walking you through the voting process." ]
+            , [ text "If you'd like, ", a [ href "https://www.youtube.com/watch?v=afEwklJEzFc", target "_blank" ] [ text "here is a video" ], text " walking you through the voting process." ]
             , [ text "When you're ready, let's begin the voting process!" ]
             ]
 
