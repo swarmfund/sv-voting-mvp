@@ -29,6 +29,6 @@ var votingContract = "0x2Bb10945E9f0C9483022dc473aB4951BC2a77d0f";
 8. Calculate the encryption nonce (`var nonce = sha256(fromHex(myPubkey)).slice(0,24)`)
 9. Feed this into the encryption module `nacl.crypto_box(ballotPlaintext, nonce, ballotEncPk, mySeckey)`
 10. The result should match `encBallot`
-11. Full result is valid if `txData = "0x" + submitBallotPrefix + encBallot + myPubkey`
+11. Full result is valid if `txData == "0x" + submitBallotPrefix + encBallot + myPubkey`
 12. You can also double check that `txData` matches the data in your transaction broadcast to the Ethereum network.
 
