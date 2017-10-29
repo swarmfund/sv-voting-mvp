@@ -33,7 +33,7 @@ openingSlide model =
             ]
 
         introParagraphs =
-            div [ class "center", style [ ( "max-width", "700px" ) ] ] <| List.map renderPara introText
+            div [ class "center" ] <| List.map renderPara introText
 
         renderPara txt =
             Options.styled span [ body1, cs "black db pa2 mv2" ] txt
@@ -44,10 +44,13 @@ openingSlide model =
         [ Card.text [ cs "center tc" ]
             [ Options.styled div [ display2, Color.text Color.black, cs "pa2 heading-text" ] [ text "Welcome to the SWM Release Schedule Vote" ]
             , Options.styled div [ headline, cs "black pa2 mv3" ] [ text "This vote is open to all Swarm token holders." ]
-            , introParagraphs
-            , ballotIntegrity model
-            , div [ class "mv3" ]
-                [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmAddressR) ] [ text "Continue" ]
+            , div
+                [ style [ ( "max-width", "700px" ) ] ]
+                [ introParagraphs
+                , ballotIntegrity model
+                , div [ class "mv3" ]
+                    [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmAddressR) ] [ text "Continue" ]
+                    ]
                 ]
             ]
         ]

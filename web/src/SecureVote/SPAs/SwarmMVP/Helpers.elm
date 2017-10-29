@@ -3,6 +3,7 @@ module SecureVote.SPAs.SwarmMVP.Helpers exposing (..)
 import Dict
 import Html exposing (Html, pre)
 import Html.Attributes exposing (class)
+import Maybe.Extra exposing ((?))
 import ParseInt exposing (parseIntRadix, toRadix)
 import Result.Extra exposing (isOk)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
@@ -48,6 +49,10 @@ delegateAddrId =
 getDelegateAddress : Model -> Maybe String
 getDelegateAddress model =
     Dict.get delegateAddrId model.fields
+
+
+defaultDelegate =
+    "0x9999999999999999999999999999999999999999"
 
 
 setDelegateAddress : String -> Msg
@@ -147,3 +152,15 @@ codeSection code =
 codepointToBinary : Int -> Result ParseInt.Error String
 codepointToBinary =
     Result.map (String.padLeft 8 '0') << toRadix 2
+
+
+toStrDropQts : a -> String
+toStrDropQts v =
+    let
+        str =
+            toString v
+    in
+    if String.left 1 str == "\"" then
+        String.dropRight 1 (String.dropLeft 1 str)
+    else
+        str
