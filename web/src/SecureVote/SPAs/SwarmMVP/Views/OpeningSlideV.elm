@@ -43,7 +43,7 @@ openingSlide model =
             [ Options.styled div [ display2, Color.text Color.black, cs "pa2 heading-text" ] [ text "Welcome to the SWM Release Schedule Vote" ]
             , Options.styled div [ headline, cs "black pa2 mv3" ] [ text "This vote is open to all Swarm token holders." ]
             , div
-                [ style [ ( "max-width", "700px" ) ] ]
+                [ style [ ( "max-width", "700px" ) ], class "center" ]
                 [ introParagraphs
                 , ballotIntegrity model
                 , div [ class "mv3" ]
