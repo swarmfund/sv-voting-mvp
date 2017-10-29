@@ -23,6 +23,8 @@ onGotTxidStatus val =
             decode GotTxidResp
                 |> required "data" string
                 |> required "confirmed" bool
+                |> required "gas" int
+                |> required "logMsg" string
     in
     case Decode.decodeValue decoder val of
         Ok resp ->

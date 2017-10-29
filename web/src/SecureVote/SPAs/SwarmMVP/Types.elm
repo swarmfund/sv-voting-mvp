@@ -11,4 +11,6 @@ type TxidCheckStatus
 type alias GotTxidResp =
     { data : String
     , confirmed : Bool
+    , gas : Int
+    , logMsg : String
     }
