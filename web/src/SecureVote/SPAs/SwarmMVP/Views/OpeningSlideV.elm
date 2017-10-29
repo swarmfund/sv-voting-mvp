@@ -6,7 +6,6 @@ import Material.Card as Card
 import Material.Color as Color exposing (Hue(Red), Shade(S500))
 import Material.Options as Options exposing (cs, css)
 import Material.Typography exposing (body1, display1, display2, display3, headline, title)
-import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)

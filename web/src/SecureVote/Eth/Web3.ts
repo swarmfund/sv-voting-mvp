@@ -1,9 +1,20 @@
 import Web3 = require("web3");
 import ERC20ABI from "./ERC20ABI";
 import SwmVotingMVPABIs from "./SwmVotingMVP.abi";
+import abiDecoder = require("abi-decoder");
 
 import {create, env} from 'sanctuary';
 const S = create({checkTypes: true, env});
+
+
+const promiseCb = (resolve, reject, extra = []) => (err, val) => {
+    console.log('promiseCb got:', {err, val, extra});
+    if (err) {
+        reject(err);
+    } else {
+        resolve([val, ...extra]);
+    }
+}
 
 
 const web3Ports = (web3: Web3, app) => {
@@ -25,6 +36,7 @@ const web3Ports = (web3: Web3, app) => {
     const Erc20Contract = web3.eth.contract(ERC20ABI);
     const SwmVotingContract = web3.eth.contract(SwmVotingMVPABIs.fullAbi);
 
+    abiDecoder.addABI(SwmVotingMVPABIs.fullAbi);
 
     app.ports.getInit.subscribe(wrapper((contractAddr) => {
         app.ports.implInit.send({
@@ -170,14 +182,32 @@ const web3Ports = (web3: Web3, app) => {
     }))
 
     app.ports.checkTxid.subscribe(wrapper((txid) => {
-        web3.eth.getTransaction(txid, (err, resp) => {
-            console.log('checkTxid response:', resp);
-            if (err) {
-                implNotifyErr(err.toString());
+        const p = new Promise((resolve, reject) => {
+            web3.eth.getTransaction(txid, promiseCb(resolve, reject));
+        })
+        p.then(([getTx]) => {
+            return new Promise((resolve, reject) => {
+                web3.eth.getTransactionReceipt(txid, promiseCb(resolve, reject, [getTx]));
+            })
+        }).then(([getTxR, getTx]) => {
+            console.log("checkTxid got tx and txR of:", getTx, getTxR);
+            let ret
+            if (getTxR === null || getTx === null) {
+                ret = {data: "", confirmed: false, gas: 0, logMsg: ""};
             } else {
-                const ret = resp == null ? {data: "", confirmed: false} : {data: resp.input, confirmed: resp.blockNumber !== null};
-                app.ports.gotTxidCheckStatus.send(ret);
+                let logMsg = "";
+                try {
+                    const logs = abiDecoder.decodeLogs(getTxR.logs);
+                    console.log(logs);
+                    logMsg = logs[0].events[0].value;
+                } catch (err) {
+                    console.log('checkTxid decoding error broke with: ', err.toString());
+                }
+                ret = {data: getTx.input, confirmed: getTx.blockNumber !== null, gas: getTxR.gasUsed || 0, logMsg};
             }
+            app.ports.gotTxidCheckStatus.send(ret);
+        }).catch(err => {
+            implNotifyErr(err.toString());
         });
     }));
 };

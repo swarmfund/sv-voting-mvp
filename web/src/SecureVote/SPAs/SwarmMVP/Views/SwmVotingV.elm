@@ -43,19 +43,26 @@ votingView model =
                     ++ [ tableRow ( "Delegate", getDelegateAddress model ? "None" ) ]
                 )
 
-        endTime =
+        ( startTime, endTime ) =
             case model.ballotOpen of
-                Success { endTime } ->
-                    endTime + (15 * 60)
+                Success { startTime, endTime } ->
+                    ( startTime, endTime + (15 * 60) )
 
                 -- should be this value anyway, included as safe default
                 _ ->
-                    1510009200 + (15 * 60)
+                    ( 1509372000, 1510009200 + (15 * 60) )
+
+        ballotClosedWarning =
+            if startTime > model.now then
+                Options.styled div [ headline, cs "red mv3" ] [ text <| "Warning! Ballot not yet open! Opens on " ++ formatTsAsDate startTime ]
+            else
+                div [] []
 
         ballotDetails =
             div []
                 [ Options.styled div [ headline, cs "black" ] [ text "Ballot Transaction:" ]
                 , div [ class "mw7 ph3 center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
+                , ballotClosedWarning
                 , Options.styled div [ title, cs "black mv3" ] [ text <| "Results available " ++ formatTsAsDate endTime ]
                 , div [ class "mv4" ]
                     [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Click (SetDialog "Cast your vote using MyEtherWallet" MEWDialog), OpenDialog ] [ text "Cast using M.E.W." ]

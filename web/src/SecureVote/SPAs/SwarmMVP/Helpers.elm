@@ -6,7 +6,6 @@ import Date.Extra.Format exposing (format, isoString)
 import Dict
 import Html exposing (Html, pre)
 import Html.Attributes exposing (class)
-import Maybe.Extra exposing ((?))
 import ParseInt exposing (parseIntRadix, toRadix)
 import Result.Extra exposing (isOk)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
@@ -54,6 +53,7 @@ getDelegateAddress model =
     Dict.get delegateAddrId model.fields
 
 
+defaultDelegate : String
 defaultDelegate =
     "0x9999999999999999999999999999999999999999"
 

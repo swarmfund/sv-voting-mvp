@@ -207,7 +207,7 @@ verifyDialogV model =
         []
         [ subhead "Check your transaction"
         , checkTxComponent model
-        , subhead "Verify you ballot was encrypted correctly"
+        , subhead "Verify you ballot was constructed and encrypted correctly"
         , p [] [ text "For this, you'll need to copy down these variables, and follow the instructions at ", a [ href verificationUrl, target "_blank" ] [ text verificationUrl ] ]
         , renderedVerVars
         ]
@@ -241,16 +241,16 @@ checkTxComponent model =
         checkStatusTxt =
             case model.txidCheck of
                 TxidSuccess ->
-                    "Transaction confirmed and recorded correctly!"
+                    span [ class "green" ] [ text "Transaction confirmed and recorded correctly!" ]
 
                 TxidNotMade ->
-                    "Waiting for txid..."
+                    text "Waiting for txid..."
 
                 TxidFail msg ->
-                    "Fail! " ++ msg
+                    span [ class "red" ] [ text <| "Fail! " ++ msg ]
 
                 TxidInProgress ->
-                    "Loading..."
+                    text "Loading..."
     in
     div []
         [ text "Paste in your transaction ID to confirm your ballot was cast correctly:"
@@ -268,7 +268,7 @@ checkTxComponent model =
                 []
             ]
         , btn 3984938349 model [ PriBtn, Attr (class "ph2"), Click (ToWeb3 <| CheckTxid txidFieldVal), btnDisabled ] [ text "Check Txid" ]
-        , div [ class "mt3" ] [ text "Transaction status: ", text checkStatusTxt ]
+        , div [ class "mt3" ] [ text "Transaction status: ", checkStatusTxt ]
         ]
 
 

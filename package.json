@@ -7,6 +7,8 @@
   "author": "Max Kaye (SecureVote)",
   "license": "UNLICENSED",
   "dependencies": {
+    "@types/es6-promise": "^0.0.33",
+    "abi-decoder": "^1.0.9",
     "async-parallel": "^1.2.3",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",

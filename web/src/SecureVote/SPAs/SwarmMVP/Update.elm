@@ -220,9 +220,21 @@ updateFromWeb3 msg model =
 
         GotTxidStatus txidE ->
             case txidE of
-                Ok { data, confirmed } ->
+                Ok { data, confirmed, gas, logMsg } ->
                     if confirmed then
-                        if Just data == model.candidateTx.data then
+                        -- gas should be around 100,000 for a successful vote
+                        if gas < 75000 then
+                            let
+                                errMsg =
+                                    "Warning! "
+                                        ++ (if String.length logMsg > 0 then
+                                                "Voting contract returned error: " ++ logMsg
+                                            else
+                                                "Gas seems low, vote likely failed to be recorded. Check ethereum transaction log & manual verification; unable to find an error message."
+                                           )
+                            in
+                            { model | txidCheck = TxidFail errMsg } ! []
+                        else if Just data == model.candidateTx.data then
                             { model | txidCheck = TxidSuccess } ! []
                         else
                             { model | txidCheck = TxidFail "Warning! Data mismatch!" } ! []
