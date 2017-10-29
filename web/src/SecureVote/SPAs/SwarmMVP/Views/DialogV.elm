@@ -4,7 +4,7 @@ import Html exposing (Html, a, b, div, em, img, li, p, pre, span, text, ul)
 import Html.Attributes exposing (class, href, src, target)
 import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
-import Material.Typography exposing (headline, menu, title)
+import Material.Typography as Typo exposing (headline, menu, title)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
 import SecureVote.Eth.Utils exposing (isValidTxid)
@@ -20,6 +20,11 @@ import SecureVote.SPAs.SwarmMVP.Views.SwmHowToVoteV exposing (combinedHowToVoteC
 subhead : String -> Html Msg
 subhead s =
     Options.styled div [ title, cs "black db mv3" ] [ text s ]
+
+
+subsubhead : String -> Html Msg
+subsubhead s =
+    Options.styled div [ Typo.subhead, cs "black db mv3" ] [ text s ]
 
 
 settingsDialogV : Model -> Html Msg
@@ -152,6 +157,7 @@ mewDialog model =
         , subhead "6. You're done!"
         , p []
             [ text "To verify your ballot was recieved as you cast it, wait for the transaction to confirm. " ]
+        , subsubhead "Manual verification"
         , p []
             [ text "Next, choose the 'voterToBallotID' method from the dropdown menu. Enter your address in the field provided and click 'READ'." ]
         , p []
@@ -162,11 +168,23 @@ mewDialog model =
             [ text "Do the same for 'associatedPubkeys' to check your public key was recorded properly." ]
         , p []
             [ text "And you're done!" ]
+        , subsubhead "Automatic verification"
+        , checkTxComponent model
         ]
 
 
 verifyDialogV : Model -> Html Msg
 verifyDialogV model =
+    div
+        []
+        [ subhead "Check your transaction"
+        , checkTxComponent model
+        , subhead "Verify you ballot"
+        ]
+
+
+checkTxComponent : Model -> Html Msg
+checkTxComponent model =
     let
         txidFieldVal =
             getBallotTxid model ? ""
@@ -205,8 +223,7 @@ verifyDialogV model =
                     "Loading..."
     in
     div []
-        [ subhead "Check your transaction"
-        , text "Paste in your transaction ID to confirm your ballot was cast correct:"
+        [ text "Paste in your transaction ID to confirm your ballot was cast correctly:"
         , div []
             [ Textf.render Mdl
                 [ 7658765856 ]
@@ -228,25 +245,3 @@ verifyDialogV model =
 customDialogV : DialogHtml msg -> Html msg
 customDialogV content =
     div [] [ dialogHtmlRender [] content ]
-
-
-debugDialogV : Model -> Html Msg
-debugDialogV model =
-    let
-        liE str =
-            li [] [ text str ]
-    in
-    ul [ class "" ]
-        [ liE "Add whatever you want here for debug"
-        , liE <| toString model.candidateTx
-        , liE <| toString model.encBytes
-        , liE <| toString <| Maybe.map String.length model.encBytes
-        , liE <| toString model.ballotPlaintext
-        , liE <| toString <| Maybe.map List.length model.ballotPlaintext
-        , liE <| toString <| Maybe.map (List.map codepointToBinary) model.ballotPlaintext
-        ]
-
-
-loremIpsum : String
-loremIpsum =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sagittis semper mi, sit amet laoreet mauris lobortis sed. Sed facilisis justo non sagittis sodales. Proin ornare interdum euismod. Cras ultricies ante vitae convallis viverra. Donec dapibus odio ac metus consequat consectetur vel quis massa. Nunc mattis feugiat erat at porta. Praesent varius felis non ullamcorper condimentum. Ut vitae posuere massa. Aenean vitae euismod mauris. Nunc turpis augue, porttitor at massa eget, gravida vehicula nisl."

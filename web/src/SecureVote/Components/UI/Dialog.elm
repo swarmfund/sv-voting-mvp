@@ -32,9 +32,6 @@ dialog model =
                 VerifyDialog ->
                     verifyDialogV model
 
-                DebugDialog ->
-                    debugDialogV model
-
                 NotFoundDialog ->
                     h1 [ class "red" ] [ text "Not Found" ]
 
@@ -45,20 +42,22 @@ dialog model =
         -- Tachyons has no Max-Height :(
         -- possible flex attrs: flex flex-column justify-between
         [ cs "w-80 w-70-l"
-        , cs "overflow-y-scroll"
+        , cs "overflow-scroll"
         , css "max-height" "80%"
         , Options.id "dialog-container"
         ]
         -- span here fixes graphical error on safari
         [ Dialog.title
             [ cs "" ]
-            [ h3 [ class "mv0 dib fl" ] [ text model.dialogHtml.title ]
-            , btn 384394893 model [ Btn.Icon, CloseDialog, Attr (class "fr") ] [ MIcon.view "close" [ MIcon.size24 ] ]
+            [ div []
+                [ h3 [ class "mv0 dib" ] [ text model.dialogHtml.title ]
+                , btn 384394893 model [ Btn.Icon, CloseDialog, Attr (class "fr") ] [ MIcon.view "close" [ MIcon.size24 ] ]
+                ]
             ]
         , Dialog.content
-            [ cs "overflow-y-hidden dib" ]
+            [ cs "overflow-y-scroll db" ]
             [ div
-                [ class "dib overflow-y-scroll" ]
+                [ class "db " ]
                 [ innerHtml ]
             ]
         , Dialog.actions [ cs "v-btm mb3" ]

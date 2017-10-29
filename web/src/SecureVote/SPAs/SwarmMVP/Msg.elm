@@ -3,15 +3,18 @@ module SecureVote.SPAs.SwarmMVP.Msg exposing (..)
 import Decimal exposing (Decimal)
 import Material
 import Material.Snackbar as Snackbar
+import RemoteData exposing (RemoteData)
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Types exposing (InitRecord)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute, Route)
 import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
+import Time exposing (Time)
 
 
 type Msg
     = NoOp
+    | SetTime Int
       -- ** UI Maintenance msgs
     | SetElevation Int Bool
     | SetField String String
@@ -49,8 +52,9 @@ type FromWeb3Msg
     | GotDataParam String
     | GotEncPubkey String
     | Web3Init InitRecord
-    | GetBallotOpts ( Maybe (List (List Int)), Maybe String )
+    | GetBallotOpts (RemoteData String (List (List Int)))
     | GotTxidStatus (Result String GotTxidResp)
+    | GetBallotPeriod (RemoteData String { startTime : Int, endTime : Int })
 
 
 type FromCurve25519Msg

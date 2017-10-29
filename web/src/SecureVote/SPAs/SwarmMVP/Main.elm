@@ -9,7 +9,9 @@ import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..))
 import SecureVote.SPAs.SwarmMVP.Update exposing (update)
 import SecureVote.SPAs.SwarmMVP.Views.RootV exposing (rootView)
-import SecureVote.SPAs.SwarmMVP.Web3Handler exposing (decodeRead, readBallotOptsErr)
+import SecureVote.SPAs.SwarmMVP.Web3Handler exposing (decodeRead, readOptsErr)
+import Task exposing (perform)
+import Time exposing (every, second)
 
 
 subscriptions : Model -> Sub Msg
@@ -23,7 +25,7 @@ subscriptions model =
         , implDataParam <| onRecieveDataParam
         , gotEncPubkey <| onGotPubkey
         , implInit <| onInit (FromWeb3 << Web3Init)
-        , contractReadResponse <| onContractReadResponse decodeRead readBallotOptsErr
+        , contractReadResponse <| onContractReadResponse decodeRead readOptsErr
         , gotTxidCheckStatus onGotTxidStatus
         ]
 
@@ -32,6 +34,7 @@ initCmds : Model -> List (Cmd Msg) -> Cmd Msg
 initCmds initModel extraCmds =
     Cmd.batch <|
         [ setWeb3Provider initModel.ethNode
+        , perform (SetTime << round << (\t -> t / 1000)) Time.now
         , genKeyPair True
         , getEncryptionPublicKey votingContractAddr
         , getInit votingContractAddr
