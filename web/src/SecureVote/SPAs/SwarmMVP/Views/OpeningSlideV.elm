@@ -1,8 +1,5 @@
 module SecureVote.SPAs.SwarmMVP.Views.OpeningSlideV exposing (..)
 
-import Date
-import Date.Extra.Config.Config_en_us as USDate
-import Date.Extra.Format exposing (format, isoString)
 import Html exposing (Html, a, div, em, p, span, text)
 import Html.Attributes exposing (class, href, style, target)
 import Material.Card as Card
@@ -13,6 +10,7 @@ import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
@@ -89,9 +87,6 @@ ballotIntegrity model =
                 , div [ class "dtc tl" ] right
                 ]
 
-        formatUS d =
-            format USDate.config "%b %e %Y, %I:%M %p" <| Date.fromTime <| toFloat <| d * 1000
-
         ballotOpenHtml =
             List.singleton <|
                 case model.ballotOpen of
@@ -106,11 +101,11 @@ ballotIntegrity model =
 
                     Success { startTime, endTime } ->
                         if startTime > model.now then
-                            failMsg <| "🔜 Ballot has not opened for voting yet. (Opens " ++ formatUS startTime ++ " local time)"
+                            failMsg <| "🔜 Ballot has not opened for voting yet. (Opens " ++ formatTsAsDate startTime ++ " local time)"
                         else if endTime < model.now then
                             failMsg "❌ Voting is closed."
                         else
-                            successMsg <| "✅ Voting open! 🗳 Voting closes on: " ++ formatUS endTime ++ " local time"
+                            successMsg <| "✅ Voting open! 🗳 Voting closes on: " ++ formatTsAsDate endTime ++ " local time"
     in
     div [ class "mt1 mb3" ]
         [ Options.styled div [ cs "black mb2", headline ] [ text "Checking ballot details:" ]

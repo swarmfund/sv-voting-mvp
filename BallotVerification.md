@@ -14,6 +14,7 @@ var myVotesOffset = [4,6,0,3];
 var encBallot = "0325252d3e6bd1b7e5bf085096bb07e3132d114623e123d9ebd48d411fb65ad2";
 var submitBallotPrefix = "13c04769";
 var txData = "0x13c047690325252d3e6bd1b7e5bf085096bb07e3132d114623e123d9ebd48d411fb65ad23687cd75e4415e4b126583751b66c8a3b17eaf8eaaa0754a4638452d5602ce4c";
+var votingContract = "0x2Bb10945E9f0C9483022dc473aB4951BC2a77d0f";
 ```
 
 ## Scaffold of process (todo)

@@ -194,6 +194,7 @@ verifyDialogV model =
             , ( "encBallot", toString <| model.encBytes ? "encrypted ballot not found" )
             , ( "submitBallotPrefix", toString "13c04769" )
             , ( "txData", toString <| model.candidateTx.data ? "tx data not found" )
+            , ( "votingContract", toString <| model.swarmVotingAddress )
             ]
 
         renderVerVar ( name, content ) =

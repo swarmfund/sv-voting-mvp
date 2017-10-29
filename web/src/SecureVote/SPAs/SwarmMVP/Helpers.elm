@@ -1,5 +1,8 @@
 module SecureVote.SPAs.SwarmMVP.Helpers exposing (..)
 
+import Date
+import Date.Extra.Config.Config_en_us as USDate
+import Date.Extra.Format exposing (format, isoString)
 import Dict
 import Html exposing (Html, pre)
 import Html.Attributes exposing (class)
@@ -164,3 +167,8 @@ toStrDropQts v =
         String.dropRight 1 (String.dropLeft 1 str)
     else
         str
+
+
+formatTsAsDate : Int -> String
+formatTsAsDate ts =
+    format USDate.config "%b %e %Y, %I:%M %p" <| Date.fromTime <| toFloat <| ts * 1000
