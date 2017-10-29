@@ -51,7 +51,7 @@ fi
 mkdir -p "./$OUTPUT_DIR" 
 
 function solcCommon {
-    solc "$@" -o "./$OUTPUT_DIR/" --overwrite --optimize --optimize-runs 500 "$CONTRACT_PATH"
+    solc "$@" -o "./$OUTPUT_DIR/" --overwrite --optimize "$CONTRACT_PATH"
 }
 
 
@@ -71,5 +71,5 @@ C_NAME_NO_SOL=$(echo "$CONTRACT_NAME" | cut -d '.' -f 1)
 echo -e "\n${LCYAN}>>> Smart Contract Verification Details <<<${NC}\n"
 echo -e "Contract Name: ${LCYAN}$C_NAME_NO_SOL${NC}"
 echo -e "Solc Version: ${LCYAN}$SOLC_VERSION${NC}"
-echo -e "Optimization: ${LCYAN}Enabled (500 runs)${NC}"
+echo -e "Optimization: ${LCYAN}Enabled${NC}"
 echo -e "Contract code: ${LCYAN}$CONTRACT_PATH${NC}\n"
