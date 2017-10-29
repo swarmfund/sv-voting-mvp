@@ -6,10 +6,11 @@ import Material
 import Material.Helpers as MHelp exposing (map1st, map2nd)
 import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
+import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getDelegateAddress, getSwmAddress)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, defaultDelegate, getDelegateAddress, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidFail, TxidInProgress, TxidSuccess))
@@ -27,6 +28,9 @@ update msg model =
     case msg of
         NoOp ->
             model ! []
+
+        SetTime time ->
+            { model | now = time } ! []
 
         SetElevation id isOn ->
             { model | elevations = Dict.insert id isOn model.elevations } ! []
@@ -67,7 +71,7 @@ update msg model =
                         |> Maybe.andThen
                             (flip constructBallot <|
                                 getDelegateAddress model
-                                    ? "0x9999999999999999999999999999999999999999"
+                                    ? defaultDelegate
                             )
 
                 skM =
@@ -192,22 +196,27 @@ updateFromWeb3 msg model =
             let
                 mFail errMsg =
                     { model
-                        | ballotVerificationPassed = Just False
-                        , verificationError = Just errMsg
+                        | ballotVerificationPassed = Failure errMsg
                     }
             in
             case resp of
-                ( Just opts, _ ) ->
+                Success opts ->
                     if doBallotOptsMatch opts then
-                        { model | ballotVerificationPassed = Just True } ! []
+                        { model | ballotVerificationPassed = Success True } ! []
                     else
                         mFail "Release schedule options in voting front end do not match smart contract!" ! []
 
-                ( _, Just errMsg ) ->
+                Failure errMsg ->
                     mFail errMsg ! []
 
-                ( Nothing, Nothing ) ->
-                    mFail "Unknown error" ! []
+                Loading ->
+                    { model | ballotVerificationPassed = Loading } ! []
+
+                NotAsked ->
+                    { model | ballotVerificationPassed = NotAsked } ! []
+
+        GetBallotPeriod resp ->
+            { model | ballotOpen = resp } ! []
 
         GotTxidStatus txidE ->
             case txidE of

@@ -1,25 +1,34 @@
 module SecureVote.SPAs.SwarmMVP.Views.DialogV exposing (..)
 
+import Dict
 import Html exposing (Html, a, b, div, em, img, li, p, pre, span, text, ul)
 import Html.Attributes exposing (class, href, src, target)
 import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
-import Material.Typography exposing (headline, menu, title)
+import Material.Typography as Typo exposing (headline, menu, title)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
 import SecureVote.Eth.Utils exposing (isValidTxid)
+import SecureVote.SPAs.SwarmMVP.Ballot exposing (voteOptions)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRender)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary, getBallotTxid, getEthNodeTemp, setBallotTxid, setEthNodeTemp)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary, defaultDelegate, getBallotTxid, getDelegateAddress, getEthNodeTemp, setBallotTxid, setEthNodeTemp, toStrDropQts)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(CheckTxid, SetProvider))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(..))
 import SecureVote.SPAs.SwarmMVP.Views.SwmDelegateV exposing (delegateExplanationCopy)
 import SecureVote.SPAs.SwarmMVP.Views.SwmHowToVoteV exposing (combinedHowToVoteCopy)
+import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (orderedBallotBits)
+import SecureVote.Types.VBit exposing (vBitsToInt, vblToList)
 
 
 subhead : String -> Html Msg
 subhead s =
     Options.styled div [ title, cs "black db mv3" ] [ text s ]
+
+
+subsubhead : String -> Html Msg
+subsubhead s =
+    Options.styled div [ Typo.subhead, cs "black db mv3" ] [ text s ]
 
 
 settingsDialogV : Model -> Html Msg
@@ -152,6 +161,7 @@ mewDialog model =
         , subhead "6. You're done!"
         , p []
             [ text "To verify your ballot was recieved as you cast it, wait for the transaction to confirm. " ]
+        , subsubhead "Manual verification"
         , p []
             [ text "Next, choose the 'voterToBallotID' method from the dropdown menu. Enter your address in the field provided and click 'READ'." ]
         , p []
@@ -162,11 +172,49 @@ mewDialog model =
             [ text "Do the same for 'associatedPubkeys' to check your public key was recorded properly." ]
         , p []
             [ text "And you're done!" ]
+        , subsubhead "Automatic verification"
+        , checkTxComponent model
         ]
 
 
 verifyDialogV : Model -> Html Msg
 verifyDialogV model =
+    let
+        verificationUrl =
+            "https://github.com/swarmfund/sv-voting-mvp/blob/master/BallotVerification.md"
+
+        verificationVars =
+            -- we apply toString to these strings so they're wrapped in quotes
+            [ ( "ballotEncPk", toString <| model.remoteHexPk ? "err: not found" )
+            , ( "myPubkey", toString <| Maybe.map .hexPk model.keypair ? "pubkey not found" )
+            , ( "mySeckey", toString <| Maybe.map .hexSk model.keypair ? "seckey not found" )
+            , ( "myDelegate", toString <| getDelegateAddress model ? defaultDelegate )
+            , ( "myVotesRaw", toString <| List.map (\vo -> Dict.get vo.id model.ballotRange ? -9999) voteOptions )
+            , ( "myVotesOffset", toString <| List.map (vBitsToInt << vblToList) <| orderedBallotBits model.ballotBits ? [] )
+            , ( "encBallot", toString <| model.encBytes ? "encrypted ballot not found" )
+            , ( "submitBallotPrefix", toString "13c04769" )
+            , ( "txData", toString <| model.candidateTx.data ? "tx data not found" )
+            , ( "votingContract", toString <| model.swarmVotingAddress )
+            ]
+
+        renderVerVar ( name, content ) =
+            text <| "var " ++ name ++ " = " ++ content ++ ";\n"
+
+        renderedVerVars =
+            codeSection <| List.map renderVerVar verificationVars
+    in
+    div
+        []
+        [ subhead "Check your transaction"
+        , checkTxComponent model
+        , subhead "Verify you ballot was encrypted correctly"
+        , p [] [ text "For this, you'll need to copy down these variables, and follow the instructions at ", a [ href verificationUrl, target "_blank" ] [ text verificationUrl ] ]
+        , renderedVerVars
+        ]
+
+
+checkTxComponent : Model -> Html Msg
+checkTxComponent model =
     let
         txidFieldVal =
             getBallotTxid model ? ""
@@ -205,8 +253,7 @@ verifyDialogV model =
                     "Loading..."
     in
     div []
-        [ subhead "Check your transaction"
-        , text "Paste in your transaction ID to confirm your ballot was cast correct:"
+        [ text "Paste in your transaction ID to confirm your ballot was cast correctly:"
         , div []
             [ Textf.render Mdl
                 [ 7658765856 ]
@@ -228,25 +275,3 @@ verifyDialogV model =
 customDialogV : DialogHtml msg -> Html msg
 customDialogV content =
     div [] [ dialogHtmlRender [] content ]
-
-
-debugDialogV : Model -> Html Msg
-debugDialogV model =
-    let
-        liE str =
-            li [] [ text str ]
-    in
-    ul [ class "" ]
-        [ liE "Add whatever you want here for debug"
-        , liE <| toString model.candidateTx
-        , liE <| toString model.encBytes
-        , liE <| toString <| Maybe.map String.length model.encBytes
-        , liE <| toString model.ballotPlaintext
-        , liE <| toString <| Maybe.map List.length model.ballotPlaintext
-        , liE <| toString <| Maybe.map (List.map codepointToBinary) model.ballotPlaintext
-        ]
-
-
-loremIpsum : String
-loremIpsum =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sagittis semper mi, sit amet laoreet mauris lobortis sed. Sed facilisis justo non sagittis sodales. Proin ornare interdum euismod. Cras ultricies ante vitae convallis viverra. Donec dapibus odio ac metus consequat consectetur vel quis massa. Nunc mattis feugiat erat at porta. Praesent varius felis non ullamcorper condimentum. Ut vitae posuere massa. Aenean vitae euismod mauris. Nunc turpis augue, porttitor at massa eget, gravida vehicula nisl."

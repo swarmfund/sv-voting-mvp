@@ -7,15 +7,16 @@ import Json.Encode exposing (encode)
 import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs)
-import Material.Typography exposing (display2, headline)
+import Material.Typography exposing (display2, headline, title)
 import Maybe.Extra exposing ((?))
+import RemoteData exposing (RemoteData(Success))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Utils exposing (processCandidateTx)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (renderReleaseScheduleTitle, voteOptions)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (getDelegateAddress)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate, getDelegateAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetDialog))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(GethDialog, MEWDialog, VerifyDialog), Route(SwmSubmitR))
@@ -42,10 +43,20 @@ votingView model =
                     ++ [ tableRow ( "Delegate", getDelegateAddress model ? "None" ) ]
                 )
 
+        endTime =
+            case model.ballotOpen of
+                Success { endTime } ->
+                    endTime + (15 * 60)
+
+                -- should be this value anyway, included as safe default
+                _ ->
+                    1510009200 + (15 * 60)
+
         ballotDetails =
             div []
                 [ Options.styled div [ headline, cs "black" ] [ text "Ballot Transaction:" ]
                 , div [ class "mw7 ph3 center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
+                , Options.styled div [ title, cs "black mv3" ] [ text <| "Results available " ++ formatTsAsDate endTime ]
                 , div [ class "mv4" ]
                     [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Click (SetDialog "Cast your vote using MyEtherWallet" MEWDialog), OpenDialog ] [ text "Cast using M.E.W." ]
                     , btn 785784536 model [ SecBtn, Attr (class "ph3"), Click (SetDialog "Cast using Other" GethDialog), OpenDialog ] [ text "Cast using Other" ]
@@ -55,7 +66,8 @@ votingView model =
 
         loadingSpinner =
             div [ id "loading-screen" ]
-                [ div [ class "cssload-container cssload-orange cssload-small" ]
+                [ text "Waiting for ballot encryption..."
+                , div [ class "cssload-container cssload-orange cssload-small" ]
                     [ ul [ class "cssload-flex-container" ]
                         [ li []
                             [ span [ class "cssload-loading cssload-one" ] []

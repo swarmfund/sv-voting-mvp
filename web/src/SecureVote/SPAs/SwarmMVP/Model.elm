@@ -4,6 +4,7 @@ import Decimal exposing (Decimal)
 import Dict exposing (Dict)
 import Material
 import Material.Snackbar
+import RemoteData exposing (RemoteData(..))
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Const exposing (erc20Addr, votingContractAddr)
@@ -38,8 +39,10 @@ type alias Model =
     , remoteHexPk : Maybe String
     , miniVotingAbi : String
     , verificationError : Maybe String
-    , ballotVerificationPassed : Maybe Bool
+    , ballotVerificationPassed : RemoteData String Bool
     , txidCheck : TxidCheckStatus
+    , ballotOpen : RemoteData String { startTime : Int, endTime : Int }
+    , now : Int
     }
 
 
@@ -71,8 +74,10 @@ initModel =
     , remoteHexPk = Nothing
     , miniVotingAbi = "Error: Web3 has not initialized correctly"
     , verificationError = Just "Hi"
-    , ballotVerificationPassed = Nothing
+    , ballotVerificationPassed = Loading
     , txidCheck = TxidNotMade
+    , ballotOpen = Loading
+    , now = 0
     }
 
 

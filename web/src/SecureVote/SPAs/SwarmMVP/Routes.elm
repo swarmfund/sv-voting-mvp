@@ -20,5 +20,4 @@ type DialogRoute msg
     | GethDialog
     | MEWDialog
     | VerifyDialog
-    | DebugDialog
     | NotFoundDialog

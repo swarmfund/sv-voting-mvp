@@ -7,8 +7,10 @@ import Material.Color as Color exposing (Hue(Red), Shade(S500))
 import Material.Options as Options exposing (cs, css)
 import Material.Typography exposing (body1, display1, display2, display3, headline, title)
 import Maybe.Extra exposing ((?))
+import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
@@ -29,7 +31,7 @@ openingSlide model =
             ]
 
         introParagraphs =
-            div [ class "center", style [ ( "max-width", "700px" ) ] ] <| List.map renderPara introText
+            div [ class "center" ] <| List.map renderPara introText
 
         renderPara txt =
             Options.styled span [ body1, cs "black db pa2 mv2" ] txt
@@ -40,50 +42,77 @@ openingSlide model =
         [ Card.text [ cs "center tc" ]
             [ Options.styled div [ display2, Color.text Color.black, cs "pa2 heading-text" ] [ text "Welcome to the SWM Release Schedule Vote" ]
             , Options.styled div [ headline, cs "black pa2 mv3" ] [ text "This vote is open to all Swarm token holders." ]
-            , introParagraphs
-            , div [ class "mv3" ]
-                [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmAddressR) ] [ text "Continue" ]
+            , div
+                [ style [ ( "max-width", "700px" ) ] ]
+                [ introParagraphs
+                , ballotIntegrity model
+                , div [ class "mv3" ]
+                    [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmAddressR) ] [ text "Continue" ]
+                    ]
                 ]
             ]
         ]
 
 
+ballotIntegrity : Model -> Html Msg
+ballotIntegrity model =
+    let
+        failMsg errMsg =
+            Options.styled span [ body1, cs "red" ] [ text errMsg ]
 
---ballotIntegrity : Model -> List (Html Msg) -> List (Html Msg) -> Html Msg
---ballotIntegrity model successHtml failHtml =
---    let
---        pgraph innerHtmls =
---            Options.styled p
---                [ body1, cs "black db pa2 mv2" ]
---                innerHtmls
---
---        verifyingHtml =
---            Options.styled
---                div
---                [ headline, Color.text Color.black, cs "mv2" ]
---                [ text "Verifying Integrity of Vote..." ]
---
---        failMsg errMsg =
---            div []
---                [ Options.styled
---                    div
---                    [ headline, Color.text <| Color.color Red S500 ]
---                    [ text "Verification Failed!" ]
---                , pgraph
---                    [ text "Failure reason: "
---                    , text errMsg
---                    ]
---                ]
---
---        rendered =
---            case model.ballotVerificationPassed of
---                Just True ->
---                    [ pgraph [ text "Ballot integrity verified." ] ] ++ successHtml
---
---                Just False ->
---                    [ failMsg <| model.verificationError ? "Verification error not found :(" ] ++ failHtml
---
---                _ ->
---                    [ verifyingHtml ]
---    in
---    div [ class "mv1" ] rendered
+        successMsg msg =
+            Options.styled span [ body1, cs "green" ] [ text msg ]
+
+        ballotOptionsHtml =
+            List.singleton <|
+                case model.ballotVerificationPassed of
+                    NotAsked ->
+                        text "Initializing... (We should never see this in the UI)"
+
+                    Loading ->
+                        text "Loading..."
+
+                    Success b ->
+                        if b then
+                            successMsg "✅ Ballot options match."
+                        else
+                            failMsg <| "Verification failed: " ++ "❌ Warning! Ballot options do not match!"
+
+                    Failure s ->
+                        failMsg <| "Verification failed: " ++ s
+
+        row left right =
+            div [ class "w-100 dt dt--fixed black mv2" ]
+                [ div [ class "dtc tr pr3" ] left
+                , div [ class "dtc tl" ] right
+                ]
+
+        ballotOpenHtml =
+            List.singleton <|
+                case model.ballotOpen of
+                    NotAsked ->
+                        text "Initializing... (We should never see this in the UI)"
+
+                    Loading ->
+                        text "Loading..."
+
+                    Failure e ->
+                        failMsg <| "Error: " ++ e
+
+                    Success { startTime, endTime } ->
+                        if startTime > model.now then
+                            failMsg <| "🔜 Ballot has not opened for voting yet. (Opens " ++ formatTsAsDate startTime ++ " local time)"
+                        else if endTime < model.now then
+                            failMsg "❌ Voting is closed."
+                        else
+                            successMsg <| "✅ Voting open! 🗳 Voting closes on: " ++ formatTsAsDate endTime ++ " local time"
+    in
+    div [ class "mt1 mb3" ]
+        [ Options.styled div [ cs "black mb2", headline ] [ text "Checking ballot details:" ]
+        , row
+            [ text "Ballot open:" ]
+            ballotOpenHtml
+        , row
+            [ text "Ballot options match smart contract:" ]
+            ballotOptionsHtml
+        ]

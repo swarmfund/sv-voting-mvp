@@ -37,10 +37,51 @@ const web3Ports = (web3: Web3, app) => {
         } catch (err) {
             implRecieveBallotOptsCB(err, null);
         }
-    }))
+
+        try {
+            const doErr = err => {
+                implBallotPeriod(err, [0,0]);
+            }
+            voteC.startTime((err1, _startTime) => {
+                if (err1) {
+                    doErr(err1);
+                }
+                const startTime = _startTime.toNumber();
+                voteC.endTime((err2, _endTime) => {
+                    if (err2) {
+                        doErr(err2);
+                    }
+                    const endTime = _endTime.toNumber();
+                    implBallotPeriod(null, [startTime, endTime]);
+                });
+            });
+        } catch (err) {
+            implBallotPeriod(err, [0,0]);
+        }
+    }));
 
 
     // Implementation of port sends
+    const implBallotPeriod = (err, [startTime, endTime]) => {
+        console.log('implBallotPeriod got', err, [startTime, endTime]);
+        if (err) {
+            app.ports.contractReadResponse.send({
+                success: false,
+                errMsg: err.toString(),
+                method: "ballotPeriod",
+                response: {}
+            })
+        } else {
+            app.ports.contractReadResponse.send({
+                success: true,
+                errMsg: "",
+                method: "ballotPeriod",
+                response: {startTime, endTime}
+            })
+        }
+    }
+
+
     const implRecieveBallotOptsCB = (err, ballotOpts) => {
         console.log('implRecieveBallotOptsCB got:', err, ballotOpts)
         if (err) {
