@@ -37,7 +37,8 @@ const swarmOutputPath = path.join(__dirname, _dist);
 const CopyWebpackPluginConfig = new CopyWebpackPlugin([
     {from: './web/css', to: swarmOutputPath + '/css'},
     {from: './web/js', to: swarmOutputPath + '/js'},
-    {from: './web/img', to: swarmOutputPath + '/img'}
+    {from: './web/img', to: swarmOutputPath + '/img'},
+    {from: './web/_redirects', to: swarmOutputPath + '/_redirects'}
 ]);
 
 
