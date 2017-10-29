@@ -75,7 +75,7 @@ async function testInstantiation(accounts, contractFactory) {
 
   const _ballotOptions = await vc.getBallotOptions();
   const _ballotOptionsProcd = S.map(([a, b]) => [a.toNumber(), b.toNumber()], _ballotOptions);
-  assert.deepEqual(_ballotOptionsProcd, [[8, 42], [42, 8], [16, 42], [1, 42]], "should have expected ballot params")
+  assert.deepEqual(_ballotOptionsProcd, [[8, 42], [42, 8], [16, 42], [4, 84]], "should have expected ballot params")
 
   const _ballotOptNumber = await vc.getBallotOptNumber();
   assert.equal(_ballotOptNumber, 4, "should have 4 ballot options")
