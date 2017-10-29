@@ -7,7 +7,7 @@ before_install:
     - sudo apt-get -y install solc
 install:
     - yarn install --non-interactive
-    - npm i -g bower truffle@beta
+    - npm i -g bower truffle@beta wait-port
     - bower install
     - rm -r contract/build || echo ''
 before_script:
@@ -15,6 +15,8 @@ before_script:
     - |
       testrpc -a 210 > /dev/null 2>&1 &
       TESTRPC_PID=$!
+    - wait-port -t 30000 localhost:8545  # wait for testrpc to be up and running
+    - echo "TestRPC started"
     - cd contract && truffle migrate --reset --compile-all && cd ..  # fix for weird truffle bug re: invalid number of args
 script:
     "yarn test-all"
