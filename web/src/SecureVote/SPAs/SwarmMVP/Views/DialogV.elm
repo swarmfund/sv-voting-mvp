@@ -126,7 +126,11 @@ gethDialogV model =
             , text " 120,000 gas; we recommend 200,000."
             ]
         , subhead "4. Sign and send your transaction"
-        , p [] [ text "And you're done! If you'd like to confirm the finer details of your ballot and confirm it was recorded correctly, check out the 'Cast with M.E.W.' page, as well as the 'Verify Ballot' page." ]
+        , p [] [ text "Woo! Wait for your transaction to confirm and your ballot should be submitted!" ]
+        , subhead "5. Check your transaction"
+        , checkTxComponent model
+        , subsubhead "Manual check"
+        , p [] [ text "If you'd like to confirm the finer details of your ballot and confirm it was recorded correctly, check out the 'Cast with M.E.W.' page, as well as the 'Verify Ballot' page." ]
         ]
 
 
