@@ -154,7 +154,8 @@ mewDialog model =
         , p [] [ text "Copy and paste this into the ABI section:", codeSection [ text model.miniVotingAbi ] ]
         , subhead "4. Copy in your encrypted ballot and ephemeral public key"
         , p []
-            [ text "Copy in your encrypted ballot (below) into the corresponding field."
+            [ text "Select the 'submitBallot' contract method."
+            , text "Copy in your encrypted ballot (below) into the corresponding field."
             , text "To verify your encrypted ballot, please see the 'Verify Ballot' screen."
             , codeSection [ text <| "0x" ++ model.encBytes ? "-- Error: Can't find your encrypted ballot in the app state!" ]
             , text "You'll also need to copy in your voting public key. (This was generated as a one-time-use key for this ballot only)"
