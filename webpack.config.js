@@ -3,7 +3,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 const merge = require('webpack-merge');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-var HTMLWebpackPlugin = require('html-webpack-plugin');
+const HTMLWebpackPlugin = require('html-webpack-plugin');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 
 var TARGET_ENV = function () {
@@ -38,7 +39,7 @@ const CopyWebpackPluginConfig = new CopyWebpackPlugin([
     {from: './web/css', to: swarmOutputPath + '/css'},
     {from: './web/js', to: swarmOutputPath + '/js'},
     {from: './web/img', to: swarmOutputPath + '/img'},
-    {from: './web/_redirects', to: swarmOutputPath + '/_redirects'}
+    {from: './web/_redirects', to: swarmOutputPath + '/'}
 ]);
 
 
@@ -167,8 +168,7 @@ if (TARGET_ENV === 'production') {
                 dry: false
             }),
             CopyWebpackPluginConfig,
-            // TODO update to version that handles =>
-            new webpack.optimize.UglifyJsPlugin()
+            new UglifyJSPlugin()
         ],
         module: {
             rules: [
