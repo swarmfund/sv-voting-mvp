@@ -71,7 +71,7 @@ binaryVotes = R.map(v => {
 
 We need to move all your votes into one string. The way we do this is by concatenating them in order.
 
-If your votes were `[1, 3, -3, 0]` (and therefore `` when offset) then your binary representation would be `['100', '110', '000', '011']`.
+If your votes were `[1, 3, -3, 0]` (and therefore `[4,6,0,3]` when offset) then your binary representation would be `['100', '110', '000', '011']`.
 
 We then concatenate these into one string: `'100110000011'`
 
