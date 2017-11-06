@@ -23,13 +23,17 @@ var accounts = [];
 
 
 function convertAllToStdString(input) {
-    if (input.toFixed) {  // checks if it's a BigNumber
-        return input.toFixed();
+    if (input) {
+        if (input.toFixed) {  // checks if it's a BigNumber
+            return input.toFixed();
+        }
+        if (input.constructor === Array) {
+            // do anything here?
+        }
+        return input.toString();
+    } else {
+        return input
     }
-    if (input.constructor === Array) {
-        // do anything here?
-    }
-    return input.toString();
 }
 
 
