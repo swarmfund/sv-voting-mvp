@@ -181,7 +181,7 @@ completeBallotTest = do
         log $ "Block number: " <> show blockNum
 
         -- count ballot
-        ballotResultE <- runBallotCount 1 contract erc20Contract {silent: false}
+        ballotResultE <- runBallotCount blockNum contract erc20Contract {silent: false}
 
         -- check count results
         ballotSuccess <- logAndPrintResults ballotResultE
