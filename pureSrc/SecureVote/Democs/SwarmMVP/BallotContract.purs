@@ -42,6 +42,7 @@ import SecureVote.Crypto.Curve25519 (decryptOneTimeBallot, toBox, toBoxPubkey, t
 import SecureVote.Democs.SwarmMVP.Admin (main)
 import SecureVote.Democs.SwarmMVP.Ballot (delegateAddr)
 import SecureVote.Democs.SwarmMVP.BannedAddrs (bannedAddresses)
+import SecureVote.Democs.SwarmMVP.Const (balanceAt)
 import SecureVote.Democs.SwarmMVP.Types (Address, Delegate, SwmBallot, Vote, Voter, Votes, VotesRecord, getVoter, getVotes, toAddress, toDelegate, toSwmBallot, toVoter, voteToInt, voterToString)
 import SecureVote.Utils.Array (fromList)
 import SecureVote.Utils.ArrayBuffer (UI8AShowable(..), fromEthHex, fromEthHexE, fromHex, fromHexE, toHex)
@@ -99,6 +100,10 @@ foreign import setWeb3ProviderImpl :: forall a. Fn1 String a
 
 -- web3 FFI
 foreign import getAccountImpl :: forall a b. Fn3 (a -> Either a b) (b -> Either a b) Int (Either String String)
+foreign import getBlockNumberImpl :: forall e. Fn0 (EffFnAff (| e) Int)
+
+getBlockNumber :: forall eff. Aff (| eff) Int
+getBlockNumber = fromEffFnAff (runFn0 getBlockNumberImpl)
 
 -- contract FFI
 foreign import getBallotSKImpl :: forall a. Fn3 (a -> Maybe a) (Maybe a) SwmVotingContract (Maybe a)
@@ -111,12 +116,19 @@ ballotPropHelper :: forall a b c w. (Web3Contract w) => String -> Array a -> w -
 ballotPropHelper = runFn5 getBallotPropImpl Left Right
 
 foreign import getBallotPropAsyncImpl :: forall e b c w. Fn3 String (Array c) w (EffFnAff (| e) b) 
+foreign import getBallotPropAsyncWBlockNumImpl :: forall e b c w. Fn4 String (Array c) Int w (EffFnAff (| e) b) 
 
 ballotPropHelperEffFnAff :: forall a b eff w. (Web3Contract w) => String -> Array a -> w -> EffFnAff (| eff) b
 ballotPropHelperEffFnAff = runFn3 getBallotPropAsyncImpl
 
+ballotPropHelperWBlockNumEffFnAff :: forall a b eff w. (Web3Contract w) => String -> Array a -> Int -> w -> EffFnAff (| eff) b
+ballotPropHelperWBlockNumEffFnAff = runFn4 getBallotPropAsyncWBlockNumImpl
+
 ballotPropHelperAff :: forall a eff w. (Web3Contract w) => String -> (Array a) -> w -> (Aff (| eff) String)
 ballotPropHelperAff prop args contract = fromEffFnAff (runFn3 getBallotPropAsyncImpl prop args contract)
+
+ballotPropHelperWBlockNumAff :: forall a eff w. (Web3Contract w) => String -> (Array a) -> Int -> w -> (Aff (| eff) String)
+ballotPropHelperWBlockNumAff prop args extras contract = fromEffFnAff (runFn4 getBallotPropAsyncWBlockNumImpl prop args extras contract)
 
 foreign import submitBallotImpl :: forall e. Fn4 Int Uint8Array BoxPublicKey SwmVotingContract (EffFnAff (| e) String)
 
@@ -179,8 +191,8 @@ swmNVotes contract = do
     maybe (throwError $ error $ "nVotes was not an integer: " <> nVotesStr) pure nVotes
 
 
-runBallotCount :: forall a e. SwmVotingContract -> Erc20Contract -> {silent::Boolean} -> (Aff (now :: NOW, console :: CONSOLE | e) (Either String BallotResult))
-runBallotCount contract erc20 {silent} = 
+runBallotCount :: forall a e. Int -> SwmVotingContract -> Erc20Contract -> {silent::Boolean} -> (Aff (now :: NOW, console :: CONSOLE | e) (Either String BallotResult))
+runBallotCount ballotStartBlock contract erc20 {silent} = 
       do  -- Aff monad
         nowTime <- liftEff $ currentTimestamp
         endTime <- swmEndTime contract 
@@ -207,7 +219,7 @@ runBallotCount contract erc20 {silent} =
                 decryptedBallots <- decryptBallots ballotSeckey encBallotsWithoutDupes
                 optLog $ "Decrypted " <> (lenStr decryptedBallots) <> " ballots successfully"
 
-                balanceMap <- getBalances erc20 decryptedBallots
+                balanceMap <- getBalances erc20 ballotStartBlock decryptedBallots
                 optLog $ "Got balances for voters"
                 -- log $ "Balance Map: \n" <> renderMap balanceMap
 
@@ -289,13 +301,13 @@ decryptBallots encSk ballots = do
             maybe (throwError $ error $ "Unable to decrypt ballot from: " <> show voterAddr) (\ballot -> pure $ {ballot, voterPk, voterAddr}) ballotM
 
 
-getBalances :: forall e. Erc20Contract -> Array Ballot -> Aff (| e) BalanceMap
-getBalances erc20 ballots = do
+getBalances :: forall e. Erc20Contract -> Int -> Array Ballot -> Aff (| e) BalanceMap
+getBalances erc20 blockNumber ballots = do
         pairs <- parTraverse addBalance ballots
         pure $ fromFoldable pairs
     where
         addBalance {ballot, voterPk, voterAddr} = do
-            balM <- Dec.fromString <$> ballotPropHelperAff "balanceOf" [voterAddr] erc20
+            balM <- Dec.fromString <$> ballotPropHelperWBlockNumAff "balanceOf" [voterAddr] blockNumber erc20
             balance <- maybe (throwError $ error $ "Unable to get balance for " <> show voterAddr) pure balM
             pure $ Tuple voterAddr balance
 

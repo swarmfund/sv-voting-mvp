@@ -22,6 +22,7 @@ import Node.Yargs.Applicative (runY, yarg)
 import Node.Yargs.Setup (defaultHelp, usage)
 import Partial.Unsafe (unsafePartial)
 import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, makeErc20Contract, makeSwmVotingContract, runBallotCount, setWeb3Provider)
+import SecureVote.Democs.SwarmMVP.Const (balanceAt)
 import SecureVote.Utils.Decimal (toFixed)
 import SecureVote.Utils.String (padLeft, padRight)
 import Unsafe.Coerce (unsafeCoerce)
@@ -46,7 +47,7 @@ app ethUrl swmAddress erc20Address =
         let _ = setWeb3Provider ethUrl
         contract <- maybe (throwError $ error "Unable to instantiate voting contract") pure (makeSwmVotingContract swmAddress)
         erc20Contract <- maybe (throwError $ error "Unable to instantiate erc20 contract") pure (makeErc20Contract erc20Address)
-        ballotAns <- runBallotCount contract erc20Contract {silent: false}
+        ballotAns <- runBallotCount balanceAt contract erc20Contract {silent: false}
         let exitC = exitCode ballotAns
         let msgStart = exitMsgHeader exitC
         let msgBody = formatBallotResults $ unsafePartial $ fromRight ballotAns
