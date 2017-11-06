@@ -1,6 +1,6 @@
 module SecureVote.SPAs.SwarmMVP.Views.OpeningSlideV exposing (..)
 
-import Html exposing (Html, a, div, em, p, span, text)
+import Html exposing (Html, a, div, em, p, span, strong, text)
 import Html.Attributes exposing (class, href, style, target)
 import Material.Card as Card
 import Material.Color as Color exposing (Hue(Red), Shade(S500))
@@ -29,11 +29,25 @@ openingSlide model =
             , [ text "When you're ready, let's begin the voting process!" ]
             ]
 
+        resultsText =
+            [ [ text "Results are in!" ]
+            , [ strong [] [ text "Winner: " ], text "4 releases of 84 days each" ]
+            , []
+            , [ strong [] [ text "Raw Results:" ] ]
+            , [ text "8 releases of 42 days each:     with # votes:       215861632749216557139154" ]
+            , [ text "42 releases of 8 days each:     with # votes:     -6028150571595824835708731" ]
+            , [ text "16 releases of 42 days each:    with # votes:    -10257849820412608278569577" ]
+            , [ text "4 releases of 84 days each:     with # votes:      7845588400895824835708731" ]
+            ]
+
         introParagraphs =
             div [ class "center" ] <| List.map renderPara introText
 
+        resultsParas =
+            div [ class "center" ] <| List.map renderPara resultsText
+
         renderPara txt =
-            Options.styled span [ body1, cs "black db pa2 mv2" ] txt
+            Options.styled span [ body1, cs "black db pa1 mv2" ] txt
     in
     fullPageSlide 9483579329
         model
@@ -43,7 +57,7 @@ openingSlide model =
             , Options.styled div [ headline, cs "black pa2 mv3" ] [ text "This vote is open to all Swarm token holders." ]
             , div
                 [ style [ ( "max-width", "700px" ) ], class "center" ]
-                [ introParagraphs
+                [ resultsParas
                 , ballotIntegrity model
                 , div [ class "mv3" ]
                     [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmAddressR) ] [ text "Continue" ]
