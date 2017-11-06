@@ -1,5 +1,3 @@
-"use strict"
-
 try {
     var sodium = require('sodium');  // nodejs
 } catch (e) {}
@@ -18,6 +16,7 @@ var sha256 = null;
 
 
 function setCSodium() {
+    console.log("Setting Cordova Sodium")
     verifyDetached
         = function (signature, message, publicKey) {
             var success = false;
@@ -46,6 +45,7 @@ function setCSodium() {
 }
 
 function setNodeSodium() {
+    console.log("Setting Native Sodium")
     // verifyDetached = sodium.api.crypto_sign_verify_detached;
     // signDetached = sodium.api.crypto_sign_detached;
     sha256 = sodium.api.crypto_hash_sha256;
@@ -57,8 +57,9 @@ if (cSodium) {  // we are on a phone
     setCSodium();
 } else if (sodium) {
     setNodeSodium();
-} else if (verifyDetached === null) {
+} else {
     jsNacl.instantiate(function(nacl) {
+        console.log("Setting JS Sodium")
         verifyDetached = nacl.crypto_sign_verify_detached;
         signDetached = nacl.crypto_sign_detached;
         sha256 = nacl.crypto_hash_sha256;
