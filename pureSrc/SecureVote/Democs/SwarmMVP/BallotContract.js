@@ -33,9 +33,15 @@ function convertAllToStdString(input) {
 }
 
 
-exports.setWeb3ProviderImpl = function(host) {
-    web3.setProvider(new Web3.providers.HttpProvider(host));
-    console.log("Set web3 provider to:", host);
+exports.setWeb3ProviderImpl = function(host, auth) {
+    var userPass = {user: null, pass: null}
+    if (auth !== "") {
+        var authArr = R.split(':', auth);
+        userPass.user = authArr[0];
+        userPass.pass = authArr[1];
+    }
+    web3.setProvider(new Web3.providers.HttpProvider(host, 0, userPass.user, userPass.pass));
+    // console.log("Set web3 provider to:", host);
     coinbase = web3.eth.coinbase;
     accounts = web3.eth.accounts;
 }

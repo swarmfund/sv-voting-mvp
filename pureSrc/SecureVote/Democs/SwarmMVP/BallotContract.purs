@@ -96,7 +96,7 @@ noArgs = []
 -- contract setup FFI
 foreign import makeSwmVotingContractImpl :: forall a. Fn3 (a -> Maybe a) (Maybe a) String (Maybe SwmVotingContract)
 foreign import makeErc20ContractImpl :: forall a. Fn3 (a -> Maybe a) (Maybe a) String (Maybe Erc20Contract)
-foreign import setWeb3ProviderImpl :: forall a. Fn1 String a
+foreign import setWeb3ProviderImpl :: forall a. Fn2 String String a
 
 -- web3 FFI
 foreign import getAccountImpl :: forall a b. Fn3 (a -> Either a b) (b -> Either a b) Int (Either String String)
@@ -141,8 +141,8 @@ makeErc20Contract :: forall a. String -> Maybe Erc20Contract
 makeErc20Contract = runFn3 makeErc20ContractImpl Just Nothing
 
 
-setWeb3Provider :: forall a. String -> a 
-setWeb3Provider = runFn1 setWeb3ProviderImpl
+setWeb3Provider :: forall a. String -> String -> a 
+setWeb3Provider = runFn2 setWeb3ProviderImpl
 
 -- web3 functions
 getAccount :: Int -> Either String String
