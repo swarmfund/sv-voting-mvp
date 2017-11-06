@@ -47,7 +47,7 @@ openingSlide model =
             div [ class "center" ] <| List.map renderPara resultsText
 
         renderPara txt =
-            Options.styled span [ body1, cs "black db pa2 mv2" ] txt
+            Options.styled span [ body1, cs "black db pa1 mv2" ] txt
     in
     fullPageSlide 9483579329
         model
