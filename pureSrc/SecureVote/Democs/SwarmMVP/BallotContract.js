@@ -36,12 +36,16 @@ function convertAllToStdString(input) {
 exports.setWeb3ProviderImpl = function(host, auth) {
     var userPass = {user: null, pass: null}
     if (auth !== "") {
+        console.log("Using authenticated Web3 provider")
         var authArr = R.split(':', auth);
         userPass.user = authArr[0];
         userPass.pass = authArr[1];
+        web3.setProvider(new Web3.providers.HttpProvider(host, 0, userPass.user, userPass.pass));
+    } else {
+        console.log("Using unauthenticated Web3 provider")
+        web3.setProvider(new Web3.providers.HttpProvider(host));
     }
-    web3.setProvider(new Web3.providers.HttpProvider(host, 0, userPass.user, userPass.pass));
-    // console.log("Set web3 provider to:", host);
+    console.log("Set web3 provider to:", host);
     coinbase = web3.eth.coinbase;
     accounts = web3.eth.accounts;
 }
@@ -148,7 +152,7 @@ exports.getBallotPropAsyncWBlockNumImpl = function(_prop, _args, blockNum, contr
     const prop = R.clone(_prop);
     const args = R.clone(_args);
     return function(onErr, onSucc) {
-        args.push({gas: 999999, from: coinbase});
+        args.push({gas: 999999});
         var ballotAsyncCB = function(err, res) {
             if (err) { onErr(err) }
             onSucc(convertAllToStdString(res));
