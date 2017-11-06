@@ -7,7 +7,7 @@ import Data.String.Yarn (replicate, reverse)
 
 padLeft :: Char -> Int -> String -> String
 padLeft c len str = prefix <> str
-  where prefix = flip replicate c $ (len - String.length str)
+  where prefix = replicate (max 0 $ len - String.length str) c
 
 
 padRight :: Char -> Int -> String -> String

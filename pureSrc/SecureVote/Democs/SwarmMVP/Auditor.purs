@@ -23,7 +23,7 @@ import Node.Yargs.Setup (defaultHelp, usage)
 import Partial.Unsafe (unsafePartial)
 import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, makeErc20Contract, makeSwmVotingContract, runBallotCount, setWeb3Provider)
 import SecureVote.Utils.Decimal (toFixed)
-import SecureVote.Utils.String (padLeft)
+import SecureVote.Utils.String (padLeft, padRight)
 import Unsafe.Coerce (unsafeCoerce)
 
 
@@ -34,8 +34,8 @@ formatBallotResults {winner, possibleWinners, totals} = resultsMsgHeader <> "\n"
             (Just w) -> "Winner! \n" <> formatOpt w
             Nothing -> "Draw!!!\n " <> formatManyOpts possibleWinners
         resultsMsgRest = "\nTotals:\n" <> formatManyOpts totals
-        formatManyOpts os = unlines (map formatOpt os)
-        formatOpt (Tuple opt nVotes) = opt <> " with # votes: " <> padLeft ' ' 30 decStr
+        formatManyOpts os = String.joinWith "\n" (map formatOpt os)
+        formatOpt (Tuple opt nVotes) = padRight ' ' 30 opt <> " with # votes: " <> padLeft ' ' 30 decStr
             where
                 decStr = toFixed 0 nVotes
 

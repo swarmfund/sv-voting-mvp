@@ -14,7 +14,8 @@ import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Trans.Class (lift)
 import Control.Parallel (parTraverse)
 import Crypt.NaCl (BoxPublicKey, BoxSecretKey, toUint8Array)
-import Data.Array (elem, filter, foldl, head, init, last, length, range, sortBy, tail, takeWhile, zip, (:))
+import Data.Array (elem, filter, foldl, head, init, last, length, range, replicate, sortBy, tail, takeWhile, zip, (:))
+import Data.Array as A
 import Data.ArrayBuffer.Typed (toIntArray)
 import Data.ArrayBuffer.Types (ArrayView, Uint8, Uint8Array)
 import Data.DateTime.Instant (toDateTime, unInstant)
@@ -28,7 +29,7 @@ import Data.Map (Map, delete, empty, fromFoldable, insert, keys, lookup, showTre
 import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
 import Data.Number (fromString)
 import Data.Number.Format (toString)
-import Data.String (drop, joinWith, take)
+import Data.String (Pattern(..), drop, joinWith)
 import Data.String as String
 import Data.Time.Duration (Milliseconds(..))
 import Data.Traversable (maximumBy, sequence, sum, traverse)
@@ -44,11 +45,11 @@ import SecureVote.Democs.SwarmMVP.BannedAddrs (bannedAddresses)
 import SecureVote.Democs.SwarmMVP.Types (Address, Delegate, SwmBallot, Vote, Voter, Votes, VotesRecord, getVoter, getVotes, toAddress, toDelegate, toSwmBallot, toVoter, voteToInt, voterToString)
 import SecureVote.Utils.Array (fromList)
 import SecureVote.Utils.ArrayBuffer (UI8AShowable(..), fromEthHex, fromEthHexE, fromHex, fromHexE, toHex)
-import SecureVote.Utils.String (padLeft)
 import SecureVote.Utils.ArrayBuffer as SVAB
 import SecureVote.Utils.Monads (mToE)
 import SecureVote.Utils.Numbers (intByteToBitStr, intToStr)
 import SecureVote.Utils.Poly (self)
+import SecureVote.Utils.String (padLeft)
 import SecureVote.Utils.Time (currentTimestamp)
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -80,6 +81,11 @@ type BalanceMap = Map Voter Decimal
 
 type BalanceBallotPair = {balance :: Decimal, ballot :: VotesRecord}
 type ScaledVotes = {v1s :: Array Decimal, v2s :: Array Decimal, v3s :: Array Decimal, v4s :: Array Decimal}
+
+
+newtype OptStrs = OptStrs {o1::String, o2::String, o3::String, o4::String}
+instance optStrShow :: Show OptStrs where
+    show (OptStrs {o1, o2, o3, o4}) = String.joinWith ", " [o1,o2,o3,o4]
 
 
 noArgs :: forall a. Array a
@@ -219,9 +225,12 @@ runBallotCount contract erc20 {silent} =
                 delegateMapNoLoops <- pure $ removeDelegationLoops delegateMapNoHang
                 optLog "Removed delegate loops"
 
-                ballotResult <- pure $ countBallots ballotMap delegateMapNoLoops balanceMap
+                ballotOpts <- parseBallotOpts <$> ballotPropHelperAff "getBallotOptions" noArgs contract 
+                optLog $ "Got ballot opts: " <> show ballotOpts
+
+                ballotResult <- pure $ countBallots ballotOpts ballotMap delegateMapNoLoops balanceMap
                 
-                let futureResp = { ballotSeckey
+                let allDetails = { ballotSeckey
                                  , nVotes
                                  , encBallotsWithDupes
                                  , encBallotsWithoutDupes
@@ -232,13 +241,7 @@ runBallotCount contract erc20 {silent} =
                                  , ballotMap
                                  , ballotResult
                                  }
-
                 
-                log <<< unsafeCoerce <<< lookup (unsafeCoerce "0x71c1c1a30f07017f3278333c996ca4e4d71f2092") $ delegateMap
-                log <<< unsafeCoerce <<< lookup (unsafeCoerce "0x71c1c1a30f07017f3278333c996ca4e4d71f2092") $ delegateMapNoLoops
-                log <<< unsafeCoerce <<< lookup (unsafeCoerce "0x71c1c1a30f07017f3278333c996ca4e4d71f2092") $ ballotMap
-                log <<< unsafeCoerce <<< lookup (unsafeCoerce "0x71c1c1a30f07017f3278333c996ca4e4d71f2092") $ balanceMap
-
                 pure $ Right ballotResult
                     
     where
@@ -311,7 +314,7 @@ constructDelegateMap ballots =
             lookup (drop 4 $ toHex ballotUI8A) addrPrefixMap
 
         addrPrefixMap = 
-            foldl (\m addr -> insert (take (14*2) $ drop 2 $ voterToString addr) addr m) empty allAddresses
+            foldl (\m addr -> insert (String.take (14*2) $ drop 2 $ voterToString addr) addr m) empty allAddresses
             
         allAddresses = 
             map (\{voterAddr} -> voterAddr) ballots
@@ -399,8 +402,27 @@ renderMap m = joinWith "\n" $ map (\{k, v} -> "  " <> show k <> "\n   \\-> " <> 
         kvPairs = map (\k -> {k, v: maybe "Nothing" (\a -> show a) $ lookup k m}) $ fromList $ keys m
 
 
-countBallots :: forall e. BallotMap -> DelegateMap -> BalanceMap -> BallotResult
-countBallots ballotMap delegateMap balanceMap = do
+parseBallotOpts :: String -> OptStrs
+parseBallotOpts rawBallotOpts = if length firstSplit /= 8 
+        then OptStrs {o1: totalErr, o2: totalErr, o3: totalErr, o4: totalErr}
+        else renderedOpts
+    where
+        firstSplit = String.split (Pattern ",") rawBallotOpts
+        pairs [] = []
+        pairs strs = (Tuple (A.head strs) (A.head $ A.drop 1 strs)) : pairs (A.drop 2 strs)
+        formatTuple t = case t of
+            (Tuple (Just nRs) (Just days)) -> nRs <> " releases of " <> days <> " days each"
+            _ -> decodingErr
+        optsArr = map formatTuple (pairs firstSplit)
+        renderedOpts = OptStrs {o1: getOpt 1 optsArr, o2: getOpt 2 optsArr, o3: getOpt 3 optsArr, o4: getOpt 4 optsArr}
+        jOrErr i strM = fromMaybe ("Unable to decode opt " <> intToStr i) strM
+        getOpt i arr = jOrErr i $ A.head $ A.drop (i-1) arr
+        totalErr = "Incorrect number of options returned: " <> rawBallotOpts
+        decodingErr = "Unable to decode option"
+
+
+countBallots :: forall e. OptStrs -> BallotMap -> DelegateMap -> BalanceMap -> BallotResult
+countBallots (OptStrs {o1, o2, o3, o4}) ballotMap delegateMap balanceMap = do
         -- first, find the ballot to use for each voter (i.e. account for delegations)
         let voters = fromList $ keys ballotMap
         let processedBallotMap = findBallotsOfMostDelegated voters
@@ -416,10 +438,10 @@ countBallots ballotMap delegateMap balanceMap = do
 
         -- now we sum them all
         let totals = 
-                [ Tuple "opt1" $ sum v1s
-                , Tuple "opt2" $ sum v2s
-                , Tuple "opt3" $ sum v3s
-                , Tuple "opt4" $ sum v4s 
+                [ Tuple o1 $ sum v1s
+                , Tuple o2 $ sum v2s
+                , Tuple o3 $ sum v3s
+                , Tuple o4 $ sum v4s 
                 ]
 
         -- and that's it! We pick the maximum and that's our winner.
