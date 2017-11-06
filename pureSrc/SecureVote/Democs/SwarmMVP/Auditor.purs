@@ -10,14 +10,34 @@ import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Now (NOW)
 import Crypt.NaCl.Types (NACL_RANDOM)
+import Data.Decimal as Dec
 import Data.Either (Either(..), either, fromRight, isRight)
+import Data.Foldable (foldl)
 import Data.Maybe (Maybe(..), maybe)
+import Data.String as String
+import Data.String.Yarn (leftpadBy, unlines)
+import Data.Tuple (Tuple(..))
 import Node.Process (PROCESS, exit)
 import Node.Yargs.Applicative (runY, yarg)
 import Node.Yargs.Setup (defaultHelp, usage)
 import Partial.Unsafe (unsafePartial)
-import SecureVote.Democs.SwarmMVP.BallotContract (makeErc20Contract, makeSwmVotingContract, runBallotCount, setWeb3Provider)
+import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, makeErc20Contract, makeSwmVotingContract, runBallotCount, setWeb3Provider)
+import SecureVote.Utils.Decimal (toFixed)
+import SecureVote.Utils.String (padLeft)
 import Unsafe.Coerce (unsafeCoerce)
+
+
+formatBallotResults :: BallotResult -> String
+formatBallotResults {winner, possibleWinners, totals} = resultsMsgHeader <> "\n" <> resultsMsgRest 
+    where 
+        resultsMsgHeader = case winner of
+            (Just w) -> "Winner! \n" <> formatOpt w
+            Nothing -> "Draw!!!\n " <> formatManyOpts possibleWinners
+        resultsMsgRest = "\nTotals:\n" <> formatManyOpts totals
+        formatManyOpts os = unlines (map formatOpt os)
+        formatOpt (Tuple opt nVotes) = opt <> " with # votes: " <> padLeft ' ' 30 decStr
+            where
+                decStr = toFixed 0 nVotes
 
 
 app :: forall eff. String -> String -> String -> Aff (console :: CONSOLE, naclRandom :: NACL_RANDOM, process :: PROCESS, now :: NOW | eff) Unit
@@ -29,7 +49,7 @@ app ethUrl swmAddress erc20Address =
         ballotAns <- runBallotCount contract erc20Contract {silent: false}
         let exitC = exitCode ballotAns
         let msgStart = exitMsgHeader exitC
-        let msgBody = unsafeCoerce $ unsafePartial $ fromRight ballotAns
+        let msgBody = formatBallotResults $ unsafePartial $ fromRight ballotAns
         log $ "\n" <> msgStart <> "\n"
         log $ msgBody
         liftEff $ exit exitC

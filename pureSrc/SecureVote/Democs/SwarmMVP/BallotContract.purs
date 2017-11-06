@@ -18,6 +18,8 @@ import Data.Array (elem, filter, foldl, head, init, last, length, range, sortBy,
 import Data.ArrayBuffer.Typed (toIntArray)
 import Data.ArrayBuffer.Types (ArrayView, Uint8, Uint8Array)
 import Data.DateTime.Instant (toDateTime, unInstant)
+import Data.Decimal (Decimal)
+import Data.Decimal as Dec
 import Data.Either (Either(..), either, isRight)
 import Data.Function.Uncurried (Fn0, Fn1, Fn2, Fn3, Fn4, Fn5, Fn6, runFn0, runFn1, runFn2, runFn3, runFn4, runFn5, runFn6)
 import Data.Int (binary, decimal, fromStringAs, toNumber, toStringAs)
@@ -41,7 +43,8 @@ import SecureVote.Democs.SwarmMVP.Ballot (delegateAddr)
 import SecureVote.Democs.SwarmMVP.BannedAddrs (bannedAddresses)
 import SecureVote.Democs.SwarmMVP.Types (Address, Delegate, SwmBallot, Vote, Voter, Votes, VotesRecord, getVoter, getVotes, toAddress, toDelegate, toSwmBallot, toVoter, voteToInt, voterToString)
 import SecureVote.Utils.Array (fromList)
-import SecureVote.Utils.ArrayBuffer (UI8AShowable(..), fromEthHex, fromEthHexE, fromHex, fromHexE, padLeft, toHex)
+import SecureVote.Utils.ArrayBuffer (UI8AShowable(..), fromEthHex, fromEthHexE, fromHex, fromHexE, toHex)
+import SecureVote.Utils.String (padLeft)
 import SecureVote.Utils.ArrayBuffer as SVAB
 import SecureVote.Utils.Monads (mToE)
 import SecureVote.Utils.Numbers (intByteToBitStr, intToStr)
@@ -62,7 +65,7 @@ data Erc20Contract = Erc20Contract Erc20Contract
 instance erc20Web3 :: Web3Contract Erc20Contract
 
 
-type BallotResult = {winner :: Maybe (Tuple String Int), possibleWinners :: Array (Tuple String Int), totals :: Array (Tuple String Int)}
+type BallotResult = {winner :: Maybe (Tuple String Decimal), possibleWinners :: Array (Tuple String Decimal), totals :: Array (Tuple String Decimal)}
 
 
 type Ballot = {ballot :: Uint8Array, voterPk :: Uint8Array, voterAddr :: Voter}
@@ -72,11 +75,11 @@ type EncBallotWVoter = {encBallot :: Uint8Array, voterPk :: BoxPublicKey}
 
 type DelegateMap = Map Voter (Maybe Voter)
 type BallotMap = Map Voter (Either String SwmBallot)
-type BalanceMap = Map Voter Int
+type BalanceMap = Map Voter Decimal
 
 
-type BalanceBallotPair = {balance :: Int, ballot :: VotesRecord}
-type ScaledVotes = {v1s :: Array Int, v2s :: Array Int, v3s :: Array Int, v4s :: Array Int}
+type BalanceBallotPair = {balance :: Decimal, ballot :: VotesRecord}
+type ScaledVotes = {v1s :: Array Decimal, v2s :: Array Decimal, v3s :: Array Decimal, v4s :: Array Decimal}
 
 
 noArgs :: forall a. Array a
@@ -106,7 +109,7 @@ foreign import getBallotPropAsyncImpl :: forall e b c w. Fn3 String (Array c) w 
 ballotPropHelperEffFnAff :: forall a b eff w. (Web3Contract w) => String -> Array a -> w -> EffFnAff (| eff) b
 ballotPropHelperEffFnAff = runFn3 getBallotPropAsyncImpl
 
-ballotPropHelperAff :: forall a b eff w. (Web3Contract w) => String -> (Array a) -> w -> (Aff (| eff) b)
+ballotPropHelperAff :: forall a eff w. (Web3Contract w) => String -> (Array a) -> w -> (Aff (| eff) String)
 ballotPropHelperAff prop args contract = fromEffFnAff (runFn3 getBallotPropAsyncImpl prop args contract)
 
 foreign import submitBallotImpl :: forall e. Fn4 Int Uint8Array BoxPublicKey SwmVotingContract (EffFnAff (| e) String)
@@ -254,7 +257,8 @@ getBallots contract n
         getBallot i = do
             encBallot <- keyFromEthHex $ ballotPropHelperAff "encryptedBallots" [i] contract
             voterPk <- keyFromEthHex $ ballotPropHelperAff "associatedPubkeys" [i] contract
-            voterAddr <- ballotPropHelperAff "associatedAddresses" [i] contract
+            voterAddrStr <- ballotPropHelperAff "associatedAddresses" [i] contract
+            voterAddr <- maybe (throwError $ error "Got bad address from web3") pure (toVoter <$> toAddress voterAddrStr)
             pure $ {i, encBallot, voterPk, voterAddr}
         keyFromEthHex k = do
             ethHex <- k
@@ -282,13 +286,13 @@ decryptBallots encSk ballots = do
             maybe (throwError $ error $ "Unable to decrypt ballot from: " <> show voterAddr) (\ballot -> pure $ {ballot, voterPk, voterAddr}) ballotM
 
 
-getBalances :: forall e. Erc20Contract -> Array Ballot -> Aff (| e) (Map Voter Int)
+getBalances :: forall e. Erc20Contract -> Array Ballot -> Aff (| e) BalanceMap
 getBalances erc20 ballots = do
         pairs <- parTraverse addBalance ballots
         pure $ fromFoldable pairs
     where
         addBalance {ballot, voterPk, voterAddr} = do
-            balM <- DInt.fromString <$> ballotPropHelperAff "balanceOf" [voterAddr] erc20
+            balM <- Dec.fromString <$> ballotPropHelperAff "balanceOf" [voterAddr] erc20
             balance <- maybe (throwError $ error $ "Unable to get balance for " <> show voterAddr) pure balM
             pure $ Tuple voterAddr balance
 
@@ -454,7 +458,7 @@ countBallots ballotMap delegateMap balanceMap = do
             scaledVotes
         makeScaledVotes {v1s, v2s, v3s, v4s} (Right {balance, ballot}) = do
             let {v1, v2, v3, v4} = ballot
-            let s = ((*) balance <<< voteToInt)
+            let s = ((*) balance <<< Dec.fromInt <<< voteToInt)
             {v1s: (s v1):v1s, v2s: (s v2):v2s, v3s: (s v3):v3s, v4s: (s v4):v4s}
 
         onlyWinners totals = getMaxTotals totals []

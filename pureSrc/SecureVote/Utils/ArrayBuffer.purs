@@ -16,6 +16,7 @@ import Data.String (fromCharArray, joinWith, length, take, drop) as String
 import Data.String.Yarn (reverse)
 import Data.TypedArray as TA
 import SecureVote.Utils.Monads (mToE)
+import SecureVote.Utils.String (padLeft)
 import Unsafe.Coerce (unsafeCoerce)
 
 
@@ -29,15 +30,6 @@ instance showUint8Array :: Show (UI8AShowable) where
 
 instance eqUint8Array :: Eq UI8AShowable where
   eq (UI8AShowable a) (UI8AShowable b) = toArray a == toArray b
-
-
-padLeft :: Char -> Int -> String -> String
-padLeft c len str = prefix <> str
-  where prefix = String.fromCharArray <<< flip replicate c $ (len - String.length str)
-
-
-padRight :: Char -> Int -> String -> String
-padRight c len str = reverse $ padLeft c len $ reverse str 
 
 
 toHex :: Uint8Array -> String

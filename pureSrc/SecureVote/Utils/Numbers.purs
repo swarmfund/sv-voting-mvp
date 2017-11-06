@@ -4,7 +4,7 @@ module SecureVote.Utils.Numbers where
 import Prelude
 
 import Data.Int (binary, decimal, toStringAs)
-import SecureVote.Utils.ArrayBuffer (padLeft)
+import SecureVote.Utils.String (padLeft)
 
 
 intToStr :: Int -> String
