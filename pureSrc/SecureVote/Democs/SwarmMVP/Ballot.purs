@@ -23,7 +23,8 @@ import Data.Traversable (foldl, sequence)
 import Data.TypedArray (asArray)
 import Node.Buffer (Octet)
 import Node.Encoding (Encoding(..))
-import SecureVote.Utils.ArrayBuffer (fromHex, padLeft, padRight, toHex)
+import SecureVote.Utils.ArrayBuffer (fromHex, toHex)
+import SecureVote.Utils.String (padLeft, padRight)
 import Unsafe.Coerce (unsafeCoerce)
 
 

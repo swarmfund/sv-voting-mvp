@@ -112,7 +112,9 @@ const main = () => {
         const compiledDataArgs = R.append(sendParams, contractArgs);
         const compiledData = contract.new.getData(...compiledDataArgs);
         const compiledSendParams = R.merge(sendParams, {data: compiledData});
-        const estGas = web3.eth.estimateGas(compiledSendParams);
+        console.log("Attempting to get gas estimate for ", compiledSendParams);
+        const estGas = web3.eth.estimateGas({...compiledSendParams, gas:4000000});
+        console.log("Gas estimate: ", estGas);
 
         // add gas estimates with some headroom
         compiledSendParams.gas = Math.round(estGas * 1.5);

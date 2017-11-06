@@ -22,6 +22,14 @@ var coinbase = "";
 var accounts = [];
 
 
+function convertAllToStdString(input) {
+    if (input.toFixed) {  // checks if it's a BigNumber
+        return input.toFixed();
+    }
+    return input;
+}
+
+
 exports.setWeb3ProviderImpl = function(host) {
     web3.setProvider(new Web3.providers.HttpProvider(host));
     console.log("Set web3 provider to:", host);
@@ -90,10 +98,7 @@ const eitherF = function(left, right, contract) {
     return function(prop, args) {
         try {
             const ans = contract[prop].apply(this, args);
-            if (ans.s && ans.e && ans.c) {
-                return right(ans.toString(10));
-            }
-            return right(ans);
+            return right(convertAllToStdString(ans));
         } catch (err) {
             return left(JSON.stringify(err));
         }
@@ -115,7 +120,7 @@ exports.getBallotPropAsyncImpl = function(_prop, _args, contract) {
         args.push({gas: 999999, from: coinbase});
         var ballotAsyncCB = function(err, res) {
             if (err) { onErr(err) }
-            onSucc(res);
+            onSucc(convertAllToStdString(res));
         }
         args.push(ballotAsyncCB);
         contract[prop].apply(null, args);

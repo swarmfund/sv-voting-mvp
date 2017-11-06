@@ -40,7 +40,7 @@ contract Erc20 is ERC20Interface {
     string public constant symbol = "FIXED";
     string public constant name = "Example Fixed Supply Token";
     uint8 public constant decimals = 18;
-    uint256 _totalSupply = 1000000;
+    uint256 _totalSupply = 1000000000000000000000000000000000000;
     
     // Owner of this contract
     address public owner;

@@ -18,7 +18,10 @@ import Data.ArrayBuffer.ArrayBuffer (fromArray)
 import Data.ArrayBuffer.DataView (whole)
 import Data.ArrayBuffer.Typed (toArray, toIntArray)
 import Data.ArrayBuffer.Types (Uint8Array)
+import Data.Decimal (Decimal, fromInt)
+import Data.Decimal as Dec
 import Data.Either (Either(..), either, fromRight)
+import Data.Foreign (typeOf)
 import Data.Int (decimal, fromNumber, fromString, fromStringAs, toStringAs)
 import Data.List (List(..))
 import Data.Maybe (Maybe(..), fromJust, fromMaybe, maybe)
@@ -39,6 +42,7 @@ import Node.Process (lookupEnv, PROCESS)
 import Partial.Unsafe (unsafePartial)
 import SecureVote.Crypto.Curve25519 (genCurve25519Key, toNonce, toBoxPubkey, toMessage, encryptOneTimeBallot)
 import SecureVote.Crypto.NativeEd25519 (sha256)
+import SecureVote.Democs.SwarmMVP.Auditor (formatBallotResults)
 import SecureVote.Democs.SwarmMVP.Ballot (makeBallot)
 import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, EncBallotWVoter, Erc20Contract(..), SwmVotingContract(..), ballotPropHelper, ballotPropHelperAff, getAccount, getBallotEncPK, makeErc20Contract, makeSwmVotingContract, noArgs, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot)
 import SecureVote.Democs.SwarmMVP.KeyGen (generateKey)
@@ -130,10 +134,11 @@ completeBallotTest = do
         -- give all voters some coins
         log $ "Sending ERC20 tokens to users"
         balances <- genBalances voterIds
-        setBalanceTxs <- parTraverse (\{addr, newBal} -> ballotPropHelperAff "transfer" [addr, intToStr newBal] erc20Contract) balances
+        setBalanceTxs <- parTraverse (\{addr, newBal} -> ballotPropHelperAff "transfer" [addr, Dec.toString newBal] erc20Contract) balances
+        log $ "Distributed ERC20 tokens; verifying balances now..."
         balancesMatch <- checkBalances erc20Contract balances
         balancesMatch `shouldEqual` true
-        log $ "Distributed ERC20 tokens"
+        log $ "ERC20 distribution complete and accurate."
         
         -- create lots of ballots
         ballots <- createBallots nVotes contractM
@@ -229,15 +234,17 @@ extractContractAddr output = addr
       addr = lineM >>= (\str' -> head $ drop 2 $ words str')
 
 
-type Balance = {addr :: String, newBal :: Int}
+type Balance = {addr :: String, newBal :: Decimal}
 genBalances :: forall e. Array Int -> AffAll e (Array Balance)
 genBalances voterIds = do
         sequence $ map genBal voterIds
     where
+        dps9 = Dec.fromInt 1000000000
+        dps18 = dps9 * dps9
         genBal voterId = do
             giveCoins <- liftEff $ randomInt 0 9  -- random in [0, 9]
             -- 80% chance to get coins
-            newBal <- if giveCoins < 8 then liftEff $ randomInt 10 1000 else pure 0
+            newBal <- ((*) dps18) <$> (fromInt <$> if giveCoins < 8 then liftEff $ randomInt 100 1000000 else pure 0)
             addr <- either (throwError <<< error) pure (getAccount voterId)
             pure $ {addr, newBal}
 
@@ -248,9 +255,14 @@ checkBalances erc20 balances = do
         pure $ and balanceChecks
     where
         checkBal {addr, newBal} = do
-            bal <- ballotPropHelperAff "balanceOf" [addr] erc20
-            pure $ fromString bal == Just newBal
-
+            balStr <- ballotPropHelperAff "balanceOf" [addr] erc20
+            let bal = Dec.fromString balStr
+            let areEq = (bal == Just newBal) || (balStr == "0" && newBal == Dec.fromInt 0)
+            if not areEq then
+                    log $ "Err: balances not equal: " <> show newBal <> " and (" <> show bal <> ")"
+                else 
+                    pure unit
+            pure areEq
 
 createBallots :: forall e. Int -> Maybe SwmVotingContract -> AffAll e ((Array Uint8Array))
 createBallots nVotes cM = case cM of
@@ -301,7 +313,7 @@ logAndPrintResults ballotResults = case ballotResults of
         pure false
     Right res -> do
         log $ "Ballot count success!"
-        logUC res 
+        log $ formatBallotResults res 
         pure true 
 
 

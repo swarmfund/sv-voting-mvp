@@ -36,7 +36,8 @@
     "purescript-node-child-process": "^4.0.0",
     "purescript-bytestrings": "^6.0.0",
     "purescript-aff": "^4.0.0",
-    "purescript-arraybuffer": "^6.0.0"
+    "purescript-arraybuffer": "^6.0.0",
+    "purescript-decimals": "^3.1.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0",
