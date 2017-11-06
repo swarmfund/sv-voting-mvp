@@ -50,6 +50,23 @@ exports.getAccountImpl = function(left, right, n) {
 }
 
 
+exports.getBlockNumberImpl = function() {
+    return function(onErr, onSucc) {
+        try {
+            web3.eth.getBlockNumber(function(err, blockNum) {
+                if (err) {
+                    onErr(err.toString())
+                } else {
+                    onSucc(blockNum);
+                }
+            });
+        } catch (err) {
+            onErr(err.toString());
+        }
+    }
+}
+
+
 exports.makeSwmVotingContractImpl = function(just, nothing, addr) {
     if (!ethUtils.isValidAddress(addr)) {
         console.log("Invalid address provided for voting contract");
@@ -117,6 +134,11 @@ exports.getBallotPropImpl = function(left, right, prop, args, contract) {
 
 
 exports.getBallotPropAsyncImpl = function(_prop, _args, contract) {
+    return exports.getBallotPropAsyncWBlockNumImpl(_prop, _args, null, contract);
+}
+
+
+exports.getBallotPropAsyncWBlockNumImpl = function(_prop, _args, blockNum, contract) {
     const prop = R.clone(_prop);
     const args = R.clone(_args);
     return function(onErr, onSucc) {
@@ -124,6 +146,9 @@ exports.getBallotPropAsyncImpl = function(_prop, _args, contract) {
         var ballotAsyncCB = function(err, res) {
             if (err) { onErr(err) }
             onSucc(convertAllToStdString(res));
+        }
+        if (blockNum) {
+            args.push(blockNum);
         }
         args.push(ballotAsyncCB);
         contract[prop].apply(null, args);
