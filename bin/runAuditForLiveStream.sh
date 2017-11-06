@@ -1,0 +1,1 @@
+node _pureDist/audit.js -e `cat ~/quiknode-url.txt` --ethnodeAuth `cat ~/quiknode-auth.txt` --swmBallotAddr 0x2Bb10945E9f0C9483022dc473aB4951BC2a77d0f --erc20Addr 0x9e88613418cf03dca54d6a2cf6ad934a78c7a17a
