@@ -26,7 +26,7 @@ import Data.Function.Uncurried (Fn0, Fn1, Fn2, Fn3, Fn4, Fn5, Fn6, runFn0, runFn
 import Data.Int (binary, decimal, fromStringAs, toNumber, toStringAs)
 import Data.Int as DInt
 import Data.Map (Map, delete, empty, fromFoldable, insert, keys, lookup, showTree, size, values, toUnfoldable)
-import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
+import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, isNothing, maybe)
 import Data.Number (fromString)
 import Data.Number.Format (toString)
 import Data.String (Pattern(..), drop, joinWith)
@@ -219,7 +219,9 @@ runBallotCount ballotStartBlock contract erc20 {silent} =
                 decryptedBallots <- decryptBallots ballotSeckey encBallotsWithoutDupes
                 optLog $ "Decrypted " <> (lenStr decryptedBallots) <> " ballots successfully"
 
-                balanceMap <- getBalances erc20 ballotStartBlock decryptedBallots
+                blockNum <- getBlockNumber
+
+                balanceMap <- getBalances erc20 blockNum decryptedBallots
                 optLog $ "Got balances for voters"
                 -- log $ "Balance Map: \n" <> renderMap balanceMap
 
@@ -291,14 +293,16 @@ removeDupes encBallots = do
 
 
 
-decryptBallots :: forall e. BoxSecretKey -> Array EncBallot -> Aff (| e) (Array Ballot)
+decryptBallots :: forall e. BoxSecretKey -> Array EncBallot -> Aff (| e) (Array (Ballot))
 decryptBallots _ [] = pure []
 decryptBallots encSk ballots = do
-        parTraverse decryptOne ballots
+        ballots_ <- parTraverse decryptOne ballots
+        let cleanBallots = map (unsafePartial $ fromJust) (filter isJust ballots_)
+        pure cleanBallots
     where
         decryptOne {i, encBallot, voterPk, voterAddr} = do
             let ballotM = toUint8Array <$> (decryptOneTimeBallot (toBox encBallot) (toBoxPubkey voterPk) encSk)
-            maybe (throwError $ error $ "Unable to decrypt ballot from: " <> show voterAddr) (\ballot -> pure $ {ballot, voterPk, voterAddr}) ballotM
+            maybe (pure $ Nothing) (\ballot -> pure $ Just {ballot, voterPk, voterAddr}) ballotM
 
 
 getBalances :: forall e. Erc20Contract -> Int -> Array Ballot -> Aff (| e) BalanceMap
