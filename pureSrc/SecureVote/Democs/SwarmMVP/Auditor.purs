@@ -10,10 +10,14 @@ import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Now (NOW)
 import Crypt.NaCl.Types (NACL_RANDOM)
+import Data.Array ((:))
+import Data.Array as A
 import Data.Decimal as Dec
 import Data.Either (Either(..), either, fromRight, isRight)
 import Data.Foldable (foldl)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Map (lookup)
+import Data.Map as Map
+import Data.Maybe (Maybe(..), maybe, fromMaybe)
 import Data.String as String
 import Data.String.Yarn (leftpadBy, unlines)
 import Data.Tuple (Tuple(..))
@@ -21,15 +25,17 @@ import Node.Process (PROCESS, exit)
 import Node.Yargs.Applicative (runY, yarg)
 import Node.Yargs.Setup (defaultHelp, usage)
 import Partial.Unsafe (unsafePartial)
-import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, makeErc20Contract, makeSwmVotingContract, runBallotCount, setWeb3Provider)
+import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, AllDetails, makeErc20Contract, makeSwmVotingContract, runBallotCount, setWeb3Provider)
 import SecureVote.Democs.SwarmMVP.Const (balanceAt)
+import SecureVote.Democs.SwarmMVP.Types (swmBallotShowJustVotes)
+import SecureVote.Utils.Array (fromList)
 import SecureVote.Utils.Decimal (toFixed)
 import SecureVote.Utils.String (padLeft, padRight)
 import Unsafe.Coerce (unsafeCoerce)
 
 
 formatBallotResults :: BallotResult -> String
-formatBallotResults {winner, possibleWinners, totals} = resultsMsgHeader <> "\n" <> resultsMsgRest 
+formatBallotResults {winner, possibleWinners, totals} = resultsMsgHeader <> resultsMsgRest 
     where 
         resultsMsgHeader = case winner of
             (Just w) -> "Winner! \n" <> formatOpt w
@@ -39,6 +45,24 @@ formatBallotResults {winner, possibleWinners, totals} = resultsMsgHeader <> "\n"
         formatOpt (Tuple opt nVotes) = padRight ' ' 30 opt <> " with # votes: " <> padLeft ' ' 30 decStr
             where
                 decStr = toFixed 0 nVotes
+
+
+formatAllDeets :: AllDetails -> String
+formatAllDeets {encBallotsWithoutDupes, decryptedBallots, delegateMapNoLoops, ballotMap, balanceMap} =
+    formattedResponse
+        where
+            formattedResponse = String.joinWith "\n" (makeCsvRow rowTitles : csvRows)
+            csvRows = map makeCsvRow votersWDetails
+            makeCsvRow d = String.joinWith "," [d.voter, d.delegate, d.vote, d.balance]
+            votersWDetails = map getVoterDetails voters
+            rowTitles = {voter: "Voter", delegate: "Delegate", vote: "Vote", balance: "Balance"}
+            getVoterDetails voter = 
+                { voter: show voter
+                , delegate: fromMaybe "No Delegate" $ show <$> (join $ lookup voter delegateMapNoLoops)
+                , vote: show $ fromMaybe "Error: no ballot to get" $ either (\err -> "Error: " <> err) swmBallotShowJustVotes <$> lookup voter ballotMap
+                , balance: show $ fromMaybe "Error: no balance found" $ toFixed 2 <$> lookup voter balanceMap
+                }
+            voters = fromList $ Map.keys balanceMap
 
 
 app :: forall eff. String -> String -> String -> String -> Aff (console :: CONSOLE, naclRandom :: NACL_RANDOM, process :: PROCESS, now :: NOW | eff) Unit
@@ -52,7 +76,7 @@ app ethUrl ethNodeAuth swmAddress erc20Address =
         let msgStart = exitMsgHeader exitC
         let msgBody = case ballotAns of
                 Left err -> err
-                Right ballotResults -> formatBallotResults ballotResults
+                Right (Tuple ballotResults allDeets) -> "Intricate Details:\n\n" <> formatAllDeets allDeets <> "\n\nSummary:\n\n" <> formatBallotResults ballotResults
         log $ "\n" <> msgStart <> "\n"
         log $ msgBody
         liftEff $ exit exitC

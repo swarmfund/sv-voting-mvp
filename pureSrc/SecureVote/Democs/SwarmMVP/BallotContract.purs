@@ -21,7 +21,7 @@ import Data.ArrayBuffer.Types (ArrayView, Uint8, Uint8Array)
 import Data.DateTime.Instant (toDateTime, unInstant)
 import Data.Decimal (Decimal)
 import Data.Decimal as Dec
-import Data.Either (Either(..), either, isRight)
+import Data.Either (Either(..), either, fromLeft, fromRight, isLeft, isRight)
 import Data.Function.Uncurried (Fn0, Fn1, Fn2, Fn3, Fn4, Fn5, Fn6, runFn0, runFn1, runFn2, runFn3, runFn4, runFn5, runFn6)
 import Data.Int (binary, decimal, fromStringAs, toNumber, toStringAs)
 import Data.Int as DInt
@@ -87,6 +87,21 @@ type ScaledVotes = {v1s :: Array Decimal, v2s :: Array Decimal, v3s :: Array Dec
 newtype OptStrs = OptStrs {o1::String, o2::String, o3::String, o4::String}
 instance optStrShow :: Show OptStrs where
     show (OptStrs {o1, o2, o3, o4}) = String.joinWith ", " [o1,o2,o3,o4]
+
+
+type AllDetails = 
+    { ballotSeckey :: BoxSecretKey
+    , nVotes :: Int
+    , encBallotsWithDupes :: Array EncBallot
+    , encBallotsWithoutDupes :: Array EncBallot
+    , decryptedBallots :: Array Ballot
+    , delegateMap :: DelegateMap
+    , delegateMapNoHang :: DelegateMap
+    , delegateMapNoLoops :: DelegateMap
+    , ballotMap :: BallotMap
+    , ballotResult :: BallotResult
+    , balanceMap :: BalanceMap
+    }
 
 
 noArgs :: forall a. Array a
@@ -191,7 +206,7 @@ swmNVotes contract = do
     maybe (throwError $ error $ "nVotes was not an integer: " <> nVotesStr) pure nVotes
 
 
-runBallotCount :: forall a e. Int -> SwmVotingContract -> Erc20Contract -> {silent::Boolean} -> (Aff (now :: NOW, console :: CONSOLE | e) (Either String BallotResult))
+runBallotCount :: forall a e. Int -> SwmVotingContract -> Erc20Contract -> {silent::Boolean} -> (Aff (now :: NOW, console :: CONSOLE | e) (Either String (Tuple BallotResult AllDetails)))
 runBallotCount ballotStartBlock contract erc20 {silent} = 
       do  -- Aff monad
         nowTime <- liftEff $ currentTimestamp
@@ -219,9 +234,12 @@ runBallotCount ballotStartBlock contract erc20 {silent} =
                 decryptedBallots <- decryptBallots ballotSeckey encBallotsWithoutDupes
                 optLog $ "Decrypted " <> (lenStr decryptedBallots) <> " ballots successfully"
 
-                blockNum <- getBlockNumber
-
-                balanceMap <- getBalances erc20 blockNum decryptedBallots
+                -- Note: some nodes do not support historical access due to pruning
+                -- in this case the results cannot be verified correctly as we need access to the balances at the time of the ballot
+                currentBlockNum <- getBlockNumber
+                balanceMap <- getBalances erc20 currentBlockNum decryptedBallots
+                
+                -- balanceMap <- getBalances erc20 ballotStartBlock decryptedBallots
                 optLog $ "Got balances for voters"
                 -- log $ "Balance Map: \n" <> renderMap balanceMap
 
@@ -242,6 +260,10 @@ runBallotCount ballotStartBlock contract erc20 {silent} =
                 ballotOpts <- parseBallotOpts <$> ballotPropHelperAff "getBallotOptions" noArgs contract 
                 optLog $ "Got ballot opts: " <> show ballotOpts
 
+                -- Note: some nodes do not support historical access due to pruning
+                -- in this case the results cannot be verified correctly as we need access to the balances at the time of the ballot
+                currentBlockNum <- getBlockNumber
+                
                 ballotResult <- pure $ countBallots ballotOpts ballotMap delegateMapNoLoops balanceMap
                 
                 let allDetails = { ballotSeckey
@@ -254,9 +276,10 @@ runBallotCount ballotStartBlock contract erc20 {silent} =
                                  , delegateMapNoLoops
                                  , ballotMap
                                  , ballotResult
+                                 , balanceMap
                                  }
                 
-                pure $ Right ballotResult
+                pure $ Right (Tuple ballotResult allDetails)
                     
     where
         lenStr :: forall a. Array a -> String 
@@ -293,16 +316,21 @@ removeDupes encBallots = do
 
 
 
-decryptBallots :: forall e. BoxSecretKey -> Array EncBallot -> Aff (| e) (Array (Ballot))
+decryptBallots :: forall e. BoxSecretKey -> Array EncBallot -> Aff (console :: CONSOLE | e) (Array (Ballot))
 decryptBallots _ [] = pure []
 decryptBallots encSk ballots = do
         ballots_ <- parTraverse decryptOne ballots
-        let cleanBallots = map (unsafePartial $ fromJust) (filter isJust ballots_)
+        let cleanBallots = map (unsafePartial $ fromRight) (filter isRight ballots_)
+        let badDecryptions = map (unsafePartial $ fromLeft) (filter isLeft ballots_)
+        if length badDecryptions > 0 then 
+                log $ "Got " <> (show $ length badDecryptions) <> " bad decryptions: " <> show badDecryptions
+            else
+                log "No bad decryptions!"
         pure cleanBallots
     where
         decryptOne {i, encBallot, voterPk, voterAddr} = do
             let ballotM = toUint8Array <$> (decryptOneTimeBallot (toBox encBallot) (toBoxPubkey voterPk) encSk)
-            maybe (pure $ Nothing) (\ballot -> pure $ Just {ballot, voterPk, voterAddr}) ballotM
+            maybe (pure $ Left $ "Cannot decrypt ballot from: " <> show voterAddr) (\ballot -> pure $ Right {ballot, voterPk, voterAddr}) ballotM
 
 
 getBalances :: forall e. Erc20Contract -> Int -> Array Ballot -> Aff (| e) BalanceMap

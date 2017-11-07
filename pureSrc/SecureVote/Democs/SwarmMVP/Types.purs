@@ -19,6 +19,7 @@ module SecureVote.Democs.SwarmMVP.Types
     , unsafeToAddress
     , getVotes
     , voteToInt
+    , swmBallotShowJustVotes
     ) where
 
 
@@ -42,6 +43,10 @@ instance showSwmBallot :: Show SwmBallot where
         "[ SwmBallot: " <>
         "Vtr: " <> show v <> ", " <> 
         "Vs: " <> foldl (\b a -> b <> " " <> show a) (show v1) [v2, v3, v4] <> " ]"
+
+
+swmBallotShowJustVotes :: SwmBallot -> String
+swmBallotShowJustVotes (SwmBallot v v1 v2 v3 v4) = show [v1, v2, v3, v4]
 
 
 newtype Address = Address String
