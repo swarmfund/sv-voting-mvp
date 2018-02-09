@@ -7,10 +7,10 @@ import Material.Snackbar
 import RemoteData exposing (RemoteData(..))
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (BallotParams)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Const exposing (erc20Addr)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
-import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(NotFoundR, OpeningSlideR, SwmAddressR))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(ListAllVotesR, NotFoundR, SwmAddressR))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidNotMade))
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits)
 
@@ -59,7 +59,7 @@ initModel defaultBallot =
     , ballotBits = Dict.empty
     , ballotAllDone = False
     , currentBallot = defaultBallot
-    , route = OpeningSlideR
+    , route = ListAllVotesR
     , history = []
     , lastRoute = Nothing
     , lastPageDirection = PageForward
