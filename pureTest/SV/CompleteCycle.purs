@@ -1,5 +1,5 @@
 module Test.SV.CompleteCycle where
-  
+
 import Prelude
 
 import Control.Monad.Aff (Aff, Canceler(..), Milliseconds(..), delay, error, makeAff, throwError)
@@ -42,9 +42,9 @@ import Node.Process (lookupEnv, PROCESS)
 import Partial.Unsafe (unsafePartial)
 import SecureVote.Crypto.Curve25519 (genCurve25519Key, toNonce, toBoxPubkey, toMessage, encryptOneTimeBallot)
 import SecureVote.Crypto.NativeEd25519 (sha256)
-import SecureVote.Democs.SwarmMVP.Auditor (formatBallotResults)
+import SecureVote.Democs.SwarmMVP.AuditApp (formatBallotResults)
 import SecureVote.Democs.SwarmMVP.Ballot (makeBallot)
-import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, EncBallotWVoter, Erc20Contract(..), SwmVotingContract(..), ballotPropHelper, ballotPropHelperAff, ballotPropHelperWBlockNumAff, getAccount, getBallotEncPK, makeErc20Contract, makeSwmVotingContract, noArgs, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, getBlockNumber)
+import SecureVote.Democs.SwarmMVP.BallotContract (AllDetails, BallotResult, EncBallotWVoter, Erc20Contract(..), SwmVotingContract(..), ballotPropHelper, ballotPropHelperAff, ballotPropHelperWBlockNumAff, getAccount, getBallotEncPK, makeErc20Contract, makeSwmVotingContract, noArgs, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, getBlockNumber)
 import SecureVote.Democs.SwarmMVP.KeyGen (generateKey)
 import SecureVote.Utils.ArrayBuffer (fromHex, toHex)
 import SecureVote.Utils.Numbers (intToStr)
@@ -81,7 +81,7 @@ logUC = log <<< unsafeCoerce
 self :: forall a. a -> a
 self a = a
 
-unsFromJ :: forall a. Maybe a -> a 
+unsFromJ :: forall a. Maybe a -> a
 unsFromJ a = unsafePartial $ fromJust a
 
 
@@ -96,14 +96,14 @@ completeBallotTest = do
         -- testRpc <- testRpcServer rpcPort
         let _ = setWeb3Provider $ "http://localhost:" <> rpcPortStr
         let voterIds = range 1 (nVotes + 1)
-        
+
         -- compile contract
         compileOut <- compileSol []
         log "Compiled contract"
 
         compileErc20Out <- compileSol ["-c", "Erc20.sol"]
         log "Compiled Erc20 contract"
-        
+
         -- deploy it
         {pk: encPk, sk: encSk, outBuffer: deployOut} <- deploySol
         let ui8SK = unsafePartial $ fromJust $ fromHex encSk
@@ -121,8 +121,10 @@ completeBallotTest = do
 
         -- check owner
         votingOwner <- ballotPropHelperAff "owner" [] contract
+        log $ "Got owner: " <> show votingOwner
         coinbase <- either (throwError <<< error) pure (getAccount 0)
         votingOwner `shouldEqual` coinbase
+        log $ "Voting owner == coinbase"
 
         -- do erc20
         let erc20AddrM = contractAddrM deployErc20Str
@@ -139,7 +141,7 @@ completeBallotTest = do
         balancesMatch <- checkBalances erc20Contract balances
         balancesMatch `shouldEqual` true
         log $ "ERC20 distribution complete and accurate."
-        
+
         -- create lots of ballots
         ballots <- createBallots nVotes contractM
         log $ "5 sample ballots: " <> (joinWith ", " $ map toHex $ Array.take 5 ballots)
@@ -162,7 +164,7 @@ completeBallotTest = do
         -- end the ballot or wait depending on ENV variables
         let shouldWaitStr = unsafePerformEff $ (lookupEnv "SV_MANUAL_TEST")
         let (shouldWait :: Boolean) = shouldWaitStr == Just "true"
-        if shouldWait 
+        if shouldWait
             then
                 log "Waiting for 90s for ballot to finish and manual testing..."
                 *> delay (Milliseconds $ 1000.0 * waitTime)
@@ -187,10 +189,10 @@ completeBallotTest = do
         ballotSuccess <- logAndPrintResults ballotResultE
         ballotSuccess `shouldEqual` true
 
-        let (nVotesInContract :: Int) = unsFromJ $ (fromStringAs decimal) $ unsafePartial $ fromRight $ ballotPropHelper "nVotesCast" noArgs contract 
+        let (nVotesInContract :: Int) = unsFromJ $ (fromStringAs decimal) $ unsafePartial $ fromRight $ ballotPropHelper "nVotesCast" noArgs contract
         if shouldWait then
                 (nVotesInContract >= (nVotes + extraVotes)) `shouldEqual` true
-            else 
+            else
                 nVotesInContract `shouldEqual` (nVotes + extraVotes)
 
         pure unit
@@ -200,7 +202,7 @@ completeBallotTest = do
     getEncPk cM = do
         contract <- maybe (Left "No contract") Right cM
         getBallotEncPK contract
-    
+
 
 compileSol :: forall e. Array String -> AffAll e Buffer
 compileSol args = do
@@ -212,7 +214,7 @@ deploySol = do
         nowTime <- liftEff currentTimestamp
         let endTime = toString $ nowTime + waitTime
         {sk, pk} <- liftEff generateKey
-        outBuffer <- affExec "node" ["./bin/solidity/deploy.js", "--startTime", "0", 
+        outBuffer <- affExec "node" ["./bin/solidity/deploy.js", "--startTime", "0",
                 "--endTime", endTime, "--ballotEncPubkey", "0x" <> pk,
                 "--unsafeSkipChecks", "--deploy", "--web3Provider",
                 "http://localhost:" <> rpcPortStr, "--testing"]
@@ -223,7 +225,7 @@ deploySol = do
 
 deployArbitrary :: forall e. String -> AffAll e Buffer
 deployArbitrary contractName = do
-        outBuffer <- affExec "node" ["./bin/solidity/deploy.js", "--startTime", "0", 
+        outBuffer <- affExec "node" ["./bin/solidity/deploy.js", "--startTime", "0",
                 "--endTime", "0", "--ballotEncPubkey", "0x00",
                 "--unsafeSkipChecks", "--deploy", "--web3Provider",
                 "http://localhost:" <> rpcPortStr, "--deployOther", contractName]
@@ -264,7 +266,7 @@ checkBalances erc20 balances = do
             let areEq = (bal == Just newBal) || (balStr == "0" && newBal == Dec.fromInt 0)
             if not areEq then
                     log $ "Err: balances not equal: " <> show newBal <> " and (" <> show bal <> ")"
-                else 
+                else
                     pure unit
             pure areEq
 
@@ -273,7 +275,7 @@ createBallots nVotes cM = case cM of
     Nothing -> throwError $ error "Contract is Nothing!"
     Just contract -> do
         let encPkM = getBallotEncPK contract
-        case encPkM of 
+        case encPkM of
             Left _ -> throwError $ error "could not get encryption pubkey from contract"
             Right encPk -> do
                 liftEff $ genBallots nVotes
@@ -310,15 +312,15 @@ castBallots allBallots (Just contract) = do
         castBallot (Tuple i ballotPack) = web3CastBallot i ballotPack contract
 
 
-logAndPrintResults :: forall e. Either String BallotResult -> Aff (console :: CONSOLE | e) Boolean
-logAndPrintResults ballotResults = case ballotResults of 
+logAndPrintResults :: forall e. Either String (Tuple BallotResult AllDetails) -> Aff (console :: CONSOLE | e) Boolean
+logAndPrintResults ballotResults = case ballotResults of
     Left err -> do
         log $ "Ballot Count Failed!\n" <> err
         pure false
-    Right res -> do
+    Right (Tuple res allResults) -> do
         log $ "Ballot count success!"
-        log $ formatBallotResults res 
-        pure true 
+        log $ formatBallotResults res
+        pure true
 
 
 
@@ -328,4 +330,3 @@ affExec cmd args = makeAff $ \cb -> do
     pure $ Canceler (\_ -> do
         _ <- throwError $ error $ "Canceled: " <> cmd <> (joinWith " " args)
         pure unit)
-
