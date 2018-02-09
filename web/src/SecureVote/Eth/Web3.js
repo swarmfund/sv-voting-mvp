@@ -1,7 +1,9 @@
-import Web3 = require("web3");
+import Web3 from "web3";
 import ERC20ABI from "./ERC20ABI";
 import SwmVotingMVPABIs from "./SwmVotingMVP.abi";
-import abiDecoder = require("abi-decoder");
+import abiDecoder from "abi-decoder";
+
+import AuditWeb from "../../../../pureSrc/SecureVote/Democs/SwarmMVP/AuditWeb.purs";
 
 import {create, env} from 'sanctuary';
 const S = create({checkTypes: true, env});
@@ -9,6 +11,7 @@ const S = create({checkTypes: true, env});
 
 // legacy contract w different getBallotOpts format
 const legacyContractAddr = "0x2bb10945e9f0c9483022dc473ab4951bc2a77d0f";
+
 
 
 const promiseCb = (resolve, reject, extra = []) => (err, val) => {
@@ -21,7 +24,7 @@ const promiseCb = (resolve, reject, extra = []) => (err, val) => {
 }
 
 
-const web3Ports = (web3: Web3, app) => {
+const web3Ports = (web3, app) => {
 
     const wrapper = (f) => {
         return (...args) => {
@@ -42,7 +45,7 @@ const web3Ports = (web3: Web3, app) => {
 
 
     const isLegacy = (addr) => {
-        return addr.toLowerCase() == legacyContractAddr.toLowerCase()
+        return addr.toLowerCase() === legacyContractAddr.toLowerCase()
     };
 
 
@@ -78,12 +81,6 @@ const web3Ports = (web3: Web3, app) => {
             getBallotOpts(implRecieveBallotOptsCBLegacy);
         } else {
             getBallotOpts(implRecieveBallotOptsCB);
-        }
-
-        try {
-            voteC.getBallotOptions(implRecieveBallotOptsCBLegacy);
-        } catch (err) {
-            implRecieveBallotOptsCBLegacy(err, null);
         }
 
         try {
@@ -193,7 +190,7 @@ const web3Ports = (web3: Web3, app) => {
 
 
     // Help with error handling boilerplate
-    const handleErrOr = <T>(f: ((T) => void)) => (err, resp: T) => {
+    const handleErrOr = (f) => (err, resp) => {
         if (err) {
             console.log('handleErrOr got err:', err);
             implNotifyErr(err)
@@ -268,6 +265,18 @@ const web3Ports = (web3: Web3, app) => {
         }).catch(err => {
             implNotifyErr(err.toString());
         });
+    }));
+
+    app.ports.getBallotResults.subscribe(wrapper(({ethUrl, votingAddr, erc20Addr}) => {
+        console.log(ethUrl, votingAddr, erc20Addr);
+        console.log(AuditWeb);
+        try {
+            const resp = AuditWeb.main(ethUrl || "")("")(votingAddr || "")(erc20Addr || "")();
+            console.log("AuditWeb returned ", resp);
+        } catch (err) {
+            console.error("AuditWeb.main threw error: ", err);
+        }
+        console.log("AuditWeb done");
     }));
 };
 

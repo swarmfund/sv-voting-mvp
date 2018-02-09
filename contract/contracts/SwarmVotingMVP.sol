@@ -149,14 +149,12 @@ contract SwarmVotingMVP {
         return ballotEncryptionSeckey;
     }
 
-    function getBallotOptions() public pure returns (string[4]) {
-        // NOTE: storing a 4x2 array in storage nearly doubled the gas cost
-        // of deployment - compromise is to create a constant function
+    function getBallotOptions() public pure returns (bytes32[4]) {
         return [
-            "",
-            "",
-            "",
-            ""
+            keccak256(""),
+            keccak256(""),
+            keccak256(""),
+            keccak256("")
         ];
     }
     

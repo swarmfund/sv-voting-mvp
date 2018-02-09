@@ -12,7 +12,7 @@ import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (doBallotOptsMatchRSched, voteOptionsRSched)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, defaultDelegate, getDelegateAddress, getSwmAddress)
-import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
+import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel, resetAllBallotFields)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidFail, TxidInProgress, TxidSuccess))
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
@@ -64,6 +64,9 @@ update msg model =
                 , ballotBits = Dict.insert id (ballotValToBytes val) model.ballotBits
             }
                 ! []
+
+        SetBallot b ->
+            update (ToWeb3 ReInit) <| resetAllBallotFields { model | currentBallot = b } b
 
         ConstructBallotPlaintext ->
             let
@@ -174,7 +177,7 @@ updateToWeb3 web3msg model =
             { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]
 
         ReInit ->
-            model ! [ getInit model.currentBallot.contractAddr ]
+            model ! [ getInit model.currentBallot.contractAddr, getEncryptionPublicKey model.currentBallot.contractAddr ]
 
 
 updateFromWeb3 : FromWeb3Msg -> Model -> ( Model, Cmd Msg )

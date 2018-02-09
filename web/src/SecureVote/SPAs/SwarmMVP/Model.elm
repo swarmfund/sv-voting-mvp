@@ -52,7 +52,7 @@ initModel defaultBallot =
     { mdl = Material.model
     , snack = Material.Snackbar.model
     , errors = []
-    , dialogHtml = { title = "", route = NotFoundDialog }
+    , dialogHtml = { title = "Error: Dialog has not been updated.", route = NotFoundDialog }
     , elevations = Dict.empty
     , fields = Dict.empty
     , ballotRange = Dict.empty
@@ -84,9 +84,30 @@ initModel defaultBallot =
 
 initEthNode : String
 initEthNode =
-    "https://mainnet.infura.io/securevote"
+    "http://eth-aws-nv-node-02.secure.vote:38545/eth"
+
+
+
+--    "https://mainnet.infura.io/securevote"
 
 
 type LastPageDirection
     = PageForward
     | PageBack
+
+
+resetAllBallotFields : Model -> BallotParams Msg -> Model
+resetAllBallotFields model { contractAddr } =
+    { model
+        | ballotRange = Dict.empty
+        , ballotBits = Dict.empty
+        , ballotAllDone = False
+        , candidateTx = { nullCandidateEthTx | to = Just contractAddr }
+        , encBytes = Nothing
+        , ballotPlaintext = Nothing
+        , remoteHexPk = Nothing
+        , miniVotingAbi = "Error: Ballot parameters have been reset and ABI is not set yet."
+        , ballotVerificationPassed = Loading
+        , txidCheck = TxidNotMade
+        , ballotOpen = Loading
+    }

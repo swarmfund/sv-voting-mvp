@@ -236,10 +236,10 @@ runBallotCount ballotStartBlock contract erc20 {silent} =
 
                 -- Note: some nodes do not support historical access due to pruning
                 -- in this case the results cannot be verified correctly as we need access to the balances at the time of the ballot
-                currentBlockNum <- getBlockNumber
-                balanceMap <- getBalances erc20 currentBlockNum decryptedBallots
+                -- currentBlockNum <- getBlockNumber
+                -- balanceMap <- getBalances erc20 currentBlockNum decryptedBallots
                 
-                -- balanceMap <- getBalances erc20 ballotStartBlock decryptedBallots
+                balanceMap <- getBalances erc20 ballotStartBlock decryptedBallots
                 optLog $ "Got balances for voters"
                 -- log $ "Balance Map: \n" <> renderMap balanceMap
 
@@ -259,10 +259,6 @@ runBallotCount ballotStartBlock contract erc20 {silent} =
 
                 ballotOpts <- parseBallotOpts <$> ballotPropHelperAff "getBallotOptions" noArgs contract 
                 optLog $ "Got ballot opts: " <> show ballotOpts
-
-                -- Note: some nodes do not support historical access due to pruning
-                -- in this case the results cannot be verified correctly as we need access to the balances at the time of the ballot
-                currentBlockNum <- getBlockNumber
                 
                 ballotResult <- pure $ countBallots ballotOpts ballotMap delegateMapNoLoops balanceMap
                 
