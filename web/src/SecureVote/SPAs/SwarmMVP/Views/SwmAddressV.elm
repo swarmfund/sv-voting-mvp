@@ -11,7 +11,6 @@ import Maybe.Extra exposing ((?), isNothing)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Utils exposing (isValidEthAddress, setCandTxFrom)
-import SecureVote.SPAs.SwarmMVP.Ballot as Ballot exposing (BallotOption)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress, setSwmAddress, swmAddrId)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance))
@@ -34,7 +33,7 @@ swmAddressV model =
             List.map .id
                 >> List.map (\id_ -> SetBallotRange id_ 0)
             <|
-                Ballot.voteOptions
+                model.currentBallot.voteOptions
 
         msgs =
             MultiMsg <|

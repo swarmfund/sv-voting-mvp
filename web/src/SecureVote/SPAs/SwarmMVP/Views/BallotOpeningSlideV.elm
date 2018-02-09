@@ -1,4 +1,4 @@
-module SecureVote.SPAs.SwarmMVP.Views.OpeningSlideV exposing (..)
+module SecureVote.SPAs.SwarmMVP.Views.BallotOpeningSlideV exposing (..)
 
 import Html exposing (Html, a, div, em, p, span, strong, text)
 import Html.Attributes exposing (class, href, style, target)

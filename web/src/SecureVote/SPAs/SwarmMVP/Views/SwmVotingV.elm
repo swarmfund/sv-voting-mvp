@@ -15,7 +15,6 @@ import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Utils exposing (processCandidateTx)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (renderReleaseScheduleTitle, voteOptions)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate, getDelegateAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward, SetDialog))
@@ -31,15 +30,15 @@ votingView model =
                 , td [ class "tl", style [ ( "word-wrap", "break-word" ) ] ] [ text value ]
                 ]
 
-        getResults { id, rSchedule, description } =
-            ( renderReleaseScheduleTitle rSchedule
+        getResults { id, title, description } =
+            ( title
             , toString <| Dict.get id model.ballotRange ? 0
             )
 
         displayResults =
             table [ class "mt2 dt--fixed w-auto-l" ]
                 (List.map tableRow
-                    (List.map getResults voteOptions)
+                    (List.map getResults model.currentBallot.voteOptions)
                     ++ [ tableRow ( "Delegate", getDelegateAddress model ? "None" ) ]
                 )
 

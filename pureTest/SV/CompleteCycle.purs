@@ -185,7 +185,7 @@ completeBallotTest = do
 
         -- check count results
         ballotSuccess <- logAndPrintResults ballotResultE
-        ballotSuccess `shouldEqual` true 
+        ballotSuccess `shouldEqual` true
 
         let (nVotesInContract :: Int) = unsFromJ $ (fromStringAs decimal) $ unsafePartial $ fromRight $ ballotPropHelper "nVotesCast" noArgs contract 
         if shouldWait then

@@ -2,6 +2,21 @@ import jsNacl = require('js-nacl');
 
 
 type SignBytesIncoming = {hexSk: string, hexRemotePk: string, bytesToSign: Array<number>};
+type KeyLog = {hexSk: string, hexPk: string, comment: string};
+
+
+const localStorageLogKey = "swmVotingKeyLog";
+
+
+const doLog = (hexSk, hexPk, comment) => {
+    try {
+        const existingKeys: Array<KeyLog> = JSON.parse(localStorage.getItem(localStorageLogKey) || "[]");
+        existingKeys.push({hexSk, hexPk, comment});
+        localStorage.setItem(localStorageLogKey, JSON.stringify(existingKeys));
+    } catch (err) {
+        console.error("Got error while attempting to append voting key log: ", err);
+    }
+}
 
 
 const curve25519Ports = (app) => {
@@ -18,9 +33,12 @@ const curve25519Ports = (app) => {
 
         app.ports.genKeyPair.subscribe(catchErrors((_) => {
             const keyPair = nacl.crypto_box_keypair();
-            const toSend = {hexSk: nacl.to_hex(keyPair.boxSk), hexPk: nacl.to_hex(keyPair.boxPk)};
+            const hexSk = nacl.to_hex(keyPair.boxSk);
+            const hexPk = nacl.to_hex(keyPair.boxPk);
+            const toSend = {hexSk, hexPk};
             app.ports.receiveKeyPair.send(toSend);
             console.log("getKeyPair sent via receiveKeyPair:", toSend);
+            doLog(hexSk, hexPk, "generated keys @ " + Date.now().toString());
         }));
 
         app.ports.encryptBytes.subscribe(catchErrors(({hexSk, hexRemotePk, bytesToSign}: SignBytesIncoming) => {
@@ -39,6 +57,7 @@ const curve25519Ports = (app) => {
             // const arrayToReturn = Array.prototype.slice.call(encrypted);
             app.ports.receiveEncryptedBytes.send(encryptedHex);
             console.log("encryptBytes sent via receiveEncryptedBytes:", encryptedHex);
+            doLog(hexSk, hexRemotePk, "Signing " + nacl.to_hex(msg) + " with the secretKey to be opened by the public key. result: " + nacl.to_hex(encryptedHex));
         }));
     })
 

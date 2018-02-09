@@ -1,17 +1,31 @@
 module SecureVote.SPAs.SwarmMVP.Ballot exposing (..)
 
+import List exposing (map)
+import List.Extra exposing (zip)
 import Round as R
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(..))
 
 
-openingDesc : String
-openingDesc =
+type alias BallotParams msg =
+    { voteOptions : List (BallotOption msg)
+    , openingDesc : String
+    , contractAddr : String
+    }
+
+
+rschedBallot : BallotParams msg
+rschedBallot =
+    { voteOptions = voteOptionsRSched, openingDesc = rSchedOpeningDesc, contractAddr = "0x2Bb10945E9f0C9483022dc473aB4951BC2a77d0f" }
+
+
+rSchedOpeningDesc : String
+rSchedOpeningDesc =
     "This option for the release of SWM tokens corresponds to the following specification:"
 
 
 type alias BallotOption msg =
     { id : Int
-    , rSchedule : ReleaseSchedule
+    , title : String
     , description : DialogHtml msg
     }
 
@@ -87,40 +101,42 @@ rSchedToListElems rSched =
     ]
 
 
-addBallotDesc : List (BallotOption msg) -> List (BallotOption msg)
-addBallotDesc ballotOptions =
-    let
-        enhanceDesc rSched desc =
-            DlogDiv
-                [ DlogP [ DlogTxt openingDesc ]
-                , DlogUl <| rSchedToListElems rSched
-                , desc
-                ]
-
-        expandDesc { id, rSchedule, description } =
-            BallotOption id rSchedule <| enhanceDesc rSchedule description
-    in
-    List.map expandDesc ballotOptions
-
-
-voteOptions : List (BallotOption msg)
-voteOptions =
-    let
-        wrapP inner =
-            DlogP [ DlogTxt inner ]
-    in
-    addBallotDesc <|
-        [ BallotOption 1337000001 (ReleaseSchedule 8 42) <| wrapP "This is the proposal in the whitepaper. The release will take approximately 1 year."
-        , BallotOption 1337000002 (ReleaseSchedule 42 8) <| wrapP "This is like the release schedule in the whitepaper, but smaller chunks will be released more frequently."
-        , BallotOption 1337000003 (ReleaseSchedule 16 42) <| wrapP "This release will occur over 2 years."
-        , BallotOption 1337000004 (ReleaseSchedule 4 84) <| DlogP [ DlogTxt "This is similar to option 1 (8 releases of 42 days), but less frequent." ]
+addBallotDescRSched : List (DialogHtml msg) -> DialogHtml msg -> DialogHtml msg
+addBallotDescRSched dialogElems desc =
+    DlogDiv
+        [ DlogP [ DlogTxt rSchedOpeningDesc ]
+        , DlogUl dialogElems
+        , desc
         ]
 
 
-doBallotOptsMatch : List (List Int) -> Bool
-doBallotOptsMatch optsFromEth =
+voteOptionsRSched : List (BallotOption msg)
+voteOptionsRSched =
     let
-        extractRelSched { rSchedule } =
+        wrapP inner =
+            DlogP [ DlogTxt inner ]
+
+        modRSched ( r, f ) =
+            f r
+    in
+    map modRSched <|
+        zip rScheds
+            [ \a -> BallotOption 1337000001 (renderReleaseScheduleTitle a) <| addBallotDescRSched (rSchedToListElems a) (wrapP "This is the proposal in the whitepaper. The release will take approximately 1 year.")
+            , \a -> BallotOption 1337000002 (renderReleaseScheduleTitle a) <| addBallotDescRSched (rSchedToListElems a) (wrapP "This is like the release schedule in the whitepaper, but smaller chunks will be released more frequently.")
+            , \a -> BallotOption 1337000003 (renderReleaseScheduleTitle a) <| addBallotDescRSched (rSchedToListElems a) (wrapP "This release will occur over 2 years.")
+            , \a -> BallotOption 1337000004 (renderReleaseScheduleTitle a) <| addBallotDescRSched (rSchedToListElems a) (wrapP "This is similar to option 1 (8 releases of 42 days), but less frequent.")
+            ]
+
+
+rScheds : List ReleaseSchedule
+rScheds =
+    [ ReleaseSchedule 8 42, ReleaseSchedule 42 8, ReleaseSchedule 16 42, ReleaseSchedule 4 84 ]
+
+
+doBallotOptsMatchRSched : List (List Int) -> Bool
+doBallotOptsMatchRSched optsFromEth =
+    let
+        extractRelSched rSchedule =
             let
                 { nReleases, releaseLength } =
                     rSchedule
@@ -128,9 +144,14 @@ doBallotOptsMatch optsFromEth =
             [ nReleases, releaseLength ]
 
         releaseSchedules =
-            List.map extractRelSched voteOptions
+            List.map extractRelSched rScheds
 
         matches =
             List.map2 (\ethOpt ourOpt -> ethOpt == ourOpt) optsFromEth releaseSchedules
     in
     List.all (\b -> b) matches
+
+
+doBallotOptsMatch : List (BallotOption msg) -> List String -> Bool
+doBallotOptsMatch voteOpts titlesFromEth =
+    True

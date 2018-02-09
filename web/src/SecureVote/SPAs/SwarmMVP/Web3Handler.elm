@@ -10,6 +10,12 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 decodeRead : ReadResponse -> Msg
 decodeRead { success, errMsg, response, method } =
     case method of
+        "getBallotOptionsLegacy" ->
+            if success then
+                decodeBallotOptsLegacy response
+            else
+                MultiMsg [ LogErr errMsg, FromWeb3 <| GetBallotOptsLegacy (Failure errMsg) ]
+
         "getBallotOptions" ->
             if success then
                 decodeBallotOpts response
@@ -42,11 +48,25 @@ decodeBallotPeriod val =
             FromWeb3 <| GetBallotPeriod <| Failure msg
 
 
+decodeBallotOptsLegacy : Value -> Msg
+decodeBallotOptsLegacy val =
+    let
+        llDecoder =
+            Decode.list (Decode.list Decode.int)
+    in
+    case Decode.decodeValue llDecoder val of
+        Ok opts ->
+            FromWeb3 <| GetBallotOptsLegacy (Success opts)
+
+        Err err ->
+            MultiMsg [ LogErr err, FromWeb3 <| GetBallotOptsLegacy (Failure err) ]
+
+
 decodeBallotOpts : Value -> Msg
 decodeBallotOpts val =
     let
         llDecoder =
-            Decode.list (Decode.list Decode.int)
+            Decode.list Decode.string
     in
     case Decode.decodeValue llDecoder val of
         Ok opts ->
