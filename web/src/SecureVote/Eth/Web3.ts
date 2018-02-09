@@ -33,20 +33,32 @@ const web3Ports = (web3: Web3, app) => {
                 implNotifyErr(err.toString());
             }
         }
-    }
+    };
+
 
     // "Global" constants
     const Erc20Contract = web3.eth.contract(ERC20ABI);
-    let SwmVotingContract;
+    let SwmVotingContract = web3.eth.contract(SwmVotingMVPABIs.fullAbi);
 
-    app.ports.getInit.subscribe(wrapper((contractAddr) => {
-        const isLegacy = contractAddr.toLowerCase() == legacyContractAddr.toLowerCase();
-        const abi = isLegacy ? SwmVotingMVPABIs.fullAbiLegacy : SwmVotingMVPABIs.fullAbi;
-        const miniAbi = isLegacy ? SwmVotingMVPABIs.miniAbiLegacy : SwmVotingMVPABIs.miniAbi;
+
+    const isLegacy = (addr) => {
+        return addr.toLowerCase() == legacyContractAddr.toLowerCase()
+    };
+
+
+    const genSwmVotingContract = (addr) => {
+        const abi = isLegacy(addr) ? SwmVotingMVPABIs.fullAbiLegacy : SwmVotingMVPABIs.fullAbi;
         abiDecoder.addABI(abi);
 
-        SwmVotingContract = web3.eth.contract(abi);
+        return web3.eth.contract(abi);
+    };
 
+
+    app.ports.getInit.subscribe(wrapper((contractAddr) => {
+
+        SwmVotingContract = genSwmVotingContract(contractAddr);
+
+        const miniAbi = isLegacy(contractAddr) ? SwmVotingMVPABIs.miniAbiLegacy : SwmVotingMVPABIs.miniAbi;
         app.ports.implInit.send({
             miniAbi: JSON.stringify(miniAbi)
         })

@@ -10,6 +10,7 @@ type Route
     | SwmVoteR
     | SwmDelegateR
     | SwmSubmitR
+    | ListAllVotesR
     | NotFoundR
 
 
