@@ -4,7 +4,7 @@ import Dict exposing (Dict)
 import Maybe.Extra exposing ((?))
 import SecureVote.Eth.Types exposing (EthAddress)
 import SecureVote.Eth.Utils exposing (fromHexEth)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (BallotOption, voteOptions)
+import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.Types.VBit exposing (vBitsToBytes, vblToList)
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits)
 
@@ -43,11 +43,11 @@ constructBallot votes delegate =
     Maybe.map (\prefix -> voteBytes ++ prefix) ethPrefixM
 
 
-orderedBallotBits : Dict Int (Result String RangeBallot3Bits) -> Maybe (List RangeBallot3Bits)
-orderedBallotBits ballotBitsDict =
+orderedBallotBits : Model -> Dict Int (Result String RangeBallot3Bits) -> Maybe (List RangeBallot3Bits)
+orderedBallotBits model ballotBitsDict =
     let
         ballotIds =
-            List.map .id voteOptions
+            List.map .id model.currentBallot.voteOptions
 
         ballotBits =
             Maybe.Extra.combine <| List.map (\id -> Dict.get id ballotBitsDict ? Err "" |> Result.toMaybe) ballotIds

@@ -51,6 +51,7 @@ contract SwarmVotingMVP {
 
     // Banned addresses - necessary to ban Swarm Fund from voting in their own ballot
     mapping(address => bool) public bannedAddresses;
+    // TODO: Is this the right address?
     address public swarmFundAddress = 0x8Bf7b2D536D286B9c5Ad9d99F608e9E214DE63f0;
 
 
@@ -149,14 +150,14 @@ contract SwarmVotingMVP {
         return ballotEncryptionSeckey;
     }
 
-    function getBallotOptions() public pure returns (string[4]) {
+    function getBallotOptions() public pure returns (uint8[2][4]) {
         // NOTE: storing a 4x2 array in storage nearly doubled the gas cost
         // of deployment - compromise is to create a constant function
         return [
-            "",
-            "",
-            "",
-            ""
+            [8, 42],
+            [42, 8],
+            [16, 42],
+            [4, 84]
         ];
     }
     

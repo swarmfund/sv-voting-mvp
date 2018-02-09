@@ -7,7 +7,8 @@ import Material.Snackbar
 import RemoteData exposing (RemoteData(..))
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
-import SecureVote.SPAs.SwarmMVP.Const exposing (erc20Addr, votingContractAddr)
+import SecureVote.SPAs.SwarmMVP.Ballot exposing (BallotParams)
+import SecureVote.SPAs.SwarmMVP.Const exposing (erc20Addr)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(NotFoundR, OpeningSlideR, SwmAddressR))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidNotMade))
@@ -24,6 +25,7 @@ type alias Model =
     , ballotRange : Dict Int Int
     , ballotBits : Dict Int (Result String RangeBallot3Bits)
     , ballotAllDone : Bool
+    , currentBallot : BallotParams Msg
     , route : Route
     , history : List Route
     , lastPageDirection : LastPageDirection
@@ -31,7 +33,6 @@ type alias Model =
     , candidateTx : CandidateEthTx
     , ethNode : String
     , swarmErc20Address : String
-    , swarmVotingAddress : String
     , swmBalance : Maybe Decimal
     , keypair : Maybe Curve25519KeyPair
     , encBytes : Maybe String
@@ -46,8 +47,8 @@ type alias Model =
     }
 
 
-initModel : Model
-initModel =
+initModel : BallotParams Msg -> Model
+initModel defaultBallot =
     { mdl = Material.model
     , snack = Material.Snackbar.model
     , errors = []
@@ -57,16 +58,16 @@ initModel =
     , ballotRange = Dict.empty
     , ballotBits = Dict.empty
     , ballotAllDone = False
+    , currentBallot = defaultBallot
     , route = OpeningSlideR
     , history = []
     , lastRoute = Nothing
     , lastPageDirection = PageForward
-    , candidateTx = { nullCandidateEthTx | to = Just votingContractAddr }
-    , ethNode = "https://mainnet.infura.io/securevote"
+    , candidateTx = nullCandidateEthTx
+    , ethNode = initEthNode
 
     --    , ethNode = "http://localhost:8545"
     , swarmErc20Address = erc20Addr
-    , swarmVotingAddress = votingContractAddr
     , swmBalance = Nothing
     , keypair = Nothing
     , encBytes = Nothing
@@ -79,6 +80,11 @@ initModel =
     , ballotOpen = Loading
     , now = 0
     }
+
+
+initEthNode : String
+initEthNode =
+    "https://mainnet.infura.io/securevote"
 
 
 type LastPageDirection

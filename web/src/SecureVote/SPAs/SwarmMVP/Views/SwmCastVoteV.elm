@@ -12,7 +12,6 @@ import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Utils exposing (rawTokenBalance18DpsToBalance)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (renderReleaseScheduleTitle, voteOptions)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
@@ -26,16 +25,13 @@ castVoteView model =
             Maybe.map rawTokenBalance18DpsToBalance model.swmBalance ? "Loading..."
 
         optionList =
-            List.map optionListItem voteOptions
+            List.map optionListItem model.currentBallot.voteOptions
 
-        optionListItem { id, rSchedule, description } =
-            let
-                rSchedTitle =
-                    renderReleaseScheduleTitle rSchedule
-            in
+        optionListItem { id, title, description } =
+            -- renderReleaseScheduleTitle rSchedule
             div [ class "center mw-5 cf mb4 mt3 db w-100 bb bw1 b--silver" ]
                 [ div [ class "h-100 w-100 w-100-m w-30-l fl mt2 mb3 tl-l v-mid" ]
-                    [ span [ class "w-100 f4 tc tl-l v-mid b" ] [ text rSchedTitle ] ]
+                    [ span [ class "w-100 f4 tc tl-l v-mid b" ] [ text title ] ]
                 , div [ class "cf w-0 w-25-m fl dn dib-m" ]
                     -- &nbsp;
                     [ text " " ]
@@ -70,7 +66,7 @@ castVoteView model =
                     [ btn (id * 13 + 1)
                         model
                         [ SecBtn
-                        , Click (SetDialog (rSchedTitle ++ ": Details") (BallotDialog description))
+                        , Click (SetDialog (title ++ ": Details") (BallotDialog description))
                         , OpenDialog
                         ]
                         [ text "Details" ]

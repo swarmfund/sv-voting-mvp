@@ -9,7 +9,6 @@ import Material.Typography as Typo exposing (headline, menu, title)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
 import SecureVote.Eth.Utils exposing (isValidTxid)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (voteOptions)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRender)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary, defaultDelegate, getBallotTxid, getDelegateAddress, getEthNodeTemp, setBallotTxid, setEthNodeTemp, toStrDropQts)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
@@ -116,7 +115,7 @@ gethDialogV model =
         [ subhead "1. Open up your wallet and go to the send transaction screen"
         , p [] [ text "We're going to send a transaction to the voting smart contract with a pre-prepared data payload." ]
         , subhead "2. Enter the voting contract address"
-        , p [] [ text "The voting contract address is:", codeSection [ text model.swarmVotingAddress ] ]
+        , p [] [ text "The voting contract address is:", codeSection [ text model.currentBallot.contractAddr ] ]
         , subhead "3. Enter transaction data"
         , p []
             [ text "Be sure you've set the 'value' you're sending to 0, and then paste in this transaction data."
@@ -149,7 +148,7 @@ mewDialog model =
         [ subhead "1. Go to MyEtherWallet > Contracts"
         , p [] [ text "You'll need to do this yourself." ]
         , subhead "2. Enter the contract address"
-        , p [] [ text "The voting contract address is:", codeSection [ text model.swarmVotingAddress ] ]
+        , p [] [ text "The voting contract address is:", codeSection [ text model.currentBallot.contractAddr ] ]
         , subhead "3. Enter the ABI"
         , p [] [ text "Copy and paste this into the ABI section:", codeSection [ text model.miniVotingAbi ] ]
         , subhead "4. Copy in your encrypted ballot and ephemeral public key"
@@ -194,12 +193,12 @@ verifyDialogV model =
             , ( "myPubkey", toString <| Maybe.map .hexPk model.keypair ? "pubkey not found" )
             , ( "mySeckey", toString <| Maybe.map .hexSk model.keypair ? "seckey not found" )
             , ( "myDelegate", toString <| getDelegateAddress model ? defaultDelegate )
-            , ( "myVotesRaw", toString <| List.map (\vo -> Dict.get vo.id model.ballotRange ? -9999) voteOptions )
-            , ( "myVotesOffset", toString <| List.map (vBitsToInt << vblToList) <| orderedBallotBits model.ballotBits ? [] )
+            , ( "myVotesRaw", toString <| List.map (\vo -> Dict.get vo.id model.ballotRange ? -9999) model.currentBallot.voteOptions )
+            , ( "myVotesOffset", toString <| List.map (vBitsToInt << vblToList) <| orderedBallotBits model model.ballotBits ? [] )
             , ( "encBallot", toString <| model.encBytes ? "encrypted ballot not found" )
             , ( "submitBallotPrefix", toString "13c04769" )
             , ( "txData", toString <| model.candidateTx.data ? "tx data not found" )
-            , ( "votingContract", toString <| model.swarmVotingAddress )
+            , ( "votingContract", toString <| model.currentBallot.contractAddr )
             ]
 
         renderVerVar ( name, content ) =

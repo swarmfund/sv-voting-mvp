@@ -7,6 +7,10 @@ import {create, env} from 'sanctuary';
 const S = create({checkTypes: true, env});
 
 
+// legacy contract w different getBallotOpts format
+const legacyContractAddr = "0x2bb10945e9f0c9483022dc473ab4951bc2a77d0f";
+
+
 const promiseCb = (resolve, reject, extra = []) => (err, val) => {
     console.log('promiseCb got:', {err, val, extra});
     if (err) {
@@ -31,23 +35,43 @@ const web3Ports = (web3: Web3, app) => {
         }
     }
 
-
     // "Global" constants
     const Erc20Contract = web3.eth.contract(ERC20ABI);
-    const SwmVotingContract = web3.eth.contract(SwmVotingMVPABIs.fullAbi);
-
-    abiDecoder.addABI(SwmVotingMVPABIs.fullAbi);
+    let SwmVotingContract;
 
     app.ports.getInit.subscribe(wrapper((contractAddr) => {
+        const isLegacy = contractAddr.toLowerCase() == legacyContractAddr.toLowerCase();
+        const abi = isLegacy ? SwmVotingMVPABIs.fullAbiLegacy : SwmVotingMVPABIs.fullAbi;
+        const miniAbi = isLegacy ? SwmVotingMVPABIs.miniAbiLegacy : SwmVotingMVPABIs.miniAbi;
+        abiDecoder.addABI(abi);
+
+        SwmVotingContract = web3.eth.contract(abi);
+
         app.ports.implInit.send({
-            miniAbi: JSON.stringify(SwmVotingMVPABIs.miniAbi)
+            miniAbi: JSON.stringify(miniAbi)
         })
 
         const voteC = SwmVotingContract.at(contractAddr);
+
+
+        const getBallotOpts = (cb) => {
+            try {
+                voteC.getBallotOptions(implRecieveBallotOptsCBLegacy);
+            } catch (err) {
+                implRecieveBallotOptsCBLegacy(err, null);
+            }
+        }
+
+        if (contractAddr == legacyContractAddr){
+            getBallotOpts(implRecieveBallotOptsCBLegacy);
+        } else {
+            getBallotOpts(implRecieveBallotOptsCB);
+        }
+
         try {
-            voteC.getBallotOptions(implRecieveBallotOptsCB);
+            voteC.getBallotOptions(implRecieveBallotOptsCBLegacy);
         } catch (err) {
-            implRecieveBallotOptsCB(err, null);
+            implRecieveBallotOptsCBLegacy(err, null);
         }
 
         try {
@@ -94,6 +118,29 @@ const web3Ports = (web3: Web3, app) => {
     }
 
 
+    const implRecieveBallotOptsCBLegacy = (err, ballotOpts) => {
+        console.log('implRecieveBallotOptsCBLegacy got:', err, ballotOpts)
+        if (err) {
+            console.log('implRecieveBallotOptsCBLegacy error got:', err);
+            app.ports.contractReadResponse.send({
+                success: false,
+                errMsg: err.toString(),
+                method: "getBallotOptions",
+                response: []
+            })
+        } else {
+            const bOpts = S.map(([a, b]) => ([a.toNumber(), b.toNumber()]), ballotOpts);
+            console.log('ballot opts returning', bOpts);
+            app.ports.contractReadResponse.send({
+                success: true,
+                errMsg: "",
+                method: "getBallotOptionsLegacy",
+                response: bOpts
+            })
+        }
+    };
+
+
     const implRecieveBallotOptsCB = (err, ballotOpts) => {
         console.log('implRecieveBallotOptsCB got:', err, ballotOpts)
         if (err) {
@@ -102,7 +149,7 @@ const web3Ports = (web3: Web3, app) => {
                 success: false,
                 errMsg: err.toString(),
                 method: "getBallotOptions",
-                response: []
+                response: ""
             })
         } else {
             const bOpts = S.map(([a, b]) => ([a.toNumber(), b.toNumber()]), ballotOpts);

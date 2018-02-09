@@ -9,7 +9,7 @@ import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Web3 exposing (..)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
+import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch, doBallotOptsMatchRSched, voteOptionsRSched)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, defaultDelegate, getDelegateAddress, getSwmAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
@@ -43,7 +43,7 @@ update msg model =
 
         PageGoBack ->
             { model
-                | route = List.head model.history ? initModel.route
+                | route = List.head model.history ? (initModel model.currentBallot).route
                 , history = List.tail model.history ? []
                 , lastPageDirection = PageBack
                 , lastRoute = Just model.route
@@ -67,7 +67,7 @@ update msg model =
         ConstructBallotPlaintext ->
             let
                 plainBytesM =
-                    orderedBallotBits model.ballotBits
+                    orderedBallotBits model model.ballotBits
                         |> Maybe.andThen
                             (flip constructBallot <|
                                 getDelegateAddress model
@@ -159,7 +159,7 @@ updateToWeb3 : ToWeb3Msg -> Model -> ( Model, Cmd Msg )
 updateToWeb3 web3msg model =
     case web3msg of
         SetProvider ->
-            model ! [ setWeb3Provider model.ethNode, getEncryptionPublicKey model.swarmVotingAddress ]
+            model ! [ setWeb3Provider model.ethNode, getEncryptionPublicKey model.currentBallot.contractAddr ]
 
         GetErc20Balance ->
             let
@@ -171,6 +171,9 @@ updateToWeb3 web3msg model =
 
         CheckTxid txid ->
             { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]
+
+        ReInit ->
+            model ! [ getInit model.currentBallot.contractAddr ]
 
 
 updateFromWeb3 : FromWeb3Msg -> Model -> ( Model, Cmd Msg )
@@ -192,28 +195,25 @@ updateFromWeb3 msg model =
         Web3Init init ->
             { model | miniVotingAbi = init.miniAbi } ! []
 
-        GetBallotOpts resp ->
-            let
-                mFail errMsg =
-                    { model
-                        | ballotVerificationPassed = Failure errMsg
-                    }
-            in
+        GetBallotOptsLegacy resp ->
             case resp of
                 Success opts ->
-                    if doBallotOptsMatch opts then
-                        { model | ballotVerificationPassed = Success True } ! []
-                    else
-                        mFail "Release schedule options in voting front end do not match smart contract!" ! []
+                    let
+                        optCheck =
+                            model.currentBallot.voteOptions == voteOptionsRSched && doBallotOptsMatchRSched opts
+                    in
+                    ballotOptSuccess model optCheck
 
-                Failure errMsg ->
-                    mFail errMsg ! []
+                _ ->
+                    ballotOptElse model resp
 
-                Loading ->
-                    { model | ballotVerificationPassed = Loading } ! []
+        GetBallotOpts resp ->
+            case resp of
+                Success opts ->
+                    ballotOptSuccess model (doBallotOptsMatch model.currentBallot.voteOptions opts)
 
-                NotAsked ->
-                    { model | ballotVerificationPassed = NotAsked } ! []
+                _ ->
+                    ballotOptElse model resp
 
         GetBallotPeriod resp ->
             { model | ballotOpen = resp } ! []
@@ -274,3 +274,34 @@ updateFromCurve25519 msg model =
 --                     model ! [ encryptBytes { bytesToSign = bytes, hexSk = keypair.hexSk, hexRemotePk = hexRemotePk } ]
 --                 _ ->
 --                     update (LogErr "App does not have all of: ballot plaintext, keypair, and encryption public key. Unable to generate encrypted ballot.") model
+
+
+mFail : Model -> String -> Model
+mFail model errMsg =
+    { model
+        | ballotVerificationPassed = Failure errMsg
+    }
+
+
+ballotOptSuccess : Model -> Bool -> ( Model, Cmd Msg )
+ballotOptSuccess model b =
+    if b then
+        { model | ballotVerificationPassed = Success True } ! []
+    else
+        mFail model "Release schedule options in voting front end do not match smart contract!" ! []
+
+
+ballotOptElse : Model -> RemoteData String a -> ( Model, Cmd Msg )
+ballotOptElse model resp =
+    case resp of
+        Success _ ->
+            mFail model "Response from Web3 successful but not handled by correct function. This error should never happen." ! []
+
+        Failure errMsg ->
+            mFail model errMsg ! []
+
+        Loading ->
+            { model | ballotVerificationPassed = Loading } ! []
+
+        NotAsked ->
+            { model | ballotVerificationPassed = NotAsked } ! []

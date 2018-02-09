@@ -45,6 +45,7 @@ type ToWeb3Msg
     = SetProvider
     | GetErc20Balance
     | CheckTxid String
+    | ReInit
 
 
 type FromWeb3Msg
@@ -52,7 +53,8 @@ type FromWeb3Msg
     | GotDataParam String
     | GotEncPubkey String
     | Web3Init InitRecord
-    | GetBallotOpts (RemoteData String (List (List Int)))
+    | GetBallotOptsLegacy (RemoteData String (List (List Int)))
+    | GetBallotOpts (RemoteData String (List String))
     | GotTxidStatus (Result String GotTxidResp)
     | GetBallotPeriod (RemoteData String { startTime : Int, endTime : Int })
 
