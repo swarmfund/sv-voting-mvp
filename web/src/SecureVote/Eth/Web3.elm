@@ -183,3 +183,6 @@ onInit msgConstructor initStuff =
 
         Err err ->
             errHelper "Error while getting initial parameters from Web3: " err
+
+
+port getBallotResults : { ethUrl : String, votingAddr : String, erc20Addr : String } -> Cmd msg

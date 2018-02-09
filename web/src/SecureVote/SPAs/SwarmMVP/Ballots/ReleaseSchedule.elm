@@ -15,6 +15,8 @@ rschedBallot =
     , startTime = 1509372000
     , endTime = 1510009200
     , ballotTitle = "SWM Token Release Schedule"
+    , description = "This ballot will decide the release schedule of the SWM token. There are four possible schedules, different in size and frequency of each step in the schedule."
+    , id = 3948759378
     }
 
 

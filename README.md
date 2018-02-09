@@ -89,3 +89,17 @@ Example deployment:
 yarn sol-deploy --startTime 1508824035 --endTime 1509667200 \
     --ballotEncPubkey 0xf13a7020b9d69380e8b91fc51acae296cf3368174edd6bfbd4edeac70bbca80f
 ```
+
+### Notes:
+
+Currently `purescript-decimals` is causing a problem with imports.
+
+To fix alter Decimal.js (in `bower_components/purescript-decimals`)
+and change `var Decimal = require("decimal.js")` to 
+
+``` javascript
+var D = require("decimal.js");
+var Decimal = D.Decimal;
+```
+
+TODO: Check if this is a problem with `purescript-decimals` or webpack.

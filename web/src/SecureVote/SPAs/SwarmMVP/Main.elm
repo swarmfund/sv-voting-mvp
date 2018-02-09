@@ -2,8 +2,9 @@ module SecureVote.SPAs.SwarmMVP.Main exposing (..)
 
 import Html exposing (Html)
 import SecureVote.Crypto.Curve25519 exposing (genKeyPair, onIncomingCurve25519Error, onIncomingEncBytes, onIncomingKeyPair, receiveCurve25519Error, receiveEncryptedBytes, receiveKeyPair)
-import SecureVote.Eth.Web3 exposing (contractReadResponse, getEncryptionPublicKey, getInit, gotEncPubkey, gotTxidCheckStatus, gotWeb3Error, implDataParam, implErc20Balance, implInit, onContractReadResponse, onGotPubkey, onGotTxidStatus, onIncomingErc20Balance, onIncomingWeb3Error, onInit, onRecieveDataParam, performContractRead, setWeb3Provider)
+import SecureVote.Eth.Web3 exposing (contractReadResponse, getBallotResults, getEncryptionPublicKey, getInit, gotEncPubkey, gotTxidCheckStatus, gotWeb3Error, implDataParam, implErc20Balance, implInit, onContractReadResponse, onGotPubkey, onGotTxidStatus, onIncomingErc20Balance, onIncomingWeb3Error, onInit, onRecieveDataParam, performContractRead, setWeb3Provider)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (rschedBallot)
+import SecureVote.SPAs.SwarmMVP.Const exposing (erc20Addr)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initEthNode, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..))
@@ -32,12 +33,20 @@ subscriptions model =
 
 initCmds : Model -> List (Cmd Msg) -> Cmd Msg
 initCmds initModel extraCmds =
+    let
+        votingAddr =
+            initModel.currentBallot.contractAddr
+
+        ethUrl =
+            initEthNode
+    in
     Cmd.batch <|
         [ setWeb3Provider initModel.ethNode
         , perform (SetTime << round << (\t -> t / 1000)) Time.now
         , genKeyPair True
-        , getEncryptionPublicKey initModel.currentBallot.contractAddr
-        , getInit initModel.currentBallot.contractAddr
+        , getEncryptionPublicKey votingAddr
+        , getInit votingAddr
+        , getBallotResults { ethUrl = initEthNode, votingAddr = votingAddr, erc20Addr = erc20Addr }
         ]
             ++ extraCmds
 

@@ -26,7 +26,8 @@ var TARGET_ENV = function () {
             return 'audit-prod';
 
         default:
-            return 'development'
+            console.warn("WARNING - Setting uncaught TARGET_ENV: ", process.env.npm_lifecycle_event);
+            return process.env.npm_lifecycle_event;
     }
 }();
 var filename = (TARGET_ENV === 'production') ? '[name]-[hash].js' : '[name].js';
@@ -43,28 +44,38 @@ const CopyWebpackPluginConfig = new CopyWebpackPlugin([
 ]);
 
 
-const pursCommonF = (mainModule) => ({
+const pursCommonF = () => ({
     module: {
         rules: [
             {
                 test: /\.purs$/,
-                loader: "purs-loader",
                 exclude: /node_modules/,
-                query: {
-                    bundle: true,
-                    pscBundleArgs: {
-                        main: mainModule
-                    },
-                    src: ["bower_components/purescript-*/src/**/*.purs", "pureSrc/**/*.purs"]
-                }
-            }
+                use: [
+                    {
+                        loader: "purs-loader",
+                        query: {
+                            bundle: true,
+                            src: ["bower_components/purescript-*/src/**/*.purs", "pureSrc/**/*.purs"]
+                        }
+                    }
+                ]
+            },
         ]
     },
-    output: {
-        path: path.join(__dirname, _pureDist),
-        filename: filename
+    node: {
+        fs: 'empty'
+    },
+    externals: {
+        sodium: 'sodium'
     }
-})
+});
+
+
+const buildAuditWeb = merge(pursCommonF(), {
+    resolve: {
+        extensions: [".purs", ".js", ".json", ".ts"]
+    },
+});
 
 
 const common = {
@@ -76,7 +87,7 @@ const common = {
     },
     output: {
         path: path.join(__dirname, _dist),
-        filename: filename
+        filename: filename,
     },
     module: {
         rules: [
@@ -86,17 +97,17 @@ const common = {
                 exclude: /node_modules/,
                 loader: 'file-loader?name=[name].[ext]',
             },
-            {
-                test: /\.js$/,
-                exclude: /node_modules/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        // env: automatically determines the Babel plugins you need based on your supported environments
-                        presets: ['env']
-                    }
-                }
-            },
+            // {
+            //     test: /\.js$/,
+            //     exclude: /node_modules/,
+            //     use: {
+            //         loader: 'babel-loader',
+            //         options: {
+            //             // env: automatically determines the Babel plugins you need based on your supported environments
+            //             presets: ['env']
+            //         }
+            //     }
+            // },
             {
                 test: /\.css$/,
                 exclude: [
@@ -123,7 +134,7 @@ const common = {
 
 if (TARGET_ENV === 'development') {
     console.log('Building for dev...');
-    module.exports = merge(common, {
+    module.exports = merge(common, buildAuditWeb, {
         plugins: [
             // Suggested for hot-loading
             new webpack.NamedModulesPlugin(),
@@ -145,6 +156,9 @@ if (TARGET_ENV === 'development') {
                 }
             ]
         },
+        resolve: {
+            extensions: [".purs", ".js", ".json", ".ts"]
+        },
         devServer: {
             inline: true,
             stats: 'errors-only',
@@ -158,7 +172,7 @@ if (TARGET_ENV === 'development') {
 
 if (TARGET_ENV === 'production') {
     console.log('Building for prod...');
-    module.exports = merge(common, {
+    module.exports = merge(common, buildAuditWeb, {
         plugins: [
             // Delete everything from output directory and report to user
             new CleanWebpackPlugin([_dist], {
@@ -184,7 +198,10 @@ if (TARGET_ENV === 'production') {
                     ]
                 }
             ]
-        }
+        },
+        resolve: {
+            extensions: [".purs", ".js", ".json", ".ts"]
+        },
     });
 
 
@@ -192,7 +209,7 @@ if (TARGET_ENV === 'production') {
 
 if (TARGET_ENV === 'admin-dev') {
     console.log("Building Admin Dev");
-    const toExport = merge(pursCommonF("SecureVote.Democs.SwarmMVP.Admin"), {
+    const toExport = merge(pursCommonF(), {
         entry: {
             "swarm-voting-admin": ['./pureSrc/SecureVote/Democs/SwarmMVP/Admin.purs']
         },
@@ -204,4 +221,18 @@ if (TARGET_ENV === 'admin-dev') {
     toExport.module.rules[0].query.watch = true;
 
     module.exports = toExport;
+}
+
+
+if (TARGET_ENV === 'audit-web') {
+    console.log("building audit web (test)");
+    module.exports = merge(buildAuditWeb, {
+        entry: {
+            "swm-vote-audit": ['./pureSrc/SecureVote/Democs/SwarmMVP/AuditWeb.purs']
+        },
+        output: {
+            path: path.join(__dirname, _dist, "js"),
+            filename: filename
+        }
+    });
 }

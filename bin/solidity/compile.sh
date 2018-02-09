@@ -59,6 +59,7 @@ echo -e "${LGREEN}>>> Starting solidity compilation of $CONTRACT_NAME <<<${NC}\n
 
 if solcCommon --bin --abi ; then
     echo -e "${LGREEN}Solidity compilation of $CONTRACT_NAME succeeded.${NC}"
+    cp "${OUTPUT_DIR}/${CONTRACT_NAME%.sol}.abi" "${OUTPUT_DIR}/${CONTRACT_NAME%.sol}.abi.json"
 else
     echo -e "${RED}ERROR: Solidity compilation of $CONTRACT_NAME failed${NC}"
     exit 1;

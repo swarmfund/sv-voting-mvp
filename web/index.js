@@ -1,5 +1,3 @@
-'use strict';
-
 // Require index.html so it gets copied to dist
 require('./css/securevote-swarm.css');
 require('./css/vendor/tachyons.min.css');
@@ -8,7 +6,7 @@ import Web3 from 'web3';
 
 const web3 = new Web3();
 
-import web3Ports from './src/SecureVote/Eth/Web3.ts';
+import web3Ports from './src/SecureVote/Eth/Web3.js';
 import curve25519Ports from './src/SecureVote/Crypto/Curve25519';
 
 setTimeout(() => {

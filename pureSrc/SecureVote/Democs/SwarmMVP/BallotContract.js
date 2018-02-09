@@ -1,25 +1,23 @@
 "use strict"
 
 const Web3 = require('web3');
-const TestRPC = require("ethereumjs-testrpc");
 const ethUtils = require('ethereumjs-util');
-const R = require('ramda');
+const split = require('ramda/src/split');
+const clone = require('ramda/src/clone');
 
 const web3 = new Web3();
 
-// we run this file from multiple locations so relative paths need some help
-try {
-    var loadDetails = require('../../bin/solidity/loadContractDetails');
-} catch (err) {
-    var loadDetails = require('../bin/solidity/loadContractDetails');
-}
-const deets = loadDetails();
-const abi = deets[0];
-const bin = deets[1];
+
+const abi = [{"constant":true,"inputs":[],"name":"nVotesCast","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getBallotOptions","outputs":[{"name":"","type":"bytes32[4]"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":false,"inputs":[{"name":"encryptedBallot","type":"bytes32"},{"name":"senderPubkey","type":"bytes32"}],"name":"submitBallot","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"ballotEncryptionPubkey","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"ballotEncryptionSeckey","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"endTime","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getEncSeckey","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"voterToBallotID","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getBallotOptNumber","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"bannedAddresses","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"associatedAddresses","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"swarmFundAddress","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getEncPubkey","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"encryptedBallots","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"startTime","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_addr","type":"address"}],"name":"banAddress","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"associatedPubkeys","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_secKey","type":"bytes32"}],"name":"revealSeckey","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newEndTime","type":"uint256"}],"name":"setEndTime","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"testMode","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_startTime","type":"uint256"},{"name":"_endTime","type":"uint256"},{"name":"_encPK","type":"bytes32"},{"name":"enableTesting","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"creator","type":"address"},{"indexed":false,"name":"start","type":"uint256"},{"indexed":false,"name":"end","type":"uint256"},{"indexed":false,"name":"encPubkey","type":"bytes32"}],"name":"CreatedBallot","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"voter","type":"address"},{"indexed":false,"name":"reason","type":"string"}],"name":"FailedVote","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"voter","type":"address"},{"indexed":false,"name":"ballot","type":"bytes32"},{"indexed":false,"name":"pubkey","type":"bytes32"}],"name":"SuccessfulVote","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"secretKey","type":"bytes32"}],"name":"SeckeyRevealed","type":"event"},{"anonymous":false,"inputs":[],"name":"TestingEnabled","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"error","type":"string"}],"name":"Error","type":"event"}];
+const legacyAbi = [{"constant":true,"inputs":[],"name":"nVotesCast","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getBallotOptions","outputs":[{"name":"","type":"uint8[2][4]"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":false,"inputs":[{"name":"encryptedBallot","type":"bytes32"},{"name":"senderPubkey","type":"bytes32"}],"name":"submitBallot","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"ballotEncryptionPubkey","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"ballotEncryptionSeckey","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"endTime","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getEncSeckey","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"voterToBallotID","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getBallotOptNumber","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"pure","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"bannedAddresses","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"associatedAddresses","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"swarmFundAddress","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getEncPubkey","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"encryptedBallots","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"startTime","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_addr","type":"address"}],"name":"banAddress","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"associatedPubkeys","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_secKey","type":"bytes32"}],"name":"revealSeckey","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"newEndTime","type":"uint256"}],"name":"setEndTime","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"testMode","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_startTime","type":"uint256"},{"name":"_endTime","type":"uint256"},{"name":"_encPK","type":"bytes32"},{"name":"enableTesting","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"creator","type":"address"},{"indexed":false,"name":"start","type":"uint256"},{"indexed":false,"name":"end","type":"uint256"},{"indexed":false,"name":"encPubkey","type":"bytes32"}],"name":"CreatedBallot","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"voter","type":"address"},{"indexed":false,"name":"reason","type":"string"}],"name":"FailedVote","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"voter","type":"address"},{"indexed":false,"name":"ballot","type":"bytes32"},{"indexed":false,"name":"pubkey","type":"bytes32"}],"name":"SuccessfulVote","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"secretKey","type":"bytes32"}],"name":"SeckeyRevealed","type":"event"},{"anonymous":false,"inputs":[],"name":"TestingEnabled","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"error","type":"string"}],"name":"Error","type":"event"}];
+const erc20Abi = [{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_amount","type":"uint256"}],"name":"approve","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"totalSupply","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_amount","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_amount","type":"uint256"}],"name":"transfer","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}];
 
 
 var coinbase = "";
 var accounts = [];
+
+
+const legacyAddr = "0x2bb10945e9f0c9483022dc473ab4951bc2a77d0f".toLowerCase();
 
 
 function convertAllToStdString(input) {
@@ -41,7 +39,7 @@ exports.setWeb3ProviderImpl = function(host, auth) {
     var userPass = {user: null, pass: null}
     if (auth !== "") {
         console.log("Using authenticated Web3 provider")
-        var authArr = R.split(':', auth);
+        var authArr = split(':', auth);
         userPass.user = authArr[0];
         userPass.pass = authArr[1];
         web3.setProvider(new Web3.providers.HttpProvider(host, 0, userPass.user, userPass.pass));
@@ -88,7 +86,8 @@ exports.makeSwmVotingContractImpl = function(just, nothing, addr) {
     }
 
     try {
-        const contract = web3.eth.contract(abi).at(addr);
+        const _abi = addr.toLowerCase() == legacyAddr ? legacyAbi : abi;
+        const contract = web3.eth.contract(_abi).at(addr);
         return just(contract);
     } catch (err) {
         console.log("WARNING: Got error when creating Web3 voting contract instance:", err);
@@ -103,9 +102,6 @@ exports.makeErc20ContractImpl = function(just, nothing, addr) {
         console.log("Invalid address provided for erc20 contract");
         return nothing;
     }
-
-    const erc20Deets = loadDetails('Erc20');
-    const erc20Abi = erc20Deets[0]
 
     try {
         const contract = web3.eth.contract(erc20Abi).at(addr);
@@ -136,7 +132,7 @@ const eitherF = function(left, right, contract) {
         } catch (err) {
             return left(JSON.stringify(err));
         }
-    }   
+    }
 }
 
 
@@ -153,8 +149,8 @@ exports.getBallotPropAsyncImpl = function(_prop, _args, contract) {
 
 
 exports.getBallotPropAsyncWBlockNumImpl = function(_prop, _args, blockNum, contract) {
-    const prop = R.clone(_prop);
-    const args = R.clone(_args);
+    const prop = clone(_prop);
+    const args = clone(_args);
     return function(onErr, onSucc) {
         args.push({gas: 999999});
         var ballotAsyncCB = function(err, res) {

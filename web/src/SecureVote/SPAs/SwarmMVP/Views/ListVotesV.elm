@@ -3,13 +3,16 @@ module SecureVote.SPAs.SwarmMVP.Views.ListVotesV exposing (..)
 import Html exposing (Html, hr, span, text)
 import List exposing (filter, length, map)
 import Material.Card as Card
+import Material.Color as Color
 import Material.Options as Options exposing (cs, css)
-import Material.Typography exposing (display2)
+import SecureVote.Components.UI.Elevation exposing (elevation)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (allBallots)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(OpeningSlideR))
+import SecureVote.Utils.Time exposing (readableTime)
 
 
 listVotesView : Model -> Html Msg
@@ -48,8 +51,43 @@ listVotesView model =
                 ]
                     ++ map drawBallotButton pastBallots
 
-        drawBallotButton { ballotTitle, startTime, endTime } =
-            text ballotTitle
+        drawBallotButton ballot =
+            let
+                { id, ballotTitle, startTime, endTime, description } =
+                    ballot
+
+                cardColor =
+                    Color.color Color.Amber Color.S300
+
+                voteTimeStatus =
+                    case ( compare model.now startTime, compare model.now endTime ) of
+                        ( LT, _ ) ->
+                            "Ballot opens in " ++ readableTime startTime model
+
+                        ( _, GT ) ->
+                            "Ballot closed " ++ readableTime endTime model ++ " ago"
+
+                        _ ->
+                            "Ballot closes in " ++ readableTime endTime model
+            in
+            Card.view
+                ([ cs "ma4 ba b--light-silver"
+                 , css "width" "auto"
+                 , Options.onClick <| MultiMsg [ SetBallot ballot, PageGoForward OpeningSlideR ]
+                 ]
+                    ++ elevation id model
+                )
+                [ Card.title [ cs "b" ] [ text ballotTitle ]
+                , Card.text [ cs "tl dark-gray" ]
+                    [ text description
+                    , Options.styled span
+                        [ cs "tr pa2 absolute bottom-0 right-0 dark-gray f6"
+                        ]
+                        [ text voteTimeStatus ]
+                    ]
+
+                -- , Card.actions [ Card.border, cs "tl" ] [ styled span [ Typo.caption ] [ text voteStatus ] ]
+                ]
     in
     fullPageSlide 3409830456
         model

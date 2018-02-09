@@ -6,10 +6,12 @@ import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml)
 type alias BallotParams msg =
     { voteOptions : List (BallotOption msg)
     , openingDesc : String
+    , description : String
     , ballotTitle : String
     , contractAddr : String
     , startTime : Int
     , endTime : Int
+    , id : Int -- Just some random integer
     }
 
 

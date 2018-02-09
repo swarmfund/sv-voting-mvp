@@ -19,7 +19,7 @@
     "colors": "^1.1.2",
     "copy-webpack-plugin": "^4.1.1",
     "css-loader": "^0.28.7",
-    "decimal.js": "^7.3.0",
+    "decimal.js": "^9.0.1",
     "dialog-polyfill": "^0.4.9",
     "elliptic": "^6.4.0",
     "elm": "^0.18.0",
@@ -56,9 +56,15 @@
     "yargs": "^9.0.1"
   },
   "devDependencies": {
+    "compression-webpack-plugin": "^1.1.6",
     "elm-live": "^2.7.5",
+    "exports-loader": "^0.7.0",
+    "expose-loader": "^0.7.4",
     "npm-run-all": "^4.1.1",
-    "web3-typescript-typings": "^0.6.2"
+    "ramda-loader": "^0.5.2",
+    "script-loader": "^0.7.2",
+    "web3-typescript-typings": "^0.6.2",
+    "webpack-bundle-analyzer": "^2.10.0"
   },
   "scripts": {
     "----- SMART CONTRACT COMMANDS": "",
@@ -81,6 +87,7 @@
     "admin-prod": "pulp build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Admin -j 2 --to _pureDist/admin.js -o ./output",
     "purs-test": "pulp -w test --src-path pureSrc --test-path pureTest -o outputTest",
     "purs-test-no-watch": "pulp test --src-path pureSrc --test-path pureTest -o outputTest",
+    "audit-web": "webpack --progress",
     "----- FULL SYSTEM / HELPER COMMANDS": "",
     "dry-run": "run-p _sc_testrpc_deploy",
     "node": "node",
