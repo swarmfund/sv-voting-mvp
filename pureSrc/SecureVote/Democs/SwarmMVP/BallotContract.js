@@ -48,12 +48,13 @@ exports.setWeb3ProviderImpl = function(host, auth) {
         web3.setProvider(new Web3.providers.HttpProvider(host));
     }
     console.log("Set web3 provider to:", host);
-    coinbase = web3.eth.coinbase;
-    accounts = web3.eth.accounts;
+    web3.eth.getAccounts(function(acc) {accounts = acc;});
+    coinbase = accounts[0];
 }
 
 
 exports.getAccountImpl = function(left, right, n) {
+    console.info("Autitor refreshing accounts.")
     const acc = accounts[n];
     if (acc) {
         return right(acc)
