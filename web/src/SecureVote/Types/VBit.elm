@@ -108,8 +108,8 @@ vBitsToBytes nBytes vbits =
     in
     if List.length vbits == 0 then
         if nBytes > 0 then
-            padRight nBytes (padRight 8 ZeroBit []) []
+            padRight nBytes (vBitsToInt <| padRight 8 ZeroBit []) []
         else
             []
     else
-        byte1 :: vBitsToBytes remBits
+        byte1 :: vBitsToBytes (nBytes - 1) remBits

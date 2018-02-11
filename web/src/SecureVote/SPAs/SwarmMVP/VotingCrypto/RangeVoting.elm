@@ -35,7 +35,7 @@ constructBallot : List RangeBallot3Bits -> EthAddress -> Maybe RangeBallotPlaint
 constructBallot votes delegate =
     let
         voteBytes =
-            vBitsToBytes <| List.concat (List.map vblToList votes)
+            vBitsToBytes 2 <| List.concat (List.map vblToList votes)
 
         ethPrefixM =
             Maybe.map (List.take 14) <| fromHexEth delegate
