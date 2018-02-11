@@ -74,7 +74,7 @@
     "----- WEB / ELM COMMANDS": "",
     "elm-live-deprecated": "yarn _live",
     "web": "webpack-dev-server --port 3000 --open --progress",
-    "build-web": "webpack",
+    "build-web": "./build_prod.sh",
     "_live": "elm-live ./web/src/SecureVote/SPAs/SwarmMVP/Main.elm --output=./web/sv-swarm.js --dir=./web --open --debug",
     "----- PureScript (Aduit + Admin)": "",
     "audit-dev": "pulp -w build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Auditor -j 2 --to _pureDist/audit.js -o ./output ",
