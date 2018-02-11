@@ -5,6 +5,7 @@ import Prelude
 import Control.Monad.Aff (Aff, throwError, error)
 import Control.Monad.Aff.Console (log)
 import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.AVar (AVAR)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
@@ -67,13 +68,13 @@ type AppArgs = {ethUrl :: String, ethRPCAuth :: String, votingAddr :: String, er
 app :: forall eff.
        AppArgs ->
        (StatusUpdate -> Unit) ->
-       Aff (console :: CONSOLE, naclRandom :: NACL_RANDOM, now :: NOW | eff) (Either (Tuple Int String) (Tuple Int BallotResult))
+       Aff (console :: CONSOLE, naclRandom :: NACL_RANDOM, now :: NOW, avar :: AVAR | eff) (Either (Tuple Int String) (Tuple Int BallotResult))
 app {ethUrl, ethRPCAuth, votingAddr, erc20Addr} updateF =
     do
         let _ = setWeb3Provider ethUrl ethRPCAuth
         contract <- maybe (throwError $ error "Unable to instantiate voting contract") pure (makeVotingContract votingAddr)
         erc20Contract <- maybe (throwError $ error "Unable to instantiate erc20 contract") pure (makeErc20Contract erc20Addr)
-        ballotAns <- runBallotCount balanceAt contract erc20Contract {silent: false} updateF
+        ballotAns <- runBallotCount balanceAt votingAddr contract erc20Contract {silent: false} updateF
 
         let exitC = exitCode ballotAns
         let msgStart = exitMsgHeader exitC
