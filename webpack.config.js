@@ -119,8 +119,7 @@ const common = {
         })
     ],
     resolve: {
-        extensions: [".js", ".json", ".ts"],
-        // mainFields: ["main", "module"]
+        extensions: [".js", ".json", ".ts"]
     }
 };
 
