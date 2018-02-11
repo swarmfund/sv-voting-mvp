@@ -1,0 +1,19 @@
+[build]
+  publish = "_dist"
+  command = "yarn build-web"
+
+[context.production]
+  [context.production.environment]
+    MAIN_TITLE = "SWM Governance"
+    DEV = "false"
+    YARN_VERSION = "0.18.1"
+
+[context.deploy-preview.environment]
+  MAIN_TITLE = "SWM Governance (Staging)"
+  DEV = "false"
+  YARN_VERSION = "0.18.1"
+
+[context.branch-deploy.environment]
+  MAIN_TITLE = "SWM Governance (Dev, Kovan)"
+  DEV = "true"
+  YARN_VERSION = "0.18.1"
