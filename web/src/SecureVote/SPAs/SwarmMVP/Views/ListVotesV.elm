@@ -80,11 +80,12 @@ listVotesView model =
                  ]
                     ++ elevation id model
                 )
-                [ Card.title [ cs "b" ] [ text ballotTitle ]
-                , Card.text [ cs "tl dark-gray" ]
+                [ Card.title [ cs "b pb1" ] [ text ballotTitle ]
+                , Card.text [ cs "tl dark-gray w-100" ]
                     [ text description
+                    , Options.styled hr [ cs "mv1 mh0" ] []
                     , Options.styled span
-                        [ cs "tr pa2 absolute bottom-0 right-0 dark-gray f6"
+                        [ cs "tr fr dark-gray f6"
                         ]
                         [ text voteTimeStatus ]
                     ]

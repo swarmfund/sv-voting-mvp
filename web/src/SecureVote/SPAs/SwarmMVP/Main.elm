@@ -35,16 +35,11 @@ initCmds initModel extraCmds =
     let
         votingAddr =
             initModel.currentBallot.contractAddr
-
-        ethUrl =
-            initEthNode
     in
     Cmd.batch <|
         [ setWeb3Provider initModel.ethNode
         , perform (SetTime << round << (\t -> t / 1000)) Time.now
         , genKeyPair True
-        , getEncryptionPublicKey votingAddr
-        , getInit votingAddr
         ]
             ++ extraCmds
 
@@ -65,12 +60,7 @@ processedInitModelCmd { mainTitle, dev } =
     in
     update
         (MultiMsg
-            [ setEthNodeTemp
-                (if dev then
-                    devEthNode
-                 else
-                    initEthNode
-                )
+            [ setEthNodeTemp model.ethNode
             ]
         )
         model
