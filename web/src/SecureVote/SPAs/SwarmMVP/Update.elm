@@ -8,7 +8,6 @@ import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
-import SecureVote.Eth.Types exposing (AuditDoc)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (doBallotOptsMatchRSched, voteOptionsRSched)
