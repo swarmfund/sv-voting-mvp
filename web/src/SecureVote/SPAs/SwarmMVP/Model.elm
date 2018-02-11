@@ -99,7 +99,7 @@ initEthNode =
 
 devEthNode : String
 devEthNode =
-    "http://eth-kovan-aws-nv-node-01.secure.vote:38545/microgovDev"
+    "https://eth-kovan-aws-nv-node-01.secure.vote:8545/microgovDev"
 
 
 
