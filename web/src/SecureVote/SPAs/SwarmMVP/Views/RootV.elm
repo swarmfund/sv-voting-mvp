@@ -9,12 +9,12 @@ import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageForward), 
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
 import SecureVote.SPAs.SwarmMVP.Views.BallotOpeningSlideV exposing (openingSlide)
+import SecureVote.SPAs.SwarmMVP.Views.CastVoteV exposing (castVoteView)
+import SecureVote.SPAs.SwarmMVP.Views.HowToVoteV exposing (howToVoteView)
 import SecureVote.SPAs.SwarmMVP.Views.ListVotesV exposing (listVotesView)
-import SecureVote.SPAs.SwarmMVP.Views.SwmAddressV exposing (swmAddressV)
-import SecureVote.SPAs.SwarmMVP.Views.SwmCastVoteV exposing (castVoteView)
-import SecureVote.SPAs.SwarmMVP.Views.SwmDelegateV exposing (delegateView)
-import SecureVote.SPAs.SwarmMVP.Views.SwmHowToVoteV exposing (howToVoteView)
-import SecureVote.SPAs.SwarmMVP.Views.SwmVotingV exposing (votingView)
+import SecureVote.SPAs.SwarmMVP.Views.SetAddressV exposing (swmAddressV)
+import SecureVote.SPAs.SwarmMVP.Views.SetDelegateV exposing (delegateView)
+import SecureVote.SPAs.SwarmMVP.Views.VotingV exposing (votingView)
 
 
 rootView : Model -> Html Msg

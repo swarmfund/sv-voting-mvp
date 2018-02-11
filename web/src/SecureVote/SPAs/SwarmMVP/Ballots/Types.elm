@@ -1,5 +1,6 @@
 module SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (..)
 
+import Decimal exposing (Decimal)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml)
 
 
@@ -11,6 +12,9 @@ type alias BallotParams msg =
     , contractAddr : String
     , startTime : Int
     , endTime : Int
+    , erc20Addr : String
+    , erc20Balance : Maybe Decimal
+    , erc20Abrv : String -- Short abbreviation for token name
     , id : Int -- Just some random integer
     }
 

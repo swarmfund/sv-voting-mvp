@@ -1,14 +1,14 @@
 module SecureVote.SPAs.SwarmMVP.Views.ListVotesV exposing (..)
 
+import Dict
 import Html exposing (Html, hr, span, text)
-import List exposing (filter, length, map)
+import List exposing (filter, length, map, sortBy)
 import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs, css)
 import SecureVote.Components.UI.Elevation exposing (elevation)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (allBallots)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(OpeningSlideR))
@@ -18,6 +18,9 @@ import SecureVote.Utils.Time exposing (readableTime)
 listVotesView : Model -> Html Msg
 listVotesView model =
     let
+        allBallots =
+            sortBy .startTime <| Dict.values model.allBallots
+
         currentBallots =
             filter (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime) allBallots
 
@@ -93,7 +96,7 @@ listVotesView model =
         model
         []
         [ Card.text [ cs "center tc" ] <|
-            [ headline "SWM Governance"
+            [ headline model.mainTitle
             , Options.styled hr [] []
             ]
                 ++ currBallotV

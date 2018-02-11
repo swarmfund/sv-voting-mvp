@@ -5,6 +5,7 @@ const merge = require('webpack-merge');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+require('dotenv').config();
 
 
 var TARGET_ENV = function () {
@@ -97,17 +98,6 @@ const common = {
                 exclude: /node_modules/,
                 loader: 'file-loader?name=[name].[ext]',
             },
-            // {
-            //     test: /\.js$/,
-            //     exclude: /node_modules/,
-            //     use: {
-            //         loader: 'babel-loader',
-            //         options: {
-            //             // env: automatically determines the Babel plugins you need based on your supported environments
-            //             presets: ['env']
-            //         }
-            //     }
-            // },
             {
                 test: /\.css$/,
                 exclude: [
@@ -118,6 +108,7 @@ const common = {
         ]
     },
     plugins: [
+        new webpack.EnvironmentPlugin(["MAIN_TITLE"]),
         CopyWebpackPluginConfig,
         new HTMLWebpackPlugin({
             // using .ejs prevents other loaders causing errors
@@ -162,10 +153,14 @@ if (TARGET_ENV === 'development') {
         devServer: {
             inline: true,
             stats: 'errors-only',
-            contentBase: path.join(__dirname, "web"),
+            contentBase: [path.join(__dirname)],
             hot: true,
             // For SPAs: serve index.html in place of 404 responses
-            historyApiFallback: true
+            historyApiFallback: true,
+            watchContentBase: true,
+            watchOptions: {
+                ignored: [/node_modules/, /bower_components/]
+            }
         }
     });
 }

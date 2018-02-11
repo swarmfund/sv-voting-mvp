@@ -267,18 +267,23 @@ const web3Ports = (web3, app) => {
         });
     }));
 
-    app.ports.getBallotResults.subscribe(wrapper(({ethUrl, votingAddr, erc20Addr}) => {
-        console.log(ethUrl, votingAddr, erc20Addr);
-        console.log(AuditWeb);
+
+    // AUDITOR STUFF
+
+
+    const auditUpdateF = (statusUpdate) => {
+        console.log(statusUpdate)
+        app.ports.gotAuditMsgImpl.send(statusUpdate);
+    }
+
+    app.ports.getBallotResults.subscribe(wrapper((args) => {
+        console.log("Calling AuditWeb with: ", args);
         try {
-            const resp = AuditWeb.main(ethUrl || "")("")(votingAddr || "")(erc20Addr || "")();
-            console.log("AuditWeb returned ", resp);
+            const resp = AuditWeb.main(args)(auditUpdateF)();
         } catch (err) {
             console.error("AuditWeb.main threw error: ", err);
         }
-        console.log("AuditWeb done");
     }));
 };
 
 export default web3Ports;
-

@@ -14,8 +14,8 @@ import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(CheckTxid, SetProvider))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(..))
-import SecureVote.SPAs.SwarmMVP.Views.SwmDelegateV exposing (delegateExplanationCopy)
-import SecureVote.SPAs.SwarmMVP.Views.SwmHowToVoteV exposing (combinedHowToVoteCopy)
+import SecureVote.SPAs.SwarmMVP.Views.HowToVoteV exposing (combinedHowToVoteCopy)
+import SecureVote.SPAs.SwarmMVP.Views.SetDelegateV exposing (delegateExplanationCopy)
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (orderedBallotBits)
 import SecureVote.Types.VBit exposing (vBitsToInt, vblToList)
 

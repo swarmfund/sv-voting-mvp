@@ -4,8 +4,10 @@ import Prelude
 
 import Control.Monad.Aff (Aff, throwError, error)
 import Control.Monad.Aff.Console (log)
+import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (CONSOLE)
+import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Now (NOW)
 import Crypt.NaCl (NACL_RANDOM)
 import Data.Array ((:))
@@ -19,7 +21,7 @@ import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.String as String
 import Data.Tuple (Tuple(..))
 import Node.Process (PROCESS)
-import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, AllDetails, makeErc20Contract, makeSwmVotingContract, runBallotCount, setWeb3Provider)
+import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, AllDetails, StatusUpdate, SUAux(..), mkSUFail, mkSULog, mkSUSuccess, makeErc20Contract, makeVotingContract, runBallotCount, setWeb3Provider)
 import SecureVote.Democs.SwarmMVP.Const (balanceAt)
 import SecureVote.Democs.SwarmMVP.Types (swmBallotShowJustVotes)
 import SecureVote.Utils.Array (fromList)
@@ -58,21 +60,35 @@ formatAllDeets {encBallotsWithoutDupes, decryptedBallots, delegateMapNoLoops, ba
             voters = fromList $ Map.keys balanceMap
 
 
-app :: forall eff. String -> String -> String -> String -> Aff (console :: CONSOLE, naclRandom :: NACL_RANDOM, now :: NOW | eff) Int
-app ethUrl ethNodeAuth swmAddress erc20Address =
+type AppArgs = {ethUrl :: String, ethRPCAuth :: String, votingAddr :: String, erc20Addr :: String }
+
+
+-- | Main app function for Auditor. Accepts record of parameters needed to audit ballot.
+app :: forall eff.
+       AppArgs ->
+       (StatusUpdate -> Unit) ->
+       Aff (console :: CONSOLE, naclRandom :: NACL_RANDOM, now :: NOW | eff) (Either (Tuple Int String) (Tuple Int BallotResult))
+app {ethUrl, ethRPCAuth, votingAddr, erc20Addr} updateF =
     do
-        let _ = setWeb3Provider ethUrl ethNodeAuth
-        contract <- maybe (throwError $ error "Unable to instantiate voting contract") pure (makeSwmVotingContract swmAddress)
-        erc20Contract <- maybe (throwError $ error "Unable to instantiate erc20 contract") pure (makeErc20Contract erc20Address)
-        ballotAns <- runBallotCount balanceAt contract erc20Contract {silent: false}
+        let _ = setWeb3Provider ethUrl ethRPCAuth
+        contract <- maybe (throwError $ error "Unable to instantiate voting contract") pure (makeVotingContract votingAddr)
+        erc20Contract <- maybe (throwError $ error "Unable to instantiate erc20 contract") pure (makeErc20Contract erc20Addr)
+        ballotAns <- runBallotCount balanceAt contract erc20Contract {silent: false} updateF
+
         let exitC = exitCode ballotAns
         let msgStart = exitMsgHeader exitC
         let msgBody = case ballotAns of
                 Left err -> err
                 Right (Tuple ballotResults allDeets) -> "Intricate Details:\n\n" <> formatAllDeets allDeets <> "\n\nSummary:\n\n" <> formatBallotResults ballotResults
-        log $ "\n" <> msgStart <> "\n"
-        log $ msgBody
-        pure exitC
+        log $ "\n" <> msgStart <> "\n" <> msgBody
+
+        let toRetE = case ballotAns of
+                Right (Tuple ballotResult allDeets) -> (\_ -> Right ballotResult) $ updateF $ mkSUSuccess allDeets
+                Left err -> (\_ -> Left err) $ updateF $ mkSUFail ("ERROR: " <> err)
+
+        case toRetE of
+            Right bRes -> pure $ Right $ Tuple exitC bRes
+            Left err -> pure $ Left $ Tuple exitC err
     where
         exitCode e = if isRight e then 0 else 1
         exitMsgHeader exitC = if exitC == 0 then "___Success:___" else ">>> ERROR <<<"

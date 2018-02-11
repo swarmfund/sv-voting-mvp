@@ -13,19 +13,19 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(SetField))
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits, intsToRangeBallot3Bits)
 
 
-swmAddrId : String
-swmAddrId =
+userErc20AddrId : String
+userErc20AddrId =
     "ethAddress"
 
 
-getSwmAddress : Model -> Maybe String
-getSwmAddress model =
-    Dict.get swmAddrId model.fields
+getUserErc20Addr : Model -> Maybe String
+getUserErc20Addr model =
+    Dict.get userErc20AddrId model.fields
 
 
-setSwmAddress : String -> Msg
-setSwmAddress =
-    SetField swmAddrId
+setUserErc20Addr : String -> Msg
+setUserErc20Addr =
+    SetField userErc20AddrId
 
 
 txidCheckId : String

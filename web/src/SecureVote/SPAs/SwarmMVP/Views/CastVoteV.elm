@@ -1,5 +1,6 @@
-module SecureVote.SPAs.SwarmMVP.Views.SwmCastVoteV exposing (..)
+module SecureVote.SPAs.SwarmMVP.Views.CastVoteV exposing (..)
 
+import Decimal exposing (eq, zero)
 import Dict
 import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (class, style)
@@ -12,7 +13,7 @@ import Maybe.Extra exposing ((?), isJust)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Utils exposing (rawTokenBalance18DpsToBalance)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, getSwmAddress)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, getUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmDelegateR))
@@ -21,15 +22,28 @@ import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Rout
 castVoteView : Model -> Html Msg
 castVoteView model =
     let
-        swmBalanceStr =
-            Maybe.map rawTokenBalance18DpsToBalance model.swmBalance ? "Loading..."
+        balanceStr =
+            let
+                userErc20AddrM =
+                    getUserErc20Addr model
+
+                balM =
+                    model.currentBallot.erc20Balance
+
+                ifZeroOr addr b =
+                    if eq b zero then
+                        "No tokens for " ++ addr ++ " in ERC20 contract at " ++ model.currentBallot.erc20Addr
+                    else
+                        rawTokenBalance18DpsToBalance b
+            in
+            Maybe.map2 ifZeroOr userErc20AddrM balM ? "Loading..."
 
         optionList =
             List.map optionListItem model.currentBallot.voteOptions
 
-        swmBalanceView =
-            if isJust <| getSwmAddress model then
-                [ Options.styled span [ headline, cs "black dib ba pa3 ma3" ] [ text <| "SWM Balance: " ++ swmBalanceStr ] ]
+        balanceV =
+            if isJust <| getUserErc20Addr model then
+                [ Options.styled span [ headline, cs "black dib ba pa3 ma3" ] [ text <| model.currentBallot.erc20Abrv ++ " Balance: " ++ balanceStr ] ]
             else
                 []
 
@@ -93,7 +107,7 @@ castVoteView model =
         []
         [ Card.text [ cs "center tc" ] <|
             [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Choose Your Vote" ] ]
-                ++ swmBalanceView
+                ++ balanceV
                 ++ [ div [ class "mw7 center black" ] optionList
                    , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs ] [ text "Continue" ]
                    ]

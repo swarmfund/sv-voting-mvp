@@ -4,6 +4,7 @@ import List exposing (map)
 import List.Extra exposing (zip)
 import Round as R
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotOption, BallotParams, ReleaseSchedule)
+import SecureVote.SPAs.SwarmMVP.Const exposing (swmErc20Abrv, swmErc20Addr)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(DlogDiv, DlogLi, DlogP, DlogTxt, DlogUl))
 
 
@@ -16,6 +17,9 @@ rschedBallot =
     , endTime = 1510009200
     , ballotTitle = "SWM Token Release Schedule"
     , description = "This ballot will decide the release schedule of the SWM token. There are four possible schedules, different in size and frequency of each step in the schedule."
+    , erc20Addr = swmErc20Addr
+    , erc20Balance = Nothing
+    , erc20Abrv = swmErc20Abrv
     , id = 3948759378
     }
 
