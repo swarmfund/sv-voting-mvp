@@ -14,6 +14,11 @@ type Route
     | NotFoundR
 
 
+defaultRoute : Route
+defaultRoute =
+    ListAllVotesR
+
+
 type DialogRoute msg
     = SettingsDialog
     | BallotDialog (DialogHtml msg)

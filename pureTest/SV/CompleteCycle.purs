@@ -44,7 +44,7 @@ import SecureVote.Crypto.Curve25519 (genCurve25519Key, toNonce, toBoxPubkey, toM
 import SecureVote.Crypto.NativeEd25519 (sha256)
 import SecureVote.Democs.SwarmMVP.AuditApp (formatBallotResults)
 import SecureVote.Democs.SwarmMVP.Ballot (makeBallot)
-import SecureVote.Democs.SwarmMVP.BallotContract (AllDetails, BallotResult, EncBallotWVoter, Erc20Contract(..), SwmVotingContract(..), ballotPropHelper, ballotPropHelperAff, ballotPropHelperWBlockNumAff, getAccount, getBallotEncPK, makeErc20Contract, makeSwmVotingContract, noArgs, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, getBlockNumber)
+import SecureVote.Democs.SwarmMVP.BallotContract (AllDetails, BallotResult, EncBallotWVoter, Erc20Contract(..), SwmVotingContract(..), ballotPropHelper, ballotPropHelperAff, ballotPropHelperWBlockNumAff, getAccount, getBallotEncPK, makeErc20Contract, makeVotingContract, noArgs, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, getBlockNumber)
 import SecureVote.Democs.SwarmMVP.KeyGen (generateKey)
 import SecureVote.Utils.ArrayBuffer (fromHex, toHex)
 import SecureVote.Utils.Numbers (intToStr)
@@ -198,7 +198,7 @@ completeBallotTest = do
         pure unit
   where
     contractAddrM outputStr = Just outputStr >>= extractContractAddr
-    outputToVotingContract addrM = addrM >>= makeSwmVotingContract
+    outputToVotingContract addrM = addrM >>= makeVotingContract
     getEncPk cM = do
         contract <- maybe (Left "No contract") Right cM
         getBallotEncPK contract

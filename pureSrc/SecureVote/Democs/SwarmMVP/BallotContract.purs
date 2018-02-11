@@ -3,12 +3,14 @@ module SecureVote.Democs.SwarmMVP.BallotContract where
 import Prelude
 
 import Control.Apply (lift2)
-import Control.Monad.Aff (Aff, error, launchAff, parallel, sequential, throwError)
+import Control.Monad.Aff (Aff, catchError, error, launchAff, liftEff', message, parallel, sequential, throwError)
 import Control.Monad.Aff.Compat (EffFnAff(..), fromEffFnAff)
-import Control.Monad.Aff.Console (CONSOLE, log)
+import Control.Monad.Aff.Console (CONSOLE)
+import Control.Monad.Aff.Console as AffC
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console as EffC
+import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Now (NOW, now)
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Trans.Class (lift)
@@ -22,11 +24,15 @@ import Data.DateTime.Instant (toDateTime, unInstant)
 import Data.Decimal (Decimal)
 import Data.Decimal as Dec
 import Data.Either (Either(..), either, fromLeft, fromRight, isLeft, isRight)
+import Data.Foreign.Class (class Encode)
+import Data.Foreign.Generic (defaultOptions, genericEncode)
 import Data.Function.Uncurried (Fn0, Fn1, Fn2, Fn3, Fn4, Fn5, Fn6, runFn0, runFn1, runFn2, runFn3, runFn4, runFn5, runFn6)
+import Data.Generic.Rep (class Generic)
 import Data.Int (binary, decimal, fromStringAs, toNumber, toStringAs)
 import Data.Int as DInt
 import Data.Map (Map, delete, empty, fromFoldable, insert, keys, lookup, showTree, size, values, toUnfoldable)
 import Data.Maybe (Maybe(..), fromJust, fromMaybe, isJust, isNothing, maybe)
+import Data.Newtype (class Newtype)
 import Data.Number (fromString)
 import Data.Number.Format (toString)
 import Data.String (Pattern(..), drop, joinWith)
@@ -56,7 +62,6 @@ import Unsafe.Coerce (unsafeCoerce)
 
 
 class Web3Contract a
-    
 
 
 -- These types can never be instantiated from purescript, they can be given from the FFI though
@@ -89,7 +94,28 @@ instance optStrShow :: Show OptStrs where
     show (OptStrs {o1, o2, o3, o4}) = String.joinWith ", " [o1,o2,o3,o4]
 
 
-type AllDetails = 
+data SUAux = SuStr String | SuRes AllDetails
+
+
+type StatusUpdate =
+    { t :: String
+    , p :: SUAux
+    }
+
+
+mkSUFail :: String -> StatusUpdate
+mkSUFail e = {t: "fail", p: SuStr e}
+
+
+mkSULog :: String -> StatusUpdate
+mkSULog p = {t: "log", p: SuStr p}
+
+
+mkSUSuccess :: AllDetails -> StatusUpdate
+mkSUSuccess b = {t: "success", p: SuRes b}
+
+
+type AllDetails =
     { ballotSeckey :: BoxSecretKey
     , nVotes :: Int
     , encBallotsWithDupes :: Array EncBallot
@@ -122,7 +148,7 @@ getBlockNumber = fromEffFnAff (runFn0 getBlockNumberImpl)
 
 -- contract FFI
 foreign import getBallotSKImpl :: forall a. Fn3 (a -> Maybe a) (Maybe a) SwmVotingContract (Maybe a)
-foreign import getBallotPropImpl :: forall a b c w. Fn5 (a -> Either a b) (b -> Either a b) String c w (Either a b) 
+foreign import getBallotPropImpl :: forall a b c w. Fn5 (a -> Either a b) (b -> Either a b) String c w (Either a b)
 
 -- TODO: These functions which take an `Array a` require all elements to the the same type, but that's often not what eth parameters are...
 -- workaround is to submit ints as strings, this works with the web3 api currently
@@ -130,8 +156,8 @@ foreign import getBallotPropImpl :: forall a b c w. Fn5 (a -> Either a b) (b -> 
 ballotPropHelper :: forall a b c w. (Web3Contract w) => String -> Array a -> w -> Either b c
 ballotPropHelper = runFn5 getBallotPropImpl Left Right
 
-foreign import getBallotPropAsyncImpl :: forall e b c w. Fn3 String (Array c) w (EffFnAff (| e) b) 
-foreign import getBallotPropAsyncWBlockNumImpl :: forall e b c w. Fn4 String (Array c) Int w (EffFnAff (| e) b) 
+foreign import getBallotPropAsyncImpl :: forall e b c w. Fn3 String (Array c) w (EffFnAff (| e) b)
+foreign import getBallotPropAsyncWBlockNumImpl :: forall e b c w. Fn4 String (Array c) Int w (EffFnAff (| e) b)
 
 ballotPropHelperEffFnAff :: forall a b eff w. (Web3Contract w) => String -> Array a -> w -> EffFnAff (| eff) b
 ballotPropHelperEffFnAff = runFn3 getBallotPropAsyncImpl
@@ -149,23 +175,23 @@ foreign import submitBallotImpl :: forall e. Fn4 Int Uint8Array BoxPublicKey Swm
 
 
 -- contract setup functions
-makeSwmVotingContract :: forall a. String -> Maybe SwmVotingContract
-makeSwmVotingContract = runFn3 makeSwmVotingContractImpl Just Nothing
+makeVotingContract :: forall a. String -> Maybe SwmVotingContract
+makeVotingContract = runFn3 makeSwmVotingContractImpl Just Nothing
 
 makeErc20Contract :: forall a. String -> Maybe Erc20Contract
 makeErc20Contract = runFn3 makeErc20ContractImpl Just Nothing
 
 
-setWeb3Provider :: forall a. String -> String -> a 
+setWeb3Provider :: forall a. String -> String -> a
 setWeb3Provider = runFn2 setWeb3ProviderImpl
 
 -- web3 functions
 getAccount :: Int -> Either String String
-getAccount = runFn3 getAccountImpl Left Right 
+getAccount = runFn3 getAccountImpl Left Right
 
 -- contract functions
 swmBallotSk :: forall e. SwmVotingContract -> Aff (| e) (BoxSecretKey)
-swmBallotSk contract = do 
+swmBallotSk contract = do
     skStr <- ballotPropHelperAff "ballotEncryptionSeckey" noArgs contract
     if skStr == "0x0000000000000000000000000000000000000000000000000000000000000000" then
             throwError $ error "Ballot Encryption Secret Key has not yet been published"
@@ -192,7 +218,7 @@ web3CastBallot :: forall e. Int -> EncBallotWVoter -> SwmVotingContract -> (Aff 
 web3CastBallot accN {encBallot, voterPk} contract = fromEffFnAff $ runFn4 submitBallotImpl accN encBallot voterPk contract
 
 
-swmEndTime :: forall e. SwmVotingContract -> Aff (| e) Number
+swmEndTime :: forall e. SwmVotingContract -> Aff (now :: NOW | e) Number
 swmEndTime contract = do
     endTimeStr <- ballotPropHelperAff "endTime" noArgs contract
     let endTimeM = fromString endTimeStr
@@ -206,42 +232,53 @@ swmNVotes contract = do
     maybe (throwError $ error $ "nVotes was not an integer: " <> nVotesStr) pure nVotes
 
 
-runBallotCount :: forall a e. Int -> SwmVotingContract -> Erc20Contract -> {silent::Boolean} -> (Aff (now :: NOW, console :: CONSOLE | e) (Either String (Tuple BallotResult AllDetails)))
-runBallotCount ballotStartBlock contract erc20 {silent} = 
+runBallotCount :: forall a e.
+    Int ->
+    SwmVotingContract ->
+    Erc20Contract ->
+    {silent::Boolean} ->
+    (StatusUpdate -> Unit) ->
+    Aff (now :: NOW, console :: CONSOLE | e) (Either String (Tuple BallotResult AllDetails))
+runBallotCount ballotStartBlock contract erc20 {silent} updateF =
       do  -- Aff monad
-        nowTime <- liftEff $ currentTimestamp
-        endTime <- swmEndTime contract 
+        nowTime <- liftEff' $ currentTimestamp
+        endTime <- swmEndTime contract
         log $ "Ballot end time: " <> (toString endTime) <> "\nCurrent Time:    " <> (toString nowTime)
-        if nowTime < endTime 
+        if nowTime < endTime
             then pure $ Left "The ballot has not ended yet!"
             else do
                 ballotSeckey <- swmBallotSk contract
                 optLog $ "Ballot encryption secret key: " <> (toHex $ toUint8Array ballotSeckey)
 
-                nVotes <- swmNVotes contract 
+                nVotes <- swmNVotes contract
                 optLog $ "Smart contract reports " <> (intToStr nVotes) <> " votes were cast"
 
+                optLog "Retrieving ballots now."
                 encBallotsWithDupes <- getBallots contract nVotes
                 optLog $ "Retrieved " <> (lenStr encBallotsWithDupes) <> " ballots"
                 -- optLog $ "Enc Ballot Order: " <> (show $ map (\{i} -> i) encBallotsWithDupes)
 
                 encBallotsWithoutDupes <- removeDupes encBallotsWithDupes
-                optLog $ "Removing repeated votes took nBallots from " <> 
+                optLog $ "Removing repeated votes took nBallots from " <>
                         (intToStr $ length encBallotsWithDupes) <> " to " <>
                         (intToStr $ length encBallotsWithoutDupes)
                 -- optLog $ "New Enc Ballot Order: " <> (show $ map (\{i} -> i) encBallotsWithoutDupes)
 
-                decryptedBallots <- decryptBallots ballotSeckey encBallotsWithoutDupes
+                decryptedBallots <- decryptBallots ballotSeckey encBallotsWithoutDupes log
                 optLog $ "Decrypted " <> (lenStr decryptedBallots) <> " ballots successfully"
 
-                -- Note: some nodes do not support historical access due to pruning
-                -- in this case the results cannot be verified correctly as we need access to the balances at the time of the ballot
+                -- Note: most Eth nodes do not support historical access due to pruning
+                -- in this case the results cannot be verified correctly as we need
+                -- access to the balances at the time of the ballot. The below two lines
+                -- will use the current block number instead of the historical block number
                 -- currentBlockNum <- getBlockNumber
                 -- balanceMap <- getBalances erc20 currentBlockNum decryptedBallots
-                
-                balanceMap <- getBalances erc20 ballotStartBlock decryptedBallots
+
+                balanceMap <- catchError (getBalances erc20 ballotStartBlock decryptedBallots) $ \err -> do
+                        let _ = updateF $ mkSUFail $ "Error getting balances: " <> message err
+                        throwError err
                 optLog $ "Got balances for voters"
-                -- log $ "Balance Map: \n" <> renderMap balanceMap
+                -- optLog $ "Balance Map: \n" <> renderMap balanceMap
 
                 {delegateMap, prefixMap} <- pure $ constructDelegateMap decryptedBallots
                 optLog $ "Processed delegates"
@@ -257,11 +294,11 @@ runBallotCount ballotStartBlock contract erc20 {silent} =
                 delegateMapNoLoops <- pure $ removeDelegationLoops delegateMapNoHang
                 optLog "Removed delegate loops"
 
-                ballotOpts <- parseBallotOpts <$> ballotPropHelperAff "getBallotOptions" noArgs contract 
+                ballotOpts <- parseBallotOpts <$> ballotPropHelperAff "getBallotOptions" noArgs contract
                 optLog $ "Got ballot opts: " <> show ballotOpts
-                
+
                 ballotResult <- pure $ countBallots ballotOpts ballotMap delegateMapNoLoops balanceMap
-                
+
                 let allDetails = { ballotSeckey
                                  , nVotes
                                  , encBallotsWithDupes
@@ -274,17 +311,21 @@ runBallotCount ballotStartBlock contract erc20 {silent} =
                                  , ballotResult
                                  , balanceMap
                                  }
-                
+
                 pure $ Right (Tuple ballotResult allDetails)
-                    
+
     where
-        lenStr :: forall a. Array a -> String 
+        log :: forall e. String -> Aff (console :: CONSOLE | e) Unit
+        log str = do
+            let _ = updateF $ mkSULog str
+            if silent then pure unit else AffC.log str
+        lenStr :: forall a. Array a -> String
         lenStr = intToStr <<< length
-        optLog str = if silent then pure unit else log str
+        optLog = log
 
 
 getBallots :: forall e. SwmVotingContract -> Int -> Aff (| e) (Array EncBallot)
-getBallots contract n 
+getBallots contract n
     | n <= 0 = pure []
     | otherwise = do
         let allVoteIds = range 0 (n-1)
@@ -312,16 +353,16 @@ removeDupes encBallots = do
 
 
 
-decryptBallots :: forall e. BoxSecretKey -> Array EncBallot -> Aff (console :: CONSOLE | e) (Array (Ballot))
-decryptBallots _ [] = pure []
-decryptBallots encSk ballots = do
+decryptBallots :: forall e e2. BoxSecretKey -> Array EncBallot -> (String -> Aff (console :: CONSOLE | e) Unit) -> Aff (console :: CONSOLE | e) (Array (Ballot))
+decryptBallots _ [] log = pure []
+decryptBallots encSk ballots log = do
         ballots_ <- parTraverse decryptOne ballots
         let cleanBallots = map (unsafePartial $ fromRight) (filter isRight ballots_)
         let badDecryptions = map (unsafePartial $ fromLeft) (filter isLeft ballots_)
-        if length badDecryptions > 0 then 
+        if length badDecryptions > 0 then
                 log $ "Got " <> (show $ length badDecryptions) <> " bad decryptions: " <> show badDecryptions
             else
-                log "No bad decryptions!"
+                log "All ballots decrypted successfully."
         pure cleanBallots
     where
         decryptOne {i, encBallot, voterPk, voterAddr} = do
@@ -341,22 +382,22 @@ getBalances erc20 blockNumber ballots = do
 
 
 constructDelegateMap :: Array Ballot -> {delegateMap :: DelegateMap, prefixMap :: Map String Voter}
-constructDelegateMap ballots = 
+constructDelegateMap ballots =
         {delegateMap, prefixMap: addrPrefixMap}
     where
-        delegateMap = 
+        delegateMap =
             foldl (\m {voterAddr, delegateAddr} -> insert voterAddr delegateAddr m) empty voterDelegateParis
 
         voterDelegateParis =
             map (\{voterAddr, ballot} -> {voterAddr, delegateAddr: genDelegateFromBallot ballot}) ballots
 
-        genDelegateFromBallot ballotUI8A = 
+        genDelegateFromBallot ballotUI8A =
             lookup (drop 4 $ toHex ballotUI8A) addrPrefixMap
 
-        addrPrefixMap = 
+        addrPrefixMap =
             foldl (\m addr -> insert (String.take (14*2) $ drop 2 $ voterToString addr) addr m) empty allAddresses
-            
-        allAddresses = 
+
+        allAddresses =
             map (\{voterAddr} -> voterAddr) ballots
 
 
@@ -366,8 +407,8 @@ removeHangingDelegations :: forall k1 v. Show k1 => Ord k1 =>
         Map k1 (Maybe k1) -> Map k1 (Either String v) -> Map k1 (Maybe k1)
 removeHangingDelegations delMap ballotMap = removeInvalidDelegates delMap validDelegates
     where
-        validDelegates = 
-            (filter (\k -> isRight $ maybe (Left "") (join <<< Right) $ lookup k ballotMap) 
+        validDelegates =
+            (filter (\k -> isRight $ maybe (Left "") (join <<< Right) $ lookup k ballotMap)
                 $ fromList $ keys ballotMap)
         removeInvalidDelegates dMap validDlgts = foldl (remDelegatesFoldF validDlgts) dMap (fromList $ keys dMap)
         remDelegatesFoldF validDlgts dMapFolding voter = do
@@ -386,16 +427,16 @@ removeDelegationLoops dMap = foldl checkForLoops dMap $ fromList $ keys dMap
             let lastInDelegationChian = last delegationChain
             case lastInDelegationChian of
                 -- if we have no last element then there was no delegations; this should never happen
-                Nothing -> unsafeCrashWith "Delegate loop check should always have a delegation list of length >= 1"  
+                Nothing -> unsafeCrashWith "Delegate loop check should always have a delegation list of length >= 1"
                 (Just finalDelegate) -> case (init delegationChain) of
                     Nothing -> m  -- if we have no `init` of the delegationChain then it only had 1 elem
-                    (Just allButLast) -> if finalDelegate `elem` allButLast 
+                    (Just allButLast) -> if finalDelegate `elem` allButLast
                         then purgeLoopFrom m finalDelegate delegationChain
                         else m  -- if the final delegate wasn't in the list of delegates we don't need to do anything
         mkDelegationChain m voter pastChain = case (join $ lookup voter m) of
-                Nothing -> currChain  -- 
-                Just (next) -> do 
-                    if next `elem` currChain 
+                Nothing -> currChain  --
+                Just (next) -> do
+                    if next `elem` currChain
                         then currChain <> [next]  -- terminate as we've found the first elem that we've seen before
                         else mkDelegationChain m next (currChain)
             where currChain = pastChain <> [voter]
@@ -406,7 +447,7 @@ removeDelegationLoops dMap = foldl checkForLoops dMap $ fromList $ keys dMap
             case nextMaybe of
                 Nothing -> mNext
                 (Just next) -> purgeLoopFrom mNext next dChain
-            
+
 
 
 makeBallotMap :: Array Ballot -> DelegateMap -> BallotMap
@@ -434,7 +475,7 @@ makeBallotMap ballots delegateMap = foldl insertSwmBallot empty $ arrSwmBs
 removeBannedAddresses :: BallotMap -> BallotMap
 removeBannedAddresses ballotMapPre =
         foldl (\m bannedAddr -> delete bannedAddr m) ballotMapPre bannedAddresses
-        
+
 
 renderMap :: forall k v. (Ord k) => (Show k) => (Show v) => Map k v -> String
 renderMap m = joinWith "\n" $ map (\{k, v} -> "  " <> show k <> "\n   \\-> " <> v <> "\n") kvPairs
@@ -443,7 +484,7 @@ renderMap m = joinWith "\n" $ map (\{k, v} -> "  " <> show k <> "\n   \\-> " <> 
 
 
 parseBallotOpts :: String -> OptStrs
-parseBallotOpts rawBallotOpts = if length firstSplit /= 8 
+parseBallotOpts rawBallotOpts = if length firstSplit /= 8
         then OptStrs {o1: totalErr, o2: totalErr, o3: totalErr, o4: totalErr}
         else renderedOpts
     where
@@ -467,21 +508,21 @@ countBallots (OptStrs {o1, o2, o3, o4}) ballotMap delegateMap balanceMap = do
         let voters = fromList $ keys ballotMap
         let processedBallotMap = findBallotsOfMostDelegated voters
 
-        -- usually we'd multiply the ballots by their reputation, 
+        -- usually we'd multiply the ballots by their reputation,
         -- but this is just their ballance for this ballot
         -- so let's get a list of ballots and multiples (which are the balances)
         let voterBallotPairs = (toUnfoldable processedBallotMap :: Array (Tuple Voter (Either String SwmBallot)))
         let balanceBallotPairs = (\(Tuple voter ballot) -> (toBalanceBallotPair voter ballot)) <$> voterBallotPairs
-        
+
         -- now we need to extract lists of scaled ballot
         let {v1s, v2s, v3s, v4s} = procBalanceBallotPairs balanceBallotPairs
 
         -- now we sum them all
-        let totals = 
+        let totals =
                 [ Tuple o1 $ sum v1s
                 , Tuple o2 $ sum v2s
                 , Tuple o3 $ sum v3s
-                , Tuple o4 $ sum v4s 
+                , Tuple o4 $ sum v4s
                 ]
 
         -- and that's it! We pick the maximum and that's our winner.
@@ -494,26 +535,26 @@ countBallots (OptStrs {o1, o2, o3, o4}) ballotMap delegateMap balanceMap = do
         {winner, possibleWinners, totals}
 
     where
-        findBallotsOfMostDelegated voters = 
+        findBallotsOfMostDelegated voters =
             foldl (\m voter -> fromMaybe empty $ do
                 finalDlgt <- pure $ followDelegationChain voter
                 dlgtBallot <- lookup finalDlgt ballotMap
                 pure $ insert voter dlgtBallot m
             ) ballotMap voters
-        
+
         followDelegationChain voter = case (join $ lookup voter delegateMap) of
             Nothing -> voter
             (Just next) -> followDelegationChain next
-        
+
         toBalanceBallotPair :: Voter -> Either String SwmBallot -> Either String BalanceBallotPair
         toBalanceBallotPair voter ballotE = do
             ballot <- ballotE
             balance <- maybe (Left $ "Unable to get balance for: " <> show voter) Right $ lookup voter balanceMap
             pure $ {balance, ballot: getVotes ballot}
-        
+
         procBalanceBallotPairs :: Array (Either String BalanceBallotPair) -> ScaledVotes
         procBalanceBallotPairs allPairs = foldl makeScaledVotes {v1s: [], v2s: [], v3s: [], v4s: []} allPairs
-        
+
         makeScaledVotes :: ScaledVotes -> Either String BalanceBallotPair -> ScaledVotes
         makeScaledVotes scaledVotes (Left err) = do
             let _ = unsafePerformEff $ EffC.log $ "Error while counting ballots: " <> err
@@ -529,14 +570,10 @@ countBallots (OptStrs {o1, o2, o3, o4}) ballotMap delegateMap balanceMap = do
             case Tuple (head totals) (tail totals) of
                 (Tuple Nothing _) -> currBests
                 (Tuple _ Nothing) -> currBests
-                (Tuple (Just aTotal@(Tuple opt score)) (Just remTotals)) -> 
+                (Tuple (Just aTotal@(Tuple opt score)) (Just remTotals)) ->
                     case head currBests of
                         Nothing -> getMaxTotals remTotals [aTotal]
                         (Just (Tuple prevOpt prevScore)) -> case compare score prevScore of
                             GT -> getMaxTotals remTotals [aTotal]
                             EQ -> getMaxTotals remTotals (currBests <> [aTotal])
                             LT -> getMaxTotals remTotals currBests
-
-
-
-

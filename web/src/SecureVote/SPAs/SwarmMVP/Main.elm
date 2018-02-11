@@ -2,9 +2,8 @@ module SecureVote.SPAs.SwarmMVP.Main exposing (..)
 
 import Html exposing (Html)
 import SecureVote.Crypto.Curve25519 exposing (genKeyPair, onIncomingCurve25519Error, onIncomingEncBytes, onIncomingKeyPair, receiveCurve25519Error, receiveEncryptedBytes, receiveKeyPair)
-import SecureVote.Eth.Web3 exposing (contractReadResponse, getBallotResults, getEncryptionPublicKey, getInit, gotEncPubkey, gotTxidCheckStatus, gotWeb3Error, implDataParam, implErc20Balance, implInit, onContractReadResponse, onGotPubkey, onGotTxidStatus, onIncomingErc20Balance, onIncomingWeb3Error, onInit, onRecieveDataParam, performContractRead, setWeb3Provider)
+import SecureVote.Eth.Web3 exposing (contractReadResponse, getBallotResults, getEncryptionPublicKey, getInit, gotAuditMsg, gotEncPubkey, gotTxidCheckStatus, gotWeb3Error, implDataParam, implErc20Balance, implInit, onContractReadResponse, onGotPubkey, onGotTxidStatus, onIncomingErc20Balance, onIncomingWeb3Error, onInit, onRecieveDataParam, performContractRead, setWeb3Provider)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (rschedBallot)
-import SecureVote.SPAs.SwarmMVP.Const exposing (erc20Addr)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initEthNode, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..))
@@ -28,6 +27,7 @@ subscriptions model =
         , implInit <| onInit (FromWeb3 << Web3Init)
         , contractReadResponse <| onContractReadResponse decodeRead readOptsErr
         , gotTxidCheckStatus onGotTxidStatus
+        , gotAuditMsg
         ]
 
 
@@ -46,13 +46,16 @@ initCmds initModel extraCmds =
         , genKeyPair True
         , getEncryptionPublicKey votingAddr
         , getInit votingAddr
-        , getBallotResults { ethUrl = initEthNode, votingAddr = votingAddr, erc20Addr = erc20Addr }
         ]
             ++ extraCmds
 
 
-processedInitModelCmd : ( Model, Cmd Msg )
-processedInitModelCmd =
+type alias Flags =
+    { mainTitle : String }
+
+
+processedInitModelCmd : Flags -> ( Model, Cmd Msg )
+processedInitModelCmd { mainTitle } =
     -- Note: Only use Msgs that do not
     -- send out commands
     update
@@ -60,17 +63,22 @@ processedInitModelCmd =
             [ setEthNodeTemp initEthNode
             ]
         )
-        (initModel rschedBallot)
+        (initModel rschedBallot mainTitle)
 
 
-main : Program Never Model Msg
-main =
+initF : Flags -> ( Model, Cmd Msg )
+initF flags =
     let
         ( iModel, iCmd ) =
-            processedInitModelCmd
+            processedInitModelCmd flags
     in
-    Html.program
-        { init = ( iModel, initCmds iModel [ iCmd ] )
+    ( iModel, initCmds iModel [ iCmd ] )
+
+
+main : Program Flags Model Msg
+main =
+    Html.programWithFlags
+        { init = initF
         , view = rootView
         , subscriptions = subscriptions
         , update = update

@@ -1,10 +1,11 @@
 port module SecureVote.Eth.Web3 exposing (..)
 
 import Debug
-import Decimal
+import Decimal exposing (fromString)
 import Json.Decode as Decode exposing (Decoder, Value, bool, decodeValue, int, string)
 import Json.Decode.Pipeline exposing (decode, required)
-import SecureVote.Eth.Types exposing (InitRecord)
+import Maybe.Extra exposing (combine)
+import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult, BallotTotals, InitRecord)
 import SecureVote.Eth.Utils exposing (dropEthPrefix)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
@@ -185,4 +186,72 @@ onInit msgConstructor initStuff =
             errHelper "Error while getting initial parameters from Web3: " err
 
 
-port getBallotResults : { ethUrl : String, votingAddr : String, erc20Addr : String } -> Cmd msg
+port getBallotResults : { ethUrl : String, ethRPCAuth : String, votingAddr : String, erc20Addr : String } -> Cmd msg
+
+
+port gotAuditMsgImpl : (Value -> msg) -> Sub msg
+
+
+decodeAuditMsg : Value -> Msg
+decodeAuditMsg auditVal =
+    let
+        procSuccessKVs : Decoder (List ( String, String )) -> Decoder BallotTotals
+        procSuccessKVs =
+            Decode.andThen
+                (\listOfStringRes ->
+                    case
+                        combine <|
+                            List.map
+                                (\( s, dStr ) ->
+                                    case fromString dStr of
+                                        Nothing ->
+                                            Nothing
+
+                                        Just d ->
+                                            Just ( s, d )
+                                )
+                                listOfStringRes
+                    of
+                        Nothing ->
+                            Decode.fail "Unable to decode BallotTotals from Auditor"
+
+                        Just res ->
+                            Decode.succeed res
+                )
+
+        decodePWithT tVal =
+            case tVal of
+                "log" ->
+                    Decode.map AuditLog <| Decode.field "p" Decode.string
+
+                "fail" ->
+                    Decode.map AuditFail <| Decode.field "p" Decode.string
+
+                "success" ->
+                    Decode.map AuditSuccess <|
+                        Decode.field "p" <|
+                            (decode BallotResult
+                                |> required "nVotes" int
+                                |> required "totals" (procSuccessKVs <| Decode.keyValuePairs string)
+                            )
+
+                _ ->
+                    Decode.succeed <| AuditLogErr <| "Unable to decode msg from auditor with type: " ++ tVal
+
+        auditValDecoder =
+            Decode.andThen
+                (\tVal -> decodePWithT tVal)
+            <|
+                Decode.field "t" string
+    in
+    case Decode.decodeValue auditValDecoder auditVal of
+        Ok auditMsg ->
+            FromAuditor auditMsg
+
+        Err err ->
+            errHelper "Unable to decode message from auditor! check console.log " err
+
+
+gotAuditMsg : Sub Msg
+gotAuditMsg =
+    gotAuditMsgImpl decodeAuditMsg

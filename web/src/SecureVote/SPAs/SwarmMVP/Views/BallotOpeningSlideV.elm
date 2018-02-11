@@ -9,6 +9,7 @@ import Material.Typography exposing (body1, display1, display2, display3, headli
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
+import SecureVote.Eth.Types exposing (AuditDoc(..))
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(..))
@@ -48,6 +49,27 @@ openingSlide model =
 
         renderPara txt =
             Options.styled span [ body1, cs "black db pa1 mv2" ] txt
+
+        renderAuditMsg auditMsg =
+            let
+                wrapper attrs msg =
+                    Options.styled span ([ cs "db" ] ++ attrs) [ text msg ]
+            in
+            case auditMsg of
+                AuditLog msg ->
+                    wrapper [] msg
+
+                AuditLogErr msg ->
+                    wrapper [ cs "red" ] msg
+
+                AuditFail msg ->
+                    wrapper [ cs "red bold" ] msg
+
+                AuditSuccess res ->
+                    wrapper [] <| toString res
+
+        renderAuditLog model =
+            List.map renderAuditMsg model.auditMsgs
     in
     fullPageSlide 9483579329
         model
@@ -55,6 +77,7 @@ openingSlide model =
         [ Card.text [ cs "center tc" ]
             [ Options.styled div [ display2, Color.text Color.black, cs "pa2 heading-text" ] [ text "Welcome to the SWM Release Schedule Vote" ]
             , Options.styled div [ headline, cs "black pa2 mv3" ] [ text "This vote is open to all Swarm token holders." ]
+            , div [] (renderAuditLog model)
             , div
                 [ style [ ( "max-width", "700px" ) ], class "center" ]
                 [ resultsParas

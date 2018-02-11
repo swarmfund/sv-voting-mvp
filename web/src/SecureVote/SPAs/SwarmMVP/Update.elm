@@ -8,12 +8,14 @@ import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
+import SecureVote.Eth.Types exposing (AuditDoc)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (doBallotOptsMatchRSched, voteOptionsRSched)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, defaultDelegate, getDelegateAddress, getSwmAddress)
-import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, initModel, resetAllBallotFields)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, defaultDelegate, getDelegateAddress, getUserErc20Addr)
+import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, resetAllBallotFields)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (defaultRoute)
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidFail, TxidInProgress, TxidSuccess))
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
 import Task exposing (attempt)
@@ -44,7 +46,7 @@ update msg model =
 
         PageGoBack ->
             { model
-                | route = List.head model.history ? (initModel model.currentBallot).route
+                | route = List.head model.history ? defaultRoute
                 , history = List.tail model.history ? []
                 , lastPageDirection = PageBack
                 , lastRoute = Just model.route
@@ -66,7 +68,17 @@ update msg model =
                 ! []
 
         SetBallot b ->
-            update (ToWeb3 ReInit) <| resetAllBallotFields { model | currentBallot = b } b
+            let
+                ( m_, cmds_ ) =
+                    update (ToWeb3 ReInit) <| resetAllBallotFields { model | currentBallot = b } b
+
+                doAuditIfBallotEnded =
+                    if b.endTime < model.now then
+                        [ getBallotResults { ethUrl = model.ethNode, ethRPCAuth = "", votingAddr = b.contractAddr, erc20Addr = b.erc20Addr } ]
+                    else
+                        []
+            in
+            m_ ! ([ cmds_ ] ++ doAuditIfBallotEnded)
 
         ConstructBallotPlaintext ->
             let
@@ -122,6 +134,9 @@ update msg model =
         FromCurve25519 msg ->
             updateFromCurve25519 msg model
 
+        FromAuditor msg ->
+            { model | auditMsgs = msg :: model.auditMsgs } ! []
+
         -- ToCurve25519 msg ->
         --     updateToCurve25519 msg model
         -- Boilerplate: Mdl action handler.
@@ -167,11 +182,11 @@ updateToWeb3 web3msg model =
 
         GetErc20Balance ->
             let
-                swmAddr =
+                addr =
                     -- probs okay because it will return 0
-                    getSwmAddress model ? "0x00"
+                    getUserErc20Addr model ? "0x00"
             in
-            model ! [ getErc20Balance <| GetErc20BalanceReq model.swarmErc20Address swmAddr ]
+            model ! [ getErc20Balance <| GetErc20BalanceReq model.currentBallot.erc20Addr addr ]
 
         CheckTxid txid ->
             { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]
@@ -184,7 +199,11 @@ updateFromWeb3 : FromWeb3Msg -> Model -> ( Model, Cmd Msg )
 updateFromWeb3 msg model =
     case msg of
         GotBalance bal ->
-            { model | swmBalance = Just bal } ! []
+            let
+                cBallot =
+                    model.currentBallot
+            in
+            { model | currentBallot = { cBallot | erc20Balance = Just bal } } ! []
 
         GotDataParam data ->
             let

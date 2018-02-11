@@ -1,4 +1,4 @@
-module SecureVote.SPAs.SwarmMVP.Views.SwmHowToVoteV exposing (..)
+module SecureVote.SPAs.SwarmMVP.Views.HowToVoteV exposing (..)
 
 import Html exposing (Html, div, li, p, span, text, ul)
 import Html.Attributes exposing (class, style)

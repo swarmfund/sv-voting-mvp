@@ -1,4 +1,4 @@
-module SecureVote.SPAs.SwarmMVP.Views.SwmAddressV exposing (..)
+module SecureVote.SPAs.SwarmMVP.Views.SetAddressV exposing (..)
 
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
@@ -11,7 +11,7 @@ import Maybe.Extra exposing ((?), isNothing)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Eth.Utils exposing (isValidEthAddress, setCandTxFrom)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (getSwmAddress, setSwmAddress, swmAddrId)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (getUserErc20Addr, setUserErc20Addr, userErc20AddrId)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmHowToVoteR))
@@ -24,7 +24,7 @@ swmAddressV model =
             validAddress model
 
         btnDisabled =
-            if addrErr || (isNothing <| getSwmAddress model) then
+            if addrErr || (isNothing <| getUserErc20Addr model) then
                 Disabled
             else
                 BtnNop
@@ -38,7 +38,7 @@ swmAddressV model =
         msgs =
             MultiMsg <|
                 [ PageGoForward SwmHowToVoteR
-                , SetCandidateTx (setCandTxFrom <| getSwmAddress model ? "")
+                , SetCandidateTx (setCandTxFrom <| getUserErc20Addr model ? "")
                 , ToWeb3 GetErc20Balance
                 ]
                     ++ setBallotDefaultMsgs
@@ -46,7 +46,7 @@ swmAddressV model =
         devMsgs =
             MultiMsg <|
                 [ PageGoForward SwmHowToVoteR
-                , setSwmAddress "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
+                , setUserErc20Addr "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
                 , SetCandidateTx <| setCandTxFrom "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
                 , ToWeb3 GetErc20Balance
                 ]
@@ -68,10 +68,10 @@ swmAddressV model =
                         [ Textf.render Mdl
                             [ 83543983 ]
                             model.mdl
-                            [ Options.onInput <| setSwmAddress
+                            [ Options.onInput <| setUserErc20Addr
                             , Textf.label "Your Ethereum Address"
                             , Textf.floatingLabel
-                            , Textf.value <| getSwmAddress model ? ""
+                            , Textf.value <| getUserErc20Addr model ? ""
                             , Textf.error addrErrMsg |> Options.when addrErr
                             , css "min-width" "400px"
                             ]
@@ -97,7 +97,7 @@ validAddress : Model -> ( Bool, String )
 validAddress model =
     let
         swmAddress =
-            getSwmAddress model
+            getUserErc20Addr model
     in
     case swmAddress of
         Nothing ->

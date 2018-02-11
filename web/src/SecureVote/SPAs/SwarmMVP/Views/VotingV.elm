@@ -1,4 +1,4 @@
-module SecureVote.SPAs.SwarmMVP.Views.SwmVotingV exposing (..)
+module SecureVote.SPAs.SwarmMVP.Views.VotingV exposing (..)
 
 import Dict
 import Html exposing (Html, b, code, div, li, p, pre, span, table, td, text, tr, ul)
