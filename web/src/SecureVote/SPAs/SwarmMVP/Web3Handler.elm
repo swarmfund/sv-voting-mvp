@@ -7,6 +7,8 @@ import SecureVote.Eth.Web3 exposing (ReadResponse)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 
 
+{-| Decode contract read msg |
+-}
 decodeRead : ReadResponse -> Msg
 decodeRead { success, errMsg, response, method } =
     case method of

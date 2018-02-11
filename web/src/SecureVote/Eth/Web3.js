@@ -71,9 +71,9 @@ const web3Ports = (web3, app) => {
 
         const getBallotOpts = (cb) => {
             try {
-                voteC.getBallotOptions(implRecieveBallotOptsCBLegacy);
+                voteC.getBallotOptions(cb);
             } catch (err) {
-                implRecieveBallotOptsCBLegacy(err, null);
+                cb(err, null);
             }
         }
 
@@ -134,7 +134,7 @@ const web3Ports = (web3, app) => {
             app.ports.contractReadResponse.send({
                 success: false,
                 errMsg: err.toString(),
-                method: "getBallotOptions",
+                method: "getBallotOptionsLegacy",
                 response: []
             })
         } else {

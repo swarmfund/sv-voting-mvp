@@ -130,7 +130,7 @@ onIncomingWeb3Error err =
             errHelper "Got error back from Web3: " err_
 
         Err _ ->
-            errHelper "Unable to decode error!!! Check console.log: " err
+            errHelper "Unable to decode Web3 error!!! Check console.log: " err
 
 
 port constructDataParam : ConsDataParamReq -> Cmd msg
@@ -146,7 +146,7 @@ onRecieveDataParam dataVal =
             FromWeb3 <| GotDataParam data
 
         Err err ->
-            errHelper "Unable to decode data param from web3! Check console.log: " err
+            errHelper "onRecieveDataParam: Unable to decode data param from web3! Check console.log: " err
 
 
 port getEncryptionPublicKey : String -> Cmd msg
