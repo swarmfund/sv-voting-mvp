@@ -44,7 +44,7 @@ async function testInstantiation(accounts, contractFactory) {
   var endTime = startTime + 600;
   var shortEndTime = 0;
   
-  const vc = await contractFactory.new(startTime, endTime, hexPk, true);
+  const vc = await contractFactory.new(startTime, endTime, hexPk, true, "", "", "", "", "");
 
   const owner = await vc.owner();
   assert.equal(owner, accounts[0], "Owner must be set on launch.");
@@ -74,11 +74,11 @@ async function testInstantiation(accounts, contractFactory) {
   assert.equal(_swmBanned, true, "swm fund should be banned from ballot");
 
   const _ballotOptions = await vc.getBallotOptions();
-  const _ballotOptionsProcd = S.map(([a, b]) => [a.toNumber(), b.toNumber()], _ballotOptions);
-  assert.deepEqual(_ballotOptionsProcd, [[8, 42], [42, 8], [16, 42], [4, 84]], "should have expected ballot params")
+  const emptyHash = "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470";
+  assert.deepEqual(_ballotOptions, [emptyHash, emptyHash, emptyHash, emptyHash, emptyHash], "should have expected ballot params")
 
   const _ballotOptNumber = await vc.getBallotOptNumber();
-  assert.equal(_ballotOptNumber, 4, "should have 4 ballot options")
+  assert.equal(_ballotOptNumber, 5, "should have 5 ballot options");
 
   //// ASSERTIONS FOR INSTANTIATION COMPLETE
 
@@ -139,7 +139,7 @@ async function testTestMode(accounts, contractFactory) {
   var endTime = startTime + 600;
   var shortEndTime = 0;
   
-  var vc = await contractFactory.new(startTime, endTime, hexPk, false);
+  var vc = await contractFactory.new(startTime, endTime, hexPk, false, "", "", "", "", "");
 
   const _setEndTimeTx = await vc.setEndTime(0);
   assertOnlyEvent('Error', _setEndTimeTx);
