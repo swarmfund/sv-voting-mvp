@@ -56,8 +56,7 @@ contract SwarmVotingMVP {
     bytes32[5] public optionHashes;
 
     //// ** Events
-    event CreatedBallot(address creator, uint256 start, uint256 end, bytes32 encPubkey);
-    event FailedVote(address voter, string reason);
+    event CreatedBallot(address creator, uint256 start, uint256 end, bytes32 encPubkey, string o1, string o2, string o3, string o4, string o5);
     event SuccessfulVote(address voter, bytes32 ballot, bytes32 pubkey);
     event SeckeyRevealed(bytes32 secretKey);
     event TestingEnabled();
@@ -116,6 +115,8 @@ contract SwarmVotingMVP {
             testMode = true;
             TestingEnabled();
         }
+
+        CreatedBallot(msg.sender, _startTime, _endTime, _encPK, opt1, opt2, opt3, opt4, opt5);
     }
 
     // Ballot submission

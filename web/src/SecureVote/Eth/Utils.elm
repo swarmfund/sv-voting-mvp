@@ -10,6 +10,11 @@ import Regex exposing (Regex, contains, regex)
 import SecureVote.Eth.Models exposing (CandidateEthTx, MinEthTx)
 
 
+keccak256OverString : String -> Maybe String
+keccak256OverString =
+    toHexEth << ethereum_keccak_256 << List.map Char.toCode << String.toList
+
+
 setCandTxFrom : String -> CandidateEthTx -> CandidateEthTx
 setCandTxFrom from tx =
     { tx | from = Just from }

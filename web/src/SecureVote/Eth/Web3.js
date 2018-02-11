@@ -138,7 +138,6 @@ const web3Ports = (web3, app) => {
             })
         } else {
             const bOpts = S.map(([a, b]) => ([a.toNumber(), b.toNumber()]), ballotOpts);
-            console.log('ballot opts returning', bOpts);
             app.ports.contractReadResponse.send({
                 success: true,
                 errMsg: "",
@@ -159,7 +158,6 @@ const web3Ports = (web3, app) => {
                 response: []
             })
         } else {
-            console.log('ballot opts returning', ballotOpts);
             app.ports.contractReadResponse.send({
                 success: true,
                 errMsg: "",
