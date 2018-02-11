@@ -15,3 +15,10 @@ swmErc20Addr =
 swmErc20Abrv : String
 swmErc20Abrv =
     "SWM"
+
+
+{-| Dev ERC20 address - will always return 1337 * 10^18 units for everyone. |
+-}
+devErc20Addr : String
+devErc20Addr =
+    "0xc3D10aF066bde2357C92Bc4Af25FB5f42e73F1a4"

@@ -8,7 +8,7 @@ import RemoteData exposing (RemoteData(..))
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
 import SecureVote.Eth.Types exposing (AuditDoc)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (allBallots, initBallot, initDevBallot)
+import SecureVote.SPAs.SwarmMVP.Ballot exposing (allBallots, allDevBallots, initBallot, initDevBallot)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(ListAllVotesR, NotFoundR, SwmAddressR))
@@ -53,11 +53,11 @@ type alias Model =
 initModel : Bool -> String -> Model
 initModel dev mainTitle =
     let
-        ballot_ =
+        ( ballot_, ethNode_, allBallots_ ) =
             if dev then
-                initDevBallot
+                ( initDevBallot, devEthNode, allDevBallots )
             else
-                initBallot
+                ( initBallot, initEthNode, allBallots )
     in
     { mdl = Material.model
     , snack = Material.Snackbar.model
@@ -69,21 +69,19 @@ initModel dev mainTitle =
     , ballotBits = Dict.empty
     , ballotAllDone = False
     , currentBallot = ballot_
-    , allBallots = foldl (\b m -> Dict.insert b.id b m) Dict.empty allBallots
+    , allBallots = foldl (\b m -> Dict.insert b.id b m) Dict.empty allBallots_
     , route = ListAllVotesR
     , history = []
     , lastRoute = Nothing
     , lastPageDirection = PageForward
     , candidateTx = nullCandidateEthTx
-    , ethNode = initEthNode
-
-    --    , ethNode = "http://localhost:8545"
+    , ethNode = ethNode_
     , keypair = Nothing
     , encBytes = Nothing
     , ballotPlaintext = Nothing
     , remoteHexPk = Nothing
     , miniVotingAbi = "Error: Web3 has not initialized correctly"
-    , verificationError = Just "Hi"
+    , verificationError = Nothing
     , ballotVerificationPassed = Loading
     , txidCheck = TxidNotMade
     , ballotOpen = Loading

@@ -15,6 +15,7 @@ setTimeout(() => {
         mainTitle: process.env.MAIN_TITLE,
         dev: (process.env.DEV.toLowerCase() == "true") || false
     });
+    console.log("Environment variables are: ", process.env.MAIN_TITLE, process.env.DEV);
     web3Ports(web3, app);
     curve25519Ports(app);
 }, 400);

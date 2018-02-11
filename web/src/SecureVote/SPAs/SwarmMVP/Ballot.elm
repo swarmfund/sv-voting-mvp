@@ -1,5 +1,6 @@
 module SecureVote.SPAs.SwarmMVP.Ballot exposing (..)
 
+import SecureVote.SPAs.SwarmMVP.Ballots.DevBasicBallot exposing (devBasicBallot)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (rschedBallot)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotOption, BallotParams)
 
@@ -15,6 +16,12 @@ allBallots =
     ]
 
 
+allDevBallots : List (BallotParams msg)
+allDevBallots =
+    [ devBasicBallot
+    ]
+
+
 initBallot : BallotParams msg
 initBallot =
     rschedBallot
@@ -22,4 +29,4 @@ initBallot =
 
 initDevBallot : BallotParams msg
 initDevBallot =
-    rschedBallot
+    devBasicBallot

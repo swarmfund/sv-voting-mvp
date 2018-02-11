@@ -29,7 +29,7 @@ main args updateF = launchAff_ $ do
     let updateF_ = updateF2 updateF
     let failErrorCode = 1
     _ <- catchError (app args updateF_) \e -> do
-                let _ = updateF_ {t: "fail", p: SuStr $ show e}
+                let _ = updateF_ {t: "fail", p: SuStr $ message e}
                 pure $ Left $ Tuple failErrorCode $ message e
 
     pure unit
