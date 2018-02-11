@@ -12,7 +12,8 @@ import curve25519Ports from './src/SecureVote/Crypto/Curve25519';
 setTimeout(() => {
     const Elm = require('./src/SecureVote/SPAs/SwarmMVP/Main.elm');
     const app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen'), {
-        mainTitle: process.env.MAIN_TITLE
+        mainTitle: process.env.MAIN_TITLE,
+        dev: (process.env.DEV.toLowerCase() == "true") || false
     });
     web3Ports(web3, app);
     curve25519Ports(app);

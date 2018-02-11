@@ -67,7 +67,8 @@ const pursCommonF = () => ({
         fs: 'empty'
     },
     externals: {
-        sodium: 'sodium'
+        sodium: 'sodium',
+        'decimal.js': 'Decimal'
     }
 });
 
@@ -108,7 +109,7 @@ const common = {
         ]
     },
     plugins: [
-        new webpack.EnvironmentPlugin(["MAIN_TITLE"]),
+        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV"]),
         CopyWebpackPluginConfig,
         new HTMLWebpackPlugin({
             // using .ejs prevents other loaders causing errors
@@ -118,7 +119,8 @@ const common = {
         })
     ],
     resolve: {
-        extensions: [".js", ".json", ".ts"]
+        extensions: [".js", ".json", ".ts"],
+        // mainFields: ["main", "module"]
     }
 };
 

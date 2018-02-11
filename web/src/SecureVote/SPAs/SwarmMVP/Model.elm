@@ -8,7 +8,7 @@ import RemoteData exposing (RemoteData(..))
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
 import SecureVote.Eth.Types exposing (AuditDoc)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (allBallots)
+import SecureVote.SPAs.SwarmMVP.Ballot exposing (allBallots, initBallot, initDevBallot)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(ListAllVotesR, NotFoundR, SwmAddressR))
@@ -46,11 +46,19 @@ type alias Model =
     , now : Int
     , mainTitle : String
     , auditMsgs : List AuditDoc
+    , dev : Bool
     }
 
 
-initModel : BallotParams Msg -> String -> Model
-initModel defaultBallot mainTitle =
+initModel : Bool -> String -> Model
+initModel dev mainTitle =
+    let
+        ballot_ =
+            if dev then
+                initDevBallot
+            else
+                initBallot
+    in
     { mdl = Material.model
     , snack = Material.Snackbar.model
     , errors = []
@@ -60,7 +68,7 @@ initModel defaultBallot mainTitle =
     , ballotRange = Dict.empty
     , ballotBits = Dict.empty
     , ballotAllDone = False
-    , currentBallot = defaultBallot
+    , currentBallot = ballot_
     , allBallots = foldl (\b m -> Dict.insert b.id b m) Dict.empty allBallots
     , route = ListAllVotesR
     , history = []
@@ -82,12 +90,18 @@ initModel defaultBallot mainTitle =
     , now = 0
     , mainTitle = mainTitle
     , auditMsgs = []
+    , dev = dev
     }
 
 
 initEthNode : String
 initEthNode =
-    "http://eth-aws-nv-node-02.secure.vote:38545/eth"
+    "http://eth-aws-nv-node-02.secure.vote:38545/microgov"
+
+
+devEthNode : String
+devEthNode =
+    "http://eth-kovan-aws-nv-node-01.secure.vote:38545/microgovDev"
 
 
 
