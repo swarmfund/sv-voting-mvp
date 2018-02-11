@@ -2694,9 +2694,9 @@ elm-live@^2.7.5:
     indent-string "^3.0.0"
     q-stream "^0.2.0"
 
-elm-test@^0.18.9:
-  version "0.18.9"
-  resolved "https://registry.yarnpkg.com/elm-test/-/elm-test-0.18.9.tgz#b524de27556528eb7a16e95cb2b49993ffe2dd7e"
+elm-test@^0.18.12:
+  version "0.18.12"
+  resolved "https://registry.yarnpkg.com/elm-test/-/elm-test-0.18.12.tgz#8586a056980eb383fd35ad2ef2b74a6ee4c410f7"
   dependencies:
     binstall "1.2.0"
     chalk "2.1.0"
@@ -2710,6 +2710,7 @@ elm-test@^0.18.9:
     minimist "^1.2.0"
     murmur-hash-js "1.0.0"
     node-elm-compiler "4.3.3"
+    split "^1.0.1"
     supports-color "4.2.0"
     xmlbuilder "^8.2.2"
   optionalDependencies:
@@ -7023,6 +7024,12 @@ split2@^0.2.1:
 split@0.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/split/-/split-0.3.3.tgz#cd0eea5e63a211dfff7eb0f091c4133e2d0dd28f"
+  dependencies:
+    through "2"
+
+split@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/split/-/split-1.0.1.tgz#605bd9be303aa59fb35f9229fbea0ddec9ea07d9"
   dependencies:
     through "2"
 

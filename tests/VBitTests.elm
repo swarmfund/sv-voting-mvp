@@ -2,6 +2,7 @@ module VBitTests exposing (..)
 
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
+import List as List
 import SecureVote.Types.VBit exposing (VBit(OneBit, ZeroBit), vBitsToBytes)
 import Test exposing (..)
 
@@ -54,7 +55,7 @@ suite =
                             List.map Tuple.first pairs
 
                         rhsAnswers =
-                            List.map (vBitsToBytes << Tuple.second) pairs
+                            List.map (\( lhs, rhs ) -> vBitsToBytes (ceiling <| toFloat (List.length rhs) / 8) rhs) pairs
                     in
                     Expect.equalLists lhsAnswers rhsAnswers
             ]
