@@ -19,6 +19,9 @@ import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
 openingSlide : Model -> Html Msg
 openingSlide model =
     let
+        ballotOver =
+            model.currentBallot.endTime < model.now
+
         introText =
             [ [ text "This ballot is to decide the release schedule for SWM tokens." ]
             , [ text "You will be presented with a number of options in the form "

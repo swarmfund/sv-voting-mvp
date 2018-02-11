@@ -29,6 +29,13 @@ This repository contains three key items:
 
 Web code lives in `./web`
 
+You'll need to set these environment variables:
+
+* `MAIN_TITLE`: A string corresponding to the main title of the first page, e.g. "SWM Governance".
+* `DEV`: a boolean to indicate if it's a dev environment or not.
+
+If you're building locally you can put these in a `.env` file in the root of the repo.
+
 The frontend is built in Elm using Material Design (`elm-mdl`).
 Elm is a strongly typed purely functional language based on Haskell, and built with frontend in mind (and no other use cases currently).
 It compiles to JS.
