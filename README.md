@@ -107,7 +107,10 @@ This means `decimal.js` needs to be manually included with a `<script>` tag.
 
 #### Build Flags
 
-yarn 1.3.2 was giving us problems on netlify. If you have trouble try yarn 0.18.1.
+yarn 1.3.2 was giving us problems on netlify (though not on dev machines). If you have trouble try yarn 0.18.1.
 
 additionally, if you run `INSTALL_WEBPACK=true yarn build-web` it run `npm install -g webpack` first.
 
+#### Node Version
+
+in addition to the yarn issue we also had issues with node v8.9.4. If you have trouble try v6.9.1.
