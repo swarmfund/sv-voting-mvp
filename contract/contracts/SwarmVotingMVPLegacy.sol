@@ -19,7 +19,7 @@ pragma solidity ^0.4.17;
 //
 
 
-contract SwarmVotingMVP {
+contract SwarmVotingMVPLegacy {
     //// ** Storage Variables
 
     // Std owner pattern
