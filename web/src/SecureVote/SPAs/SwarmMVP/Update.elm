@@ -244,8 +244,8 @@ updateFromWeb3 msg model =
             case txidE of
                 Ok { data, confirmed, gas, logMsg } ->
                     if confirmed then
-                        -- gas should be around 100,000 for a successful vote
-                        if gas < 75000 then
+                        -- gas should be around 114,000 for a successful vote
+                        if gas < 110000 then
                             let
                                 errMsg =
                                     "Warning! "
