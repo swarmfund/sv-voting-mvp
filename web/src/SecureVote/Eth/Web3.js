@@ -130,7 +130,6 @@ const web3Ports = (web3, app) => {
     const implRecieveBallotOptsCBLegacy = (err, ballotOpts) => {
         console.log('implRecieveBallotOptsCBLegacy got:', err, ballotOpts)
         if (err) {
-            console.log('implRecieveBallotOptsCBLegacy error got:', err);
             app.ports.contractReadResponse.send({
                 success: false,
                 errMsg: err.toString(),
@@ -153,21 +152,19 @@ const web3Ports = (web3, app) => {
     const implRecieveBallotOptsCB = (err, ballotOpts) => {
         console.log('implRecieveBallotOptsCB got:', err, ballotOpts)
         if (err) {
-            console.log('implRecieveBallotOptsCB error got:', err);
             app.ports.contractReadResponse.send({
                 success: false,
                 errMsg: err.toString(),
                 method: "getBallotOptions",
-                response: ""
+                response: []
             })
         } else {
-            const bOpts = S.map(([a, b]) => ([a.toNumber(), b.toNumber()]), ballotOpts);
-            console.log('ballot opts returning', bOpts);
+            console.log('ballot opts returning', ballotOpts);
             app.ports.contractReadResponse.send({
                 success: true,
                 errMsg: "",
                 method: "getBallotOptions",
-                response: bOpts
+                response: ballotOpts
             })
         }
     };

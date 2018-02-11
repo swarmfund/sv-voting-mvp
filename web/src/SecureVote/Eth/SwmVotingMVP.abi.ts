@@ -299,7 +299,7 @@ export default {
         "constant": true,
         "inputs": [],
         "name": "getBallotOptions",
-        "outputs": [{"name": "", "type": "string[4]"}],
+        "outputs": [{"name": "", "type": "bytes32[5]"}],
         "payable": false,
         "stateMutability": "pure",
         "type": "function"
@@ -514,7 +514,7 @@ export default {
         "constant": true,
         "inputs": [],
         "name": "getBallotOptions",
-        "outputs": [{"name": "", "type": "string[4]"}],
+        "outputs": [{"name": "", "type": "bytes32[5]"}],
         "payable": false,
         "stateMutability": "pure",
         "type": "function"
