@@ -22,7 +22,14 @@ loadDetails = require('./loadContractDetails');
 
 
 const main = () => {
-    const args = yargs.options({
+    const args_ = yargs.options({
+        "deployOther": {
+            type: 'string',
+            describe: "The contract name of an alternate contract to deploy, do not include '.sol'"
+        }
+    }).help(false).version(false).argv;
+
+    const args = (args_.deployOther) ? args_ : yargs.options({
       'testing': {
         demandOption: false,
         default: false,
@@ -30,7 +37,7 @@ const main = () => {
         type: 'boolean'
       },
       "deploy": {
-        describe: '_automatically_ deploy the contract',
+        describe: '_automatically_ deploy the contract (no user interaction)',
         type: 'boolean'
       },
       "startTime": {
@@ -60,21 +67,44 @@ const main = () => {
       "deployOther": {
           describe: "The contract name of an alternate contract to deploy, do not include '.sol'",
           type: 'string'
+      },
+      "optionNamesJson": {
+          describe: "A JSON encoded list of options; up to 5 supported. Example: '[\"option 1\", \"option 2\"]'",
+          type: 'string',
+          demandOption: true,
       }
     }).version(false).argv;
-    
+
     if (!args.deployOther && (args.ballotEncPubkey.length != 66 || args.ballotEncPubkey.slice(0,2) != "0x")) {
-        log("Error:".bgRed.white + " Ballot Encryption Pubkey is not 64 bytes formatted in Ethereum Hex")
+        log("Error:".bgRed.white + " Ballot Encryption Pubkey is not 32 bytes formatted in Ethereum Hex (should be 66 characters long total)")
         process.exit(1);
     }
 
-    
+    let optionNames;
+    if (!args.deployOther) {
+        optionNames = JSON.parse(args.optionNamesJson);
+
+        if (!args.deployOther && (!Array.isArray(optionNames) || optionNames.length == 0 || optionNames.length > 5)) {
+            log("Error:".bgRed.white + " Option Names are either of length  ==0 or >5 (must be >0 and <=5)")
+            process.exit(1);
+        }
+
+        extraOpts = new Array(5 - optionNames.length);
+        extraOpts.fill("");
+        Array.prototype.push.apply(optionNames, extraOpts);
+
+        if (optionNames.length != 5) {
+            log("Error:".bgRed.white + " Option Names is not of length 5! (Note: it should have been automatically extended to contain 5 options, with extra options being empty)")
+            process.exit(1);
+        }
+    }
+
     const contractName = args.deployOther || "SwarmVotingMVP";
     const [abi, bin] = loadDetails(contractName);
 
-    
+
     web3.setProvider(new Web3.providers.HttpProvider(args.web3Provider))
-    
+
     log("\n\nSummary of Deployment:\n".cyan.bold)
 
     if (!args.deployOther) {
@@ -84,10 +114,11 @@ const main = () => {
         log("End Time: " + endTime.toString().yellow, 2);
         log("Ballot Encryption Pubkey:", 2)
         log(args.ballotEncPubkey.yellow, 4)
+        log("Ballot Options: " + ('["' + R.filter(n => n !== "", optionNames).join('", "') + '"]').yellow, 2)
     }
     log("Sending from: " + web3.eth.coinbase.yellow, 2);
     log("\nBe sure to " + "double and triple check".magenta + " these before you go live!\n")
-    
+
     log(">>> THIS IS THE LAST OPPORTUNITY YOU HAVE TO CHANGE THEM <<<".bgYellow.black + "\n")
 
     const correctDetails = new Confirm("Are these details _all_ correct?");
@@ -98,13 +129,13 @@ const main = () => {
         const contract = web3.eth.contract(abi);
 
         // set the contract deployment arguments
-        const contractArgs = args.deployOther ? [] : [args.startTime, args.endTime, args.ballotEncPubkey, args.testing];
-        
+        const contractArgs = args.deployOther ? [] : [args.startTime, args.endTime, args.ballotEncPubkey, args.testing, ...optionNames];
+
         // organise our arguments for getting final bytecode
         const bytecodeArgs = R.append({data: "0x" + bin}, contractArgs);
         // get the final bytecode for gas estimation
         const bytecode = contract.new.getData(...bytecodeArgs);
-        
+
         // create our params for sending
         const sendParams = {data: "0x" + bin, from: web3.eth.coinbase};
 
@@ -113,7 +144,7 @@ const main = () => {
         const compiledData = contract.new.getData(...compiledDataArgs);
         const compiledSendParams = R.merge(sendParams, {data: compiledData});
         console.log("Attempting to get gas estimate for ", compiledSendParams);
-        const estGas = web3.eth.estimateGas({...compiledSendParams, gas:4000000});
+        const estGas = web3.eth.estimateGas({...compiledSendParams});
         console.log("Gas estimate: ", estGas);
 
         // add gas estimates with some headroom

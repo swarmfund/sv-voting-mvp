@@ -53,6 +53,7 @@ contract SwarmVotingMVP {
     mapping(address => bool) public bannedAddresses;
     address public swarmFundAddress = 0x8Bf7b2D536D286B9c5Ad9d99F608e9E214DE63f0;
 
+    bytes32[5] public optionHashes;
 
     //// ** Events
     event CreatedBallot(address creator, uint256 start, uint256 end, bytes32 encPubkey);
@@ -100,7 +101,7 @@ contract SwarmVotingMVP {
     //// ** Functions
 
     // Constructor function - init core params on deploy
-    function SwarmVotingMVP(uint256 _startTime, uint256 _endTime, bytes32 _encPK, bool enableTesting) public {
+    function SwarmVotingMVP(uint256 _startTime, uint256 _endTime, bytes32 _encPK, bool enableTesting, string opt1, string opt2, string opt3, string opt4, string opt5) public {
         owner = msg.sender;
 
         startTime = _startTime;
@@ -108,6 +109,8 @@ contract SwarmVotingMVP {
         ballotEncryptionPubkey = _encPK;
 
         bannedAddresses[swarmFundAddress] = true;
+
+        optionHashes = [keccak256(opt1), keccak256(opt2), keccak256(opt3), keccak256(opt4), keccak256(opt5)];
 
         if (enableTesting) {
             testMode = true;
@@ -149,18 +152,13 @@ contract SwarmVotingMVP {
         return ballotEncryptionSeckey;
     }
 
-    function getBallotOptions() public pure returns (bytes32[4]) {
-        return [
-            keccak256(""),
-            keccak256(""),
-            keccak256(""),
-            keccak256("")
-        ];
+    function getBallotOptions() public constant returns (bytes32[5]) {
+        return optionHashes;
     }
-    
+
     // ballot params - allows the frontend to do some checking
     function getBallotOptNumber() public pure returns (uint256) {
-        return 4;
+        return 5;
     }
 
     // Test functions

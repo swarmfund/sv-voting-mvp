@@ -4,6 +4,7 @@ import Prelude
 
 import Control.Monad.Aff (launchAff_)
 import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.AVar (AVAR)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
@@ -22,7 +23,7 @@ getArgs :: forall eff. String -> String -> String -> String -> Eff (console :: C
 getArgs ethUrl ethRPCAuth votingAddr erc20Addr = pure $ {ethUrl, ethRPCAuth, votingAddr, erc20Addr}
 
 
-main :: forall e. Eff ( exception :: EXCEPTION, console :: CONSOLE, naclRandom :: NACL_RANDOM, now :: NOW, process :: PROCESS | e) Unit
+main :: forall e. Eff ( exception :: EXCEPTION, console :: CONSOLE, naclRandom :: NACL_RANDOM, now :: NOW, process :: PROCESS, avar :: AVAR | e) Unit
 main = do
     let setup = usage "$0 --ballotAddr 0x1234abcd... --erc20Addr 0xabcd1234... [--ethUrl <ethNodeUrl> [--ethRPCAuth <authDeets>]]"
                 <> defaultHelp

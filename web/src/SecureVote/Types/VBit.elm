@@ -97,8 +97,8 @@ vBitsToInt vbits =
             0
 
 
-vBitsToBytes : List VBit -> List Int
-vBitsToBytes vbits =
+vBitsToBytes : Int -> List VBit -> List Int
+vBitsToBytes nBytes vbits =
     let
         byte1 =
             vBitsToInt <| padRight 8 ZeroBit <| List.take 8 vbits
@@ -107,6 +107,9 @@ vBitsToBytes vbits =
             List.drop 8 vbits
     in
     if List.length vbits == 0 then
-        []
+        if nBytes > 0 then
+            padRight nBytes (padRight 8 ZeroBit []) []
+        else
+            []
     else
         byte1 :: vBitsToBytes remBits

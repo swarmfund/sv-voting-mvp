@@ -2,6 +2,7 @@ module Test.SV.CompleteCycle where
 
 import Prelude
 
+import Control.Apply (lift2)
 import Control.Monad.Aff (Aff, Canceler(..), Milliseconds(..), delay, error, makeAff, throwError)
 import Control.Monad.Aff.Console (log)
 import Control.Monad.Eff (Eff)
@@ -12,6 +13,7 @@ import Control.Monad.Eff.Random (RANDOM, randomInt)
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Parallel (parTraverse)
 import Crypt.NaCl (BoxPublicKey, NACL_RANDOM, box, getBoxPublicKey, getBoxSecretKey, toUint8Array)
+import Data.Argonaut.Core as J
 import Data.Array (drop, dropWhile, head, length, range, replicate, slice, tail, zip, (:))
 import Data.Array as Array
 import Data.ArrayBuffer.ArrayBuffer (fromArray)
@@ -26,7 +28,7 @@ import Data.Int (decimal, fromNumber, fromString, fromStringAs, toStringAs)
 import Data.List (List(..))
 import Data.Maybe (Maybe(..), fromJust, fromMaybe, maybe)
 import Data.Number as Num
-import Data.Number.Format (toString)
+import Data.Number.Format as NumF
 import Data.Ord (abs)
 import Data.String (joinWith, take)
 import Data.String.Utils (lines, words)
@@ -58,11 +60,11 @@ import Unsafe.Coerce (unsafeCoerce)
 type AffAll e a = Aff (cp :: CHILD_PROCESS, console :: CONSOLE, now :: NOW, naclRandom :: NACL_RANDOM, random :: RANDOM | e) a
 
 
-rpcPort :: Number
-rpcPort = 8545.0
+rpcPort :: Int
+rpcPort = 8545
 
 rpcPortStr :: String
-rpcPortStr = toString rpcPort
+rpcPortStr = toStringAs decimal rpcPort
 
 
 -- Don't set this to more than 200 (we generate 210 accounts in testrpc during the auto-tests)
@@ -89,12 +91,16 @@ waitTime :: Number
 waitTime = 60.0
 
 
+optionNames :: Array String
+optionNames = ["opt1", "opt2", "option name 3 which is much longer than length 32", "opt4", ""]
+
+
 completeBallotTest :: forall e. SpecType (e)
 completeBallotTest = do
     it "should compile and deploy the contract, cast randomised votes, retrived and decrypt them, and count those votes correctly." do
         -- setup rpc server
         -- testRpc <- testRpcServer rpcPort
-        let _ = setWeb3Provider $ "http://localhost:" <> rpcPortStr
+        let _ = setWeb3Provider ("http://localhost:" <> rpcPortStr) ""
         let voterIds = range 1 (nVotes + 1)
 
         -- compile contract
@@ -109,19 +115,21 @@ completeBallotTest = do
         let ui8SK = unsafePartial $ fromJust $ fromHex encSk
         let ui8PK = unsafePartial $ fromJust $ fromHex encPk
         deployStr <- liftEff $ B.toString UTF8 deployOut
+        log $ "Deployed voting contract."
 
         deployErc20Out <- deployArbitrary "Erc20"
         deployErc20Str <- liftEff $ B.toString UTF8 deployErc20Out
+        log $ "Deployed test Erc20."
 
         -- get contract object
         let addrM = contractAddrM deployStr
         let contractM = outputToVotingContract addrM
-        contract <- maybe (throwError $ error "Unable to get voting contract") pure contractM
+        Tuple contract votingAddr <- maybe (throwError $ error "Unable to get voting contract") pure $ lift2 Tuple contractM addrM
         log $ "Voting contract deployed at: " <> (unsafePartial $ fromJust addrM)
 
         -- check owner
         votingOwner <- ballotPropHelperAff "owner" [] contract
-        log $ "Got owner: " <> show votingOwner
+        log $ "Got owner: " <> votingOwner
         coinbase <- either (throwError <<< error) pure (getAccount 0)
         votingOwner `shouldEqual` coinbase
         log $ "Voting owner == coinbase"
@@ -136,6 +144,7 @@ completeBallotTest = do
         -- give all voters some coins
         log $ "Sending ERC20 tokens to users"
         balances <- genBalances voterIds
+        log "Generated balances for each user, sending..."
         setBalanceTxs <- parTraverse (\{addr, newBal} -> ballotPropHelperAff "transfer" [addr, Dec.toString newBal] erc20Contract) balances
         log $ "Distributed ERC20 tokens; verifying balances now..."
         balancesMatch <- checkBalances erc20Contract balances
@@ -183,7 +192,7 @@ completeBallotTest = do
         log $ "Block number: " <> show blockNum
 
         -- count ballot
-        ballotResultE <- runBallotCount blockNum contract erc20Contract {silent: false}
+        ballotResultE :: Either String _ <- runBallotCount blockNum votingAddr contract erc20Contract {silent: false} (\_ -> unit)
 
         -- check count results
         ballotSuccess <- logAndPrintResults ballotResultE
@@ -212,15 +221,17 @@ compileSol args = do
 deploySol :: forall e. AffAll e {pk :: String, sk :: String, outBuffer :: Buffer}
 deploySol = do
         nowTime <- liftEff currentTimestamp
-        let endTime = toString $ nowTime + waitTime
+        let endTime = NumF.toString $ nowTime + waitTime
         {sk, pk} <- liftEff generateKey
         outBuffer <- affExec "node" ["./bin/solidity/deploy.js", "--startTime", "0",
                 "--endTime", endTime, "--ballotEncPubkey", "0x" <> pk,
                 "--unsafeSkipChecks", "--deploy", "--web3Provider",
-                "http://localhost:" <> rpcPortStr, "--testing"]
+                "http://localhost:" <> rpcPortStr, "--testing", "--optionNamesJson", optionNamesJson]
         log $ "Generated Encryption PublicKey : " <> pk
         log $ "Generated Encryption SecretKey : " <> sk
         pure $ {pk, sk, outBuffer}
+  where
+    optionNamesJson = J.stringify $ J.fromArray $ J.fromString <$> optionNames
 
 
 deployArbitrary :: forall e. String -> AffAll e Buffer
@@ -242,15 +253,14 @@ extractContractAddr output = addr
 
 type Balance = {addr :: String, newBal :: Decimal}
 genBalances :: forall e. Array Int -> AffAll e (Array Balance)
-genBalances voterIds = do
-        sequence $ map genBal voterIds
+genBalances voterIds = parTraverse genBal voterIds
     where
         dps9 = Dec.fromInt 1000000000
         dps18 = dps9 * dps9
         genBal voterId = do
-            giveCoins <- liftEff $ randomInt 0 9  -- random in [0, 9]
+            giveCoins <- liftEff $ randomInt 1 10  -- random in [1, 10]
             -- 80% chance to get coins
-            newBal <- ((*) dps18) <$> (fromInt <$> if giveCoins < 8 then liftEff $ randomInt 100 1000000 else pure 0)
+            newBal <- ((*) dps18) <$> (fromInt <$> if giveCoins <= 8 then liftEff $ randomInt 1000 1000000 else pure 0)
             addr <- either (throwError <<< error) pure (getAccount voterId)
             pure $ {addr, newBal}
 

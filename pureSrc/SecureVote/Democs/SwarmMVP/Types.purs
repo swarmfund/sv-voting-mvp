@@ -37,46 +37,46 @@ import SecureVote.Utils.Numbers (intToStr)
 
 
 
-data SwmBallot = SwmBallot Voter Vote Vote Vote Vote
+data SwmBallot = SwmBallot Voter Vote Vote Vote Vote Vote
 instance showSwmBallot :: Show SwmBallot where
-    show (SwmBallot v v1 v2 v3 v4) = 
+    show (SwmBallot v v1 v2 v3 v4 v5) =
         "[ SwmBallot: " <>
-        "Vtr: " <> show v <> ", " <> 
-        "Vs: " <> foldl (\b a -> b <> " " <> show a) (show v1) [v2, v3, v4] <> " ]"
+        "Vtr: " <> show v <> ", " <>
+        "Vs: " <> foldl (\b a -> b <> " " <> show a) (show v1) [v2, v3, v4, v5] <> " ]"
 
 
 swmBallotShowJustVotes :: SwmBallot -> String
-swmBallotShowJustVotes (SwmBallot v v1 v2 v3 v4) = show [v1, v2, v3, v4]
+swmBallotShowJustVotes (SwmBallot v v1 v2 v3 v4 v5) = show [v1, v2, v3, v4, v5]
 
 
 newtype Address = Address String
-instance showAddr :: Show Address where 
+instance showAddr :: Show Address where
     show = addrToString
 derive instance ordAddr :: Ord Address
 derive instance eqAddr :: Eq Address
 
 newtype Vote = Vote Int
-instance showVote :: Show Vote where 
+instance showVote :: Show Vote where
     show (Vote i) = toStringAs decimal i
 
 newtype Votes = Votes (Array Vote)
-instance showVotes :: Show Votes where 
-    show (Votes a) = show a 
+instance showVotes :: Show Votes where
+    show (Votes a) = show a
 
 newtype Delegate = Delegate (Address)
-instance showDelegate :: Show Delegate where 
+instance showDelegate :: Show Delegate where
     show = delegateToString
 derive instance ordDelegate :: Ord Delegate
 derive instance eqDelegate :: Eq Delegate
 
 newtype Voter = Voter (Address)
-instance showVoter :: Show Voter where 
+instance showVoter :: Show Voter where
     show = voterToString
 derive instance ordVoter :: Ord Voter
 derive instance eqVoter :: Eq Voter
 
 
-type VotesRecord = {v1::Vote, v2::Vote, v3::Vote, v4::Vote}
+type VotesRecord = {v1::Vote, v2::Vote, v3::Vote, v4::Vote, v5::Vote}
 
 
 -- utility functions
@@ -92,7 +92,7 @@ checkAddress = runFn3 checkAddressImpl Just Nothing
 delegateToAddr :: Delegate -> Address
 delegateToAddr (Delegate addr) = addr
 
-addrToString :: Address -> String 
+addrToString :: Address -> String
 addrToString (Address str) = str
 
 delegateToString :: Delegate -> String
@@ -108,21 +108,21 @@ voterToString = addrToString <<< voterToAddr
 toSwmBallot :: Voter -> Array Int -> Either String SwmBallot
 toSwmBallot voter votes = do
         checkedVotes <- toVotes votes
-        {v1, v2, v3, v4} <- destructureVotes checkedVotes
-        pure $ SwmBallot voter v1 v2 v3 v4
+        {v1, v2, v3, v4, v5} <- destructureVotes checkedVotes
+        pure $ SwmBallot voter v1 v2 v3 v4 v5
 
 
 getVoter :: SwmBallot -> Voter
-getVoter (SwmBallot voter _ _ _ _) = voter
+getVoter (SwmBallot voter _ _ _ _ _) = voter
 
 getVotes :: SwmBallot -> VotesRecord
-getVotes (SwmBallot _ v1 v2 v3 v4) = {v1, v2, v3, v4}
-        
+getVotes (SwmBallot _ v1 v2 v3 v4 v5) = {v1, v2, v3, v4, v5}
+
 
 toVotes :: Array Int -> Either String Votes
 toVotes unsVotes = do
-        vs <- sequence $ checkRange <$> take 4 unsVotes
-        if length vs /= 4 then Left $ "Ballot was incorrect length: " <> show vs
+        vs <- sequence $ checkRange <$> take 5 unsVotes
+        if length vs /= 5 then Left $ "Ballot was incorrect length: " <> show vs
                           else pure $ Votes $ map Vote vs
     where
         -- all ballots for swarm must be in the range [-3, 3]
@@ -130,7 +130,7 @@ toVotes unsVotes = do
 
 
 voteToInt :: Vote -> Int
-voteToInt (Vote v) = v 
+voteToInt (Vote v) = v
 
 
 toAddress :: String -> Maybe Address
@@ -146,8 +146,8 @@ toDelegate addr = Delegate addr
 
 
 destructureVotes :: Votes -> Either String VotesRecord
-destructureVotes (Votes [v1, v2, v3, v4]) = Right {v1, v2, v3, v4}
-destructureVotes vs = Left $ "Votes was not of length 4: " <> show vs
+destructureVotes (Votes [v1, v2, v3, v4, v5]) = Right {v1, v2, v3, v4, v5}
+destructureVotes vs = Left $ "Votes was not of length 5: " <> show vs
 
 
 unsafeToAddress :: String -> Address

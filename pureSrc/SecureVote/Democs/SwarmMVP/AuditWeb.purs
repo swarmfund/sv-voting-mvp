@@ -4,6 +4,7 @@ import Prelude
 
 import Control.Monad.Aff (launchAff_, liftEff', message)
 import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.AVar (AVAR)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
@@ -23,7 +24,7 @@ import SecureVote.Democs.SwarmMVP.BallotContract (StatusUpdate(..), SUAux(..))
 data DOut a = DStr String | DOther a
 
 
-main :: forall a e eff. AppArgs -> (J.Json -> Unit) -> Eff (console :: CONSOLE, naclRandom :: NACL_RANDOM, now :: NOW, exception :: EXCEPTION | e) Unit
+main :: forall a e eff. AppArgs -> (J.Json -> Unit) -> Eff (console :: CONSOLE, naclRandom :: NACL_RANDOM, now :: NOW, exception :: EXCEPTION, avar :: AVAR | e) Unit
 main args updateF = launchAff_ $ do
     let updateF_ = updateF2 updateF
     let failErrorCode = 1

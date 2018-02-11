@@ -32,12 +32,13 @@ import Unsafe.Coerce (unsafeCoerce)
 delegateAddr = "0x1111111111111111111111111111111111111111"
 
 
-arrayToUint8A = asUint8Array <<< whole <<< fromArray 
+arrayToUint8A = asUint8Array <<< whole <<< fromArray
 
 
 makeBallot :: forall e. String -> Eff (random :: RANDOM | e) Uint8Array
 makeBallot delegate = do
-    ballots <- randInts 4
+    -- randInts 5 implies there are 5 options
+    ballots <- randInts 5
     let ballotsBits = padRight '0' 16 $ joinWith "" $ map voteNToBitStr ballots
     let ballotsBytes = bitStrToBytes ballotsBits
     let finalBytes = arrayToUint8A $ ballotsBytes <> (asArray procDelegateA)
@@ -49,7 +50,7 @@ makeBallot delegate = do
 
 randInts :: forall e. Int -> Eff (random :: RANDOM | e) (Array Int)
 randInts 0 = pure []
-randInts n = do 
+randInts n = do
     r <- randomInt 0 6
     rs <- randInts (n-1)
     pure $ r : rs
@@ -61,12 +62,12 @@ voteNToBitStr ballot = padLeft '0' 3 $ toStringAs binary ballot
 
 bitStrToBytes :: String -> Array Number
 bitStrToBytes "" = []
-bitStrToBytes str = case byteM of 
+bitStrToBytes str = case byteM of
         Nothing -> bytes
         Just byte -> (toNumber byte) : bytes
     where
-        byteM = fromStringAs binary $ take 8 str 
-        bytes = bitStrToBytes $ drop 8 str 
+        byteM = fromStringAs binary $ take 8 str
+        bytes = bitStrToBytes $ drop 8 str
 
 
 
@@ -78,4 +79,3 @@ bitStrToBytes str = case byteM of
 --         (bitsHexM :: Maybe String) = map (\bs -> toString bs Hex) $ fromString paddedBits Binary
 --         -- take first 14 bytes of address
 --         procDelegate = take (14 * 2) $ replace (Pattern "0x") (Replacement "") delegateAddr
-
