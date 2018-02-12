@@ -49,7 +49,6 @@ import SecureVote.Crypto.Curve25519 (decryptOneTimeBallot, toBox, toBoxPubkey, t
 import SecureVote.Democs.SwarmMVP.Admin (main)
 import SecureVote.Democs.SwarmMVP.Ballot (delegateAddr)
 import SecureVote.Democs.SwarmMVP.BannedAddrs (bannedAddresses)
-import SecureVote.Democs.SwarmMVP.Const (balanceAt)
 import SecureVote.Democs.SwarmMVP.Types (Address, Delegate, SwmBallot, Vote, Voter, Votes, VotesRecord, getVoter, getVotes, toAddress, toDelegate, toSwmBallot, toVoter, voteToInt, voterToString)
 import SecureVote.Utils.Array (fromList)
 import SecureVote.Utils.ArrayBuffer (UI8AShowable(..), fromEthHex, fromEthHexE, fromHex, fromHexE, toHex)
@@ -138,14 +137,18 @@ noArgs = []
 -- contract setup FFI
 foreign import makeSwmVotingContractImpl :: forall a. Fn3 (a -> Maybe a) (Maybe a) String (Maybe SwmVotingContract)
 foreign import makeErc20ContractImpl :: forall a. Fn3 (a -> Maybe a) (Maybe a) String (Maybe Erc20Contract)
-foreign import setWeb3ProviderImpl :: forall a. Fn2 String String a
+foreign import setWeb3ProviderImpl :: forall e a. Fn2 String String (EffFnAff (| e) Unit)
 
 -- web3 FFI
 foreign import getAccountImpl :: forall a b. Fn3 (a -> Either a b) (b -> Either a b) Int (Either String String)
 foreign import getBlockNumberImpl :: forall e. Fn0 (EffFnAff (| e) Int)
+foreign import getBlockTimstampImpl :: forall e. Fn1 Int (EffFnAff (| e) Int)
 
 getBlockNumber :: forall eff. Aff (| eff) Int
 getBlockNumber = fromEffFnAff (runFn0 getBlockNumberImpl)
+
+getBlockTimestamp :: forall e. Int -> Aff (| e) Int
+getBlockTimestamp blockNum = fromEffFnAff (runFn1 getBlockTimstampImpl blockNum)
 
 -- contract FFI
 foreign import getBallotSKImpl :: forall a. Fn3 (a -> Maybe a) (Maybe a) SwmVotingContract (Maybe a)
@@ -183,8 +186,8 @@ makeErc20Contract :: forall a. String -> Maybe Erc20Contract
 makeErc20Contract = runFn3 makeErc20ContractImpl Just Nothing
 
 
-setWeb3Provider :: forall a. String -> String -> a
-setWeb3Provider = runFn2 setWeb3ProviderImpl
+setWeb3Provider :: forall a e. String -> String -> Aff (| e) Unit
+setWeb3Provider host auth = fromEffFnAff (runFn2 setWeb3ProviderImpl host auth)
 
 -- web3 functions
 getAccount :: Int -> Either String String
@@ -231,6 +234,59 @@ swmNVotes contract = do
     nVotesStr <- ballotPropHelperAff "nVotesCast" noArgs contract
     let nVotes = fromStringAs decimal nVotesStr
     maybe (throwError $ error $ "nVotes was not an integer: " <> nVotesStr) pure nVotes
+
+
+findEthBlockEndingInZeroBefore :: forall e. Int -> Aff (console :: CONSOLE, now :: NOW | e) Int
+findEthBlockEndingInZeroBefore targetTime = do
+    let initLowBlock = 4000000
+    currBlock <- truncate <$> getBlockNumber
+    Tuple currBlockTs lowTs <- sequential $ Tuple <$> parallel (getBlockTimestamp currBlock) <*> parallel (getBlockTimestamp initLowBlock)
+
+    -- take a guess first to try and get close
+    let ts1Scaled = (toNumber $ (targetTime - lowTs) / 100000)
+        ts2Scaled = (toNumber $ (currBlockTs - lowTs) / 100000)
+        bScaled = (toNumber $ (currBlock - initLowBlock) / 1000)
+    let midStep = (ts1Scaled * bScaled) / ts2Scaled
+    let finalStepF = add initLowBlock <<< mul 1000 <<< DInt.round
+    let gBH = min (finalStepF $ midStep * 1.1) currBlock
+    let gBL = max (finalStepF $ midStep * 0.9) initLowBlock
+    Tuple gHTs gLTs <- sequential $ Tuple <$> parallel (getBlockTimestamp gBH) <*> parallel (getBlockTimestamp gBL)
+
+    AffC.log $ "Searching for block with targetTs: " <> show targetTime <> ", currBlockTs: " <> show currBlockTs <> ", currBlock: " <> show currBlock
+    let runF = _findLastEthBlockBefore targetTime
+    if currBlockTs < targetTime || targetTime < lowTs
+        then throwError $ error $ "Cannot find Eth block at " <> show targetTime <> " because it is outside range: " <> show lowTs <> ", " <> show currBlockTs
+        else case Tuple (compare gHTs targetTime) (compare gLTs targetTime) of
+            -- if upper guess is LT target time
+            Tuple LT _ -> runF {hTs: currBlockTs, hB: currBlock/10, lTs: gHTs, lB: gBH/10}
+            -- if lower guess is GT target time
+            Tuple _ GT -> runF {hTs: gLTs, hB: gBL/10, lTs: lowTs, lB: initLowBlock/10}
+            -- if we hit the money in any way
+            Tuple EQ _ -> pure gBH
+            Tuple _ EQ -> pure gBL
+            -- otherwise we're in between
+            Tuple GT LT -> runF {hTs: gHTs, hB: gBH/10, lTs: gLTs, lB: gBL/10}
+  where
+    _findLastEthBlockBefore :: forall e2. Int -> {hTs :: Int, hB :: Int, lTs :: Int, lB :: Int} -> Aff (console :: CONSOLE | e2) Int
+    _findLastEthBlockBefore tTime {hTs, hB, lTs, lB} = do
+        case compare hB lB of
+                LT -> go tTime lTs lB hTs hB
+                EQ -> pure lB
+                GT -> go tTime hTs hB lTs lB
+      where
+        go tTime hTs hB lTs lB = do
+            AffC.log $ "Block search: High: " <> show (Tuple (hB*10) hTs) <> ", Low: " <> show (Tuple (lB*10) lTs) <> ", Target: " <> show tTime
+
+            let testBlockN = (hB - lB) / 2 + lB
+            newTs <- getBlockTimestamp (testBlockN * 10)
+
+            case compare newTs tTime of
+                GT -> _findLastEthBlockBefore tTime {hTs: newTs, hB: testBlockN, lTs, lB}
+                EQ -> pure $ testBlockN * 10
+                LT -> if hB - lB == 1 then pure $ lB * 10 else _findLastEthBlockBefore tTime {hTs, hB, lTs: newTs, lB: testBlockN}
+    truncate :: Int -> Int
+    truncate a = a - (mod a 10)
+
 
 
 legacyVotingAddr :: String

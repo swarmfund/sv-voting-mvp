@@ -1,13 +1,15 @@
 module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 
-import Dict
+import Dict exposing (fromList)
 import Dom.Scroll exposing (toTop)
 import Material
 import Material.Helpers as MHelp exposing (map1st, map2nd)
 import Material.Snackbar as Snackbar
-import Maybe.Extra exposing ((?))
+import Maybe exposing (andThen)
+import Maybe.Extra exposing ((?), values)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
+import SecureVote.Eth.Utils exposing (keccak256OverString)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (doBallotOptsMatchRSched, voteOptionsRSched)
@@ -52,6 +54,15 @@ update msg model =
             }
                 ! [ scrollToTop "sv-main" ]
 
+        PageGoHome ->
+            { model
+                | route = defaultRoute
+                , history = []
+                , lastPageDirection = PageBack
+                , lastRoute = Just model.route
+            }
+                ! [ scrollToTop "sv-main" ]
+
         SetDialog title route ->
             { model | dialogHtml = { title = title, route = route } } ! [ scrollToTop "dialog-container" ]
 
@@ -66,10 +77,16 @@ update msg model =
             }
                 ! []
 
+        ModBallotRange id f ->
+            { model | ballotRange = Dict.update id f model.ballotRange } ! []
+
         SetBallot b ->
             let
                 ( m_, cmds_ ) =
-                    update (ToWeb3 ReInit) <| resetAllBallotFields { model | currentBallot = b } b
+                    update (ToWeb3 ReInit) <| resetAllBallotFields { model | currentBallot = b, optHashToTitle = optHashToTitle } b
+
+                optHashToTitle =
+                    fromList <| values <| List.map (\{ title } -> keccak256OverString title |> Maybe.map (\h -> ( h, title ))) b.voteOptions
 
                 doAuditIfBallotEnded =
                     if b.endTime < model.now then
@@ -135,6 +152,9 @@ update msg model =
 
         FromAuditor msg ->
             { model | auditMsgs = msg :: model.auditMsgs } ! []
+
+        VoteWMetaMask ->
+            model ! [ castMetaMaskVote model.candidateTx ]
 
         -- ToCurve25519 msg ->
         --     updateToCurve25519 msg model
@@ -244,11 +264,11 @@ updateFromWeb3 msg model =
             case txidE of
                 Ok { data, confirmed, gas, logMsg } ->
                     if confirmed then
-                        -- gas should be around 114,000 for a successful vote
-                        if gas < 110000 then
+                        -- gas should be around 114,000 for a successful vote, though can be lower for a repeat vote.
+                        if gas < 80000 then
                             let
                                 errMsg =
-                                    "Warning! "
+                                    "Warning: Gas low! "
                                         ++ (if String.length logMsg > 0 then
                                                 "Voting contract returned error: " ++ logMsg
                                             else
@@ -265,6 +285,12 @@ updateFromWeb3 msg model =
 
                 Err msg ->
                     { model | txidCheck = TxidFail msg } ! []
+
+        GotMetaMask ->
+            { model | metamask = True } ! []
+
+        GotMetaMaskTxid txid ->
+            { model | metamaskTxid = Just txid } ! []
 
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )

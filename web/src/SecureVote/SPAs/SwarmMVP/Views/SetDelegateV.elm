@@ -6,10 +6,11 @@ import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
-import Material.Typography exposing (display2, headline)
+import Material.Typography exposing (display2)
 import Maybe.Extra exposing ((?), isNothing)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
+import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.Eth.Utils exposing (isValidEthAddress)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getDelegateAddress, setDelegateAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
@@ -17,9 +18,9 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToCurve25519Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 
-delegateExplanationCopy : List String
-delegateExplanationCopy =
-    [ "You may optionally select a delegate, though this isn't required. If you would like to, please enter their SWM token address below. "
+delegateExplanationCopy : Model -> List String
+delegateExplanationCopy model =
+    [ "You may optionally select a delegate, though this isn't required. If you would like to, please enter their " ++ model.currentBallot.erc20Abrv ++ " token address below. "
     , "If your delegate casts a vote, your votes will be replaced with the votes that your delegate chooses. "
     , "If your delegate does not cast a vote, your vote will be cast with the options you have selected. "
     ]
@@ -47,9 +48,8 @@ delegateView model =
         model
         []
         [ Card.text [ cs "center tc" ]
-            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Choose a Delegate" ]
-            , Options.styled span [ headline, cs "black db pa2 mv3" ] [ text "Choose a delegate" ]
-            , p [ class "mw7 center" ] [ text <| String.concat delegateExplanationCopy ]
+            [ headline "Choose a Delegate"
+            , p [ class "mw7 center" ] [ text <| String.concat <| delegateExplanationCopy model ]
             , Textf.render Mdl
                 [ 7674564333 ]
                 model.mdl

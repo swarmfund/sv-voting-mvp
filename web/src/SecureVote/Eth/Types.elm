@@ -19,8 +19,4 @@ type AuditDoc
 
 
 type alias BallotResult =
-    { nVotes : Int, totals : BallotTotals }
-
-
-type alias BallotTotals =
-    List ( String, Decimal )
+    { nVotes : Int, totals : List ( String, Decimal ) }

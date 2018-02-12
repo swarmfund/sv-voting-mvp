@@ -47,6 +47,9 @@ type alias Model =
     , mainTitle : String
     , auditMsgs : List AuditDoc
     , dev : Bool
+    , optHashToTitle : Dict String String
+    , metamask : Bool
+    , metamaskTxid : Maybe String
     }
 
 
@@ -89,6 +92,9 @@ initModel dev mainTitle =
     , mainTitle = mainTitle
     , auditMsgs = []
     , dev = dev
+    , optHashToTitle = Dict.empty
+    , metamask = False
+    , metamaskTxid = Nothing
     }
 
 
@@ -126,4 +132,5 @@ resetAllBallotFields model { contractAddr } =
         , txidCheck = TxidNotMade
         , ballotOpen = Loading
         , auditMsgs = []
+        , metamaskTxid = Nothing
     }

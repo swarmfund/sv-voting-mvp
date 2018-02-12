@@ -36,23 +36,35 @@ function convertAllToStdString(input) {
 
 
 exports.setWeb3ProviderImpl = function(host, auth) {
-    var userPass = {user: null, pass: null}
-    if (auth !== "") {
-        console.log("Using authenticated Web3 provider")
-        var authArr = split(':', auth);
-        userPass.user = authArr[0];
-        userPass.pass = authArr[1];
-        web3.setProvider(new Web3.providers.HttpProvider(host, 0, userPass.user, userPass.pass));
-    } else {
-        console.log("Using unauthenticated Web3 provider")
-        web3.setProvider(new Web3.providers.HttpProvider(host));
+    return function(onE, onS) {
+        try {
+            var userPass = {user: null, pass: null}
+            if (auth !== "") {
+                console.log("Using authenticated Web3 provider")
+                var authArr = split(':', auth);
+                userPass.user = authArr[0];
+                userPass.pass = authArr[1];
+                web3.setProvider(new Web3.providers.HttpProvider(host, 0, userPass.user, userPass.pass));
+            } else {
+                console.log("Using unauthenticated Web3 provider")
+                web3.setProvider(new Web3.providers.HttpProvider(host));
+            }
+            console.log("Set web3 provider to:", host);
+            web3.eth.getAccounts(function(err, acc) {
+                if (err) {
+                    console.error("Got error while getting accounts; ", err);
+                    onE(err);
+                } else {
+                    accounts = acc;
+                    coinbase = accounts[0];
+                    web3.eth.defaultAccount = coinbase;  // needed to set this - thought it was auto?
+                    onS({})
+                }
+            });
+        } catch (err) {
+            onE(err);
+        }
     }
-    console.log("Set web3 provider to:", host);
-    web3.eth.getAccounts(function(err, acc) {
-        accounts = acc;
-        coinbase = accounts[0];
-        web3.eth.defaultAccount = coinbase;  // needed to set this - thought it was auto?
-    });
 }
 
 
@@ -79,6 +91,22 @@ exports.getBlockNumberImpl = function() {
         } catch (err) {
             onErr(err.toString());
         }
+    }
+}
+
+
+exports.getBlockTimstampImpl = function(blockNum) {
+    return function(onErr, onSucc) {
+        try {
+            web3.eth.getBlock(blockNum, function(err, block) {
+                if (err) {
+                    console.log("Have args ", blockNum, " got error", err)
+                    onErr(err)
+                } else {
+                    onSucc(block.timestamp)
+                }
+            })
+        } catch (err) { onErr(err) }
     }
 }
 

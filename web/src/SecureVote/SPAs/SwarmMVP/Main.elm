@@ -2,7 +2,7 @@ module SecureVote.SPAs.SwarmMVP.Main exposing (..)
 
 import Html exposing (Html)
 import SecureVote.Crypto.Curve25519 exposing (genKeyPair, onIncomingCurve25519Error, onIncomingEncBytes, onIncomingKeyPair, receiveCurve25519Error, receiveEncryptedBytes, receiveKeyPair)
-import SecureVote.Eth.Web3 exposing (contractReadResponse, getBallotResults, getEncryptionPublicKey, getInit, gotAuditMsg, gotEncPubkey, gotTxidCheckStatus, gotWeb3Error, implDataParam, implErc20Balance, implInit, onContractReadResponse, onGotPubkey, onGotTxidStatus, onIncomingErc20Balance, onIncomingWeb3Error, onInit, onRecieveDataParam, performContractRead, setWeb3Provider)
+import SecureVote.Eth.Web3 exposing (contractReadResponse, getBallotResults, getEncryptionPublicKey, getInit, gotAuditMsg, gotEncPubkey, gotMetamask, gotTxidCheckStatus, gotWeb3Error, implDataParam, implErc20Balance, implInit, metamaskTxid, onContractReadResponse, onGotPubkey, onGotTxidStatus, onIncomingErc20Balance, onIncomingWeb3Error, onInit, onRecieveDataParam, performContractRead, setWeb3Provider)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, devEthNode, initEthNode, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..))
@@ -27,6 +27,8 @@ subscriptions model =
         , contractReadResponse <| onContractReadResponse decodeRead readOptsErr
         , gotTxidCheckStatus onGotTxidStatus
         , gotAuditMsg
+        , gotMetamask
+        , metamaskTxid
         ]
 
 

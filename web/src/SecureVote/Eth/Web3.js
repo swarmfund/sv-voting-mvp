@@ -24,7 +24,10 @@ const promiseCb = (resolve, reject, extra = []) => (err, val) => {
 }
 
 
-const web3Ports = (web3, app) => {
+const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
+    if (mmDetected) {
+        app.ports.gotMetamaskImpl.send(true);
+    }
 
     const wrapper = (f) => {
         return (...args) => {
@@ -40,8 +43,8 @@ const web3Ports = (web3, app) => {
 
 
     // "Global" constants
-    const Erc20Contract = web3.eth.contract(ERC20ABI);
-    let SwmVotingContract = web3.eth.contract(SwmVotingMVPABIs.fullAbi);
+    const Erc20Contract = web3js.eth.contract(ERC20ABI);
+    let SwmVotingContract = web3js.eth.contract(SwmVotingMVPABIs.fullAbi);
 
 
     const isLegacy = (addr) => {
@@ -53,7 +56,7 @@ const web3Ports = (web3, app) => {
         const abi = isLegacy(addr) ? SwmVotingMVPABIs.fullAbiLegacy : SwmVotingMVPABIs.fullAbi;
         abiDecoder.addABI(abi);
 
-        return web3.eth.contract(abi);
+        return web3js.eth.contract(abi);
     };
 
 
@@ -197,8 +200,8 @@ const web3Ports = (web3, app) => {
 
     // Port subscriptions
     app.ports.setWeb3Provider.subscribe(wrapper((web3Provider) => {
-        web3.setProvider(new Web3.providers.HttpProvider(web3Provider));
-        console.log("Web3 provider set to:", web3.currentProvider);
+        web3js.setProvider(new Web3.providers.HttpProvider(web3Provider));
+        console.log("Web3 provider set to:", web3js.currentProvider);
     }));
 
     app.ports.getErc20Balance.subscribe(wrapper(({contractAddress, userAddress}) => {
@@ -234,11 +237,11 @@ const web3Ports = (web3, app) => {
 
     app.ports.checkTxid.subscribe(wrapper((txid) => {
         const p = new Promise((resolve, reject) => {
-            web3.eth.getTransaction(txid, promiseCb(resolve, reject));
+            web3js.eth.getTransaction(txid, promiseCb(resolve, reject));
         })
         p.then(([getTx]) => {
             return new Promise((resolve, reject) => {
-                web3.eth.getTransactionReceipt(txid, promiseCb(resolve, reject, [getTx]));
+                web3js.eth.getTransactionReceipt(txid, promiseCb(resolve, reject, [getTx]));
             })
         }).then(([getTxR, getTx]) => {
             console.log("checkTxid got tx and txR of:", getTx, getTxR);
@@ -279,6 +282,18 @@ const web3Ports = (web3, app) => {
             console.error("AuditWeb.main threw error: ", err);
         }
     }));
+
+    app.ports.castMetaMaskVoteImpl.subscribe(wrapper((tx) => {
+        console.log("Sending tx to MetaMask:", tx);
+        mmWeb3.eth.sendTransaction(tx, (err, ret) => {
+            if (err) {
+                console.error("MetaMask error: ", err);
+                throw err;
+            }
+            console.log("MetaMask returned: ", err, ret);
+            app.ports.metamaskTxidImpl.send(ret);
+        });
+    }))
 };
 
 export default web3Ports;

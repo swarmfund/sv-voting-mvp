@@ -16,14 +16,14 @@ import Data.Array as A
 import Data.Decimal as Dec
 import Data.Either (Either(..), either, fromRight, isRight)
 import Data.Foldable (foldl)
+import Data.Int (decimal, fromStringAs)
 import Data.Map (lookup)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.String as String
 import Data.Tuple (Tuple(..))
 import Node.Process (PROCESS)
-import SecureVote.Democs.SwarmMVP.BallotContract (BallotResult, AllDetails, StatusUpdate, SUAux(..), mkSUFail, mkSULog, mkSUSuccess, makeErc20Contract, makeVotingContract, runBallotCount, setWeb3Provider)
-import SecureVote.Democs.SwarmMVP.Const (balanceAt)
+import SecureVote.Democs.SwarmMVP.BallotContract (AllDetails, BallotResult, SUAux(..), StatusUpdate, ballotPropHelperAff, findEthBlockEndingInZeroBefore, makeErc20Contract, makeVotingContract, mkSUFail, mkSULog, mkSUSuccess, noArgs, runBallotCount, setWeb3Provider)
 import SecureVote.Democs.SwarmMVP.Types (swmBallotShowJustVotes)
 import SecureVote.Utils.Array (fromList)
 import SecureVote.Utils.Decimal (toFixed)
@@ -71,10 +71,24 @@ app :: forall eff.
        Aff (console :: CONSOLE, naclRandom :: NACL_RANDOM, now :: NOW, avar :: AVAR | eff) (Either (Tuple Int String) (Tuple Int BallotResult))
 app {ethUrl, ethRPCAuth, votingAddr, erc20Addr} updateF =
     do
-        let _ = setWeb3Provider ethUrl ethRPCAuth
+        setWeb3Provider ethUrl ethRPCAuth
         contract <- maybe (throwError $ error "Unable to instantiate voting contract") pure (makeVotingContract votingAddr)
         erc20Contract <- maybe (throwError $ error "Unable to instantiate erc20 contract") pure (makeErc20Contract erc20Addr)
-        ballotAns <- runBallotCount balanceAt votingAddr contract erc20Contract {silent: false} updateF
+
+        -- note: we actually fix the starting block number _not_ to the block immediately before or at the timestamp,
+        -- but _the closest block number ending in zero_ before the timestamp. Basically it's a little quicker since
+        -- there's no direct way to ask an ethereum node for this info (we have to search for it manually)
+        startTimeS <- ballotPropHelperAff "startTime" noArgs contract
+        -- this is a silly hack to avoid updateF triggering due to strict eval :/
+        startTime <- case maybe (Left "Unable to parse ballot start time: ") Right (fromStringAs decimal startTimeS) of
+            Right t -> pure t
+            Left e -> const (pure 0) =<< (\_ -> updateFAff $ mkSUFail $ e <> startTimeS) =<< (throwError $ error $ e <> startTimeS)
+
+        _ <- updateFAff $ mkSULog $ "Finding Eth block close to time: " <> startTimeS <> " (takes 10-20 seconds)"
+        startBlock <- findEthBlockEndingInZeroBefore startTime
+        _ <- updateFAff $ mkSULog $ "Using block " <> show startBlock <> " for ERC20 balances."
+
+        ballotAns <- runBallotCount startBlock votingAddr contract erc20Contract {silent: false} updateF
 
         let exitC = exitCode ballotAns
         let msgStart = exitMsgHeader exitC
@@ -93,3 +107,4 @@ app {ethUrl, ethRPCAuth, votingAddr, erc20Addr} updateF =
     where
         exitCode e = if isRight e then 0 else 1
         exitMsgHeader exitC = if exitC == 0 then "___Success:___" else ">>> ERROR <<<"
+        updateFAff msg = (pure <<< updateF) =<< pure msg

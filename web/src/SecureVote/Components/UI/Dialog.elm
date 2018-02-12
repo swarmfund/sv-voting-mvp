@@ -32,6 +32,9 @@ dialog model =
                 VerifyDialog ->
                     verifyDialogV model
 
+                FullAuditDialog ->
+                    fullAuditDialogV model
+
                 NotFoundDialog ->
                     h1 [ class "red" ] [ text "Not Found" ]
 

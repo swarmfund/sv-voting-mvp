@@ -100,7 +100,7 @@ completeBallotTest = do
     it "should compile and deploy the contract, cast randomised votes, retrived and decrypt them, and count those votes correctly." do
         -- setup rpc server
         -- testRpc <- testRpcServer rpcPort
-        let _ = setWeb3Provider ("http://localhost:" <> rpcPortStr) ""
+        setWeb3Provider ("http://localhost:" <> rpcPortStr) ""
         let voterIds = range 1 (nVotes + 1)
 
         -- compile contract
@@ -151,6 +151,10 @@ completeBallotTest = do
         balancesMatch `shouldEqual` true
         log $ "ERC20 distribution complete and accurate."
 
+        -- get current block number for later (before we cast ballots)
+        blockNum <- getBlockNumber
+        log $ "Block number: " <> show blockNum
+
         -- create lots of ballots
         ballots <- createBallots nVotes contractM
         log $ "5 sample ballots: " <> (joinWith ", " $ map toHex $ Array.take 5 ballots)
@@ -186,10 +190,6 @@ completeBallotTest = do
         log $ "Releasing Secret Key:"
         releaseSKTxid <- releaseSecretKey encSk contract
         logUC releaseSKTxid
-
-        -- get current block number
-        blockNum <- getBlockNumber
-        log $ "Block number: " <> show blockNum
 
         -- count ballot
         ballotResultE :: Either String _ <- runBallotCount blockNum votingAddr contract erc20Contract {silent: false} (\_ -> unit)

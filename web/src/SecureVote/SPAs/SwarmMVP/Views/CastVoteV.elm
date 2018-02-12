@@ -4,14 +4,15 @@ import Decimal exposing (eq, zero)
 import Dict
 import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (class, style)
+import Html.Events exposing (onClick)
 import Material.Card as Card
-import Material.Color as Color
 import Material.Options as Options exposing (cs, css)
 import Material.Slider as Slider
-import Material.Typography exposing (display2, headline)
+import Maybe exposing (withDefault)
 import Maybe.Extra exposing ((?), isJust)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
+import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.Eth.Utils exposing (rawTokenBalance18DpsToBalance)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, getUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
@@ -42,12 +43,24 @@ castVoteView model =
             List.map optionListItem model.currentBallot.voteOptions
 
         balanceV =
-            if isJust <| getUserErc20Addr model then
-                [ Options.styled span [ headline, cs "black dib ba pa3 ma3" ] [ text <| model.currentBallot.erc20Abrv ++ " Balance: " ++ balanceStr ] ]
+            if "" /= (withDefault "" <| getUserErc20Addr model) then
+                [ Options.styled div [ cs "mt2 mb4 pa1 f4" ] [ text <| "Vote weighting (" ++ model.currentBallot.erc20Abrv ++ " balance): " ++ balanceStr ] ]
             else
                 []
 
+        dMod d f aM =
+            case aM of
+                Nothing ->
+                    Just d
+
+                Just a ->
+                    Just (f a)
+
         optionListItem { id, title, description } =
+            let
+                optBtnCs =
+                    [ class "f3 relative ba br2 b--silver bg-white-20 bg-animate hover-bg-gold ph1 pt2 pointer shadow-1 noselect z-999", style [ ( "padding-bottom", "1px" ), ( "user-select", "none" ) ] ]
+            in
             div [ class "center mw-5 cf mb4 mt3 db w-100 bb bw1 b--silver" ]
                 [ div [ class "h-100 w-100 w-100-m w-30-l fl mt2 mb3 tl-l v-mid" ]
                     [ span [ class "w-100 f4 tc tl-l v-mid b" ] [ text title ] ]
@@ -59,11 +72,13 @@ castVoteView model =
                     , div [ class "center" ]
                         [ div [ class "inline-flex flex-row content-center cf relative", style [ ( "top", "-10px" ) ] ]
                             [ span
-                                [ class "f3 relative"
-                                , style [ ( "top", "0px" ), ( "left", "15px" ) ]
-                                ]
-                                [ text "👎" ]
-                            , div [ class "dib" ]
+                                ([ style [ ( "top", "-5px" ), ( "left", "15px" ) ]
+                                 , onClick (ModBallotRange id (dMod -1 <| max -3 << flip (-) 1))
+                                 ]
+                                    ++ optBtnCs
+                                )
+                                [ span [ class "relative noselect", style [ ( "top", "3px" ) ] ] [ text "➖" ] ]
+                            , div [ class "dib z-5" ]
                                 [ Slider.view
                                     [ Slider.value <| toFloat <| Dict.get id model.ballotRange ? 0
                                     , Slider.min <| toFloat ballotDisplayMin
@@ -74,10 +89,12 @@ castVoteView model =
                                     ]
                                 ]
                             , span
-                                [ class "f3 relative"
-                                , style [ ( "top", "0px" ), ( "right", "13px" ) ]
-                                ]
-                                [ text "❤️" ]
+                                (optBtnCs
+                                    ++ [ style [ ( "top", "-5px" ), ( "right", "13px" ) ]
+                                       , onClick (ModBallotRange id (dMod 1 <| min 3 << (+) 1))
+                                       ]
+                                )
+                                [ span [ class "relative noselect", style [ ( "top", "1px" ) ] ] [ text "➕️" ] ]
                             ]
                         ]
                     ]
@@ -89,10 +106,6 @@ castVoteView model =
                         , OpenDialog
                         ]
                         [ text "Details" ]
-
-                    --                        , Icon
-                    --                        ]
-                    --                        [ MIcon.view "help_outline" [ MIcon.size24 ] ]
                     ]
                 ]
 
@@ -106,7 +119,7 @@ castVoteView model =
         model
         []
         [ Card.text [ cs "center tc" ] <|
-            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "Choose Your Vote" ] ]
+            [ Options.styled div [ cs "pb3" ] [ headline "Choose Your Vote" ] ]
                 ++ balanceV
                 ++ [ div [ class "mw7 center black" ] optionList
                    , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs ] [ text "Continue" ]

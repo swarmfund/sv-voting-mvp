@@ -1,14 +1,15 @@
 module SecureVote.SPAs.SwarmMVP.Views.ListVotesV exposing (..)
 
 import Dict
-import Html exposing (Html, hr, span, text)
+import Html exposing (Html, div, hr, span, text)
+import Html.Attributes exposing (class)
 import List exposing (filter, length, map, sortBy)
 import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs, css)
 import SecureVote.Components.UI.Elevation exposing (elevation)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
-import SecureVote.Components.UI.Typo exposing (headline)
+import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(OpeningSlideR))
@@ -25,7 +26,7 @@ listVotesView model =
             filter (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime) allBallots
 
         futureBallots =
-            filter (\{ startTime, endTime } -> startTime > model.now) allBallots
+            filter (\{ startTime, endTime } -> startTime > model.now && endTime > model.now) allBallots
 
         pastBallots =
             filter (\{ startTime, endTime } -> model.now >= endTime) allBallots
@@ -38,19 +39,19 @@ listVotesView model =
 
         currBallotV =
             drawIfNotEmpty currentBallots <|
-                [ headline "Current Ballots"
+                [ subhead "Current Ballots"
                 ]
                     ++ map drawBallotButton currentBallots
 
         futureBallotV =
             drawIfNotEmpty futureBallots <|
-                [ headline "Upcoming Ballots"
+                [ subhead "Upcoming Ballots"
                 ]
                     ++ map drawBallotButton futureBallots
 
         pastBallotV =
             drawIfNotEmpty pastBallots <|
-                [ headline "Past Ballots"
+                [ subhead "Past Ballots"
                 ]
                     ++ map drawBallotButton pastBallots
 
@@ -74,20 +75,20 @@ listVotesView model =
                             "Ballot closes in " ++ readableTime endTime model
             in
             Card.view
-                ([ cs "ma4 ba b--light-silver"
+                ([ cs "ma3 ba b--light-silver"
                  , css "width" "auto"
                  , Options.onClick <| MultiMsg [ SetBallot ballot, PageGoForward OpeningSlideR ]
                  ]
                     ++ elevation id model
                 )
-                [ Card.title [ cs "b pb1" ] [ text ballotTitle ]
+                [ Card.title [ cs "pb0 mb0 w-100" ]
+                    [ div [ class "dt w-100" ]
+                        [ Options.styled span [ cs "b w-70 dtc tl" ] [ text ballotTitle ]
+                        , Options.styled span [ cs "f6 dark-gray tr dtc" ] [ text voteTimeStatus ]
+                        ]
+                    ]
                 , Card.text [ cs "tl dark-gray w-100" ]
                     [ text description
-                    , Options.styled hr [ cs "mv1 mh0" ] []
-                    , Options.styled span
-                        [ cs "tr fr dark-gray f6"
-                        ]
-                        [ text voteTimeStatus ]
                     ]
 
                 -- , Card.actions [ Card.border, cs "tl" ] [ styled span [ Typo.caption ] [ text voteStatus ] ]

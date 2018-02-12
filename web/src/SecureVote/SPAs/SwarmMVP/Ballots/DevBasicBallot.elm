@@ -11,6 +11,8 @@ allDevBallots_ =
     , devBasic2
     , devBasic3
     , devBasic4
+    , devBasic5
+    , devBasic6
     ]
 
 
@@ -95,5 +97,47 @@ devBasic4 =
         [ { id = 3943587392, title = "Option 1", description = DlogTxt "desc opt 1" }
         , { id = 4946547867, title = "Option 2", description = DlogTxt "desc opt 2" }
         , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
+        ]
+    }
+
+
+devBasic5 : BallotParams msg
+devBasic5 =
+    { ballotTitle = "Dev test 5"
+    , contractAddr = "0xCE877C405180f55E0e9730226f2B3b8A277f1611"
+    , description = "5th test ballot for testing. It decides nothing. This is the long description."
+    , endTime = 0
+    , startTime = 1518400000
+    , id = 9234392329
+    , erc20Balance = Nothing
+    , erc20Abrv = "DEV"
+    , erc20Addr = devErc20Addr
+    , openingDesc = "This ballot is the 5th test ballot to decide nothing. Short description."
+    , voteOptions =
+        [ { id = 3943587392, title = "Option 1", description = DlogTxt "desc opt 1" }
+        , { id = 4946547867, title = "Option 2", description = DlogTxt "desc opt 2" }
+        , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
+        ]
+    }
+
+
+devBasic6 : BallotParams msg
+devBasic6 =
+    { ballotTitle = "Dev test 6"
+    , contractAddr = "0x61dd63C8EB3344903461B8eE35BF8ad5b8f507a3"
+    , description = "6th test ballot for testing. It decides nothing. This is the long description."
+    , endTime = 1518421966
+    , startTime = 1518420000
+    , id = 92343490
+    , erc20Balance = Nothing
+    , erc20Abrv = "DEV"
+    , erc20Addr = devErc20Addr
+    , openingDesc = "This ballot is the 6th test ballot to decide nothing. Short description."
+    , voteOptions =
+        [ { id = 3943587392, title = "Option 1", description = DlogTxt "desc opt 1" }
+        , { id = 4946547867, title = "Option 2", description = DlogTxt "desc opt 2" }
+        , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
+        , { id = 4946547868, title = "the last option", description = DlogTxt "desc opt 4" }
+        , { id = 4946547869, title = "not really", description = DlogTxt "desc opt 5" }
         ]
     }
