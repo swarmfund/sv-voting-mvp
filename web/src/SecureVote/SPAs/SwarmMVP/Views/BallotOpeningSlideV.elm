@@ -23,25 +23,16 @@ openingSlide model =
             model.currentBallot.endTime < model.now
 
         introText =
-            [ [ text "This ballot is to decide the release schedule for SWM tokens." ]
-            , [ text "You will be presented with a number of options in the form "
-              , em [] [ text "X releases of Y days." ]
-              , text " If X were 8, this would mean that tokens will be released in 8 distinct events, with each releasing 12.5% of all tokens. If Y were 42, that means that each release event will occur every 42 days. Each option has a 'details' button that will give you specifc information about the proposed release schedule."
+            [ [ text <| "Ballot description: " ++ model.currentBallot.description ]
+            , [ text "You will be presented with a number of options. Each option has a description explaining it in more detail."
               ]
             , [ text "When you vote, you allocate each option a number from -3 to +3 (inclusive). It's important to choose a vote for each option. (This method of voting is called 'Range Voting'.)" ]
             , [ text "If you'd like, ", a [ href "https://www.youtube.com/watch?v=afEwklJEzFc", target "_blank" ] [ text "here is a video" ], text " walking you through the voting process." ]
-            , [ text "When you're ready, let's begin the voting process!" ]
+            , [ text "When you're ready, let's vote!" ]
             ]
 
         resultsText =
-            [ [ text "Results are in!" ]
-            , [ strong [] [ text "Winner: " ], text "4 releases of 84 days each" ]
-            , []
-            , [ strong [] [ text "Raw Results:" ] ]
-            , [ text "8 releases of 42 days each:     with # votes:       215861632749216557139154" ]
-            , [ text "42 releases of 8 days each:     with # votes:     -6028150571595824835708731" ]
-            , [ text "16 releases of 42 days each:    with # votes:    -10257849820412608278569577" ]
-            , [ text "4 releases of 84 days each:     with # votes:      7845588400895824835708731" ]
+            [ renderAuditLog model
             ]
 
         introParagraphs =
@@ -78,12 +69,14 @@ openingSlide model =
         model
         []
         [ Card.text [ cs "center tc" ]
-            [ Options.styled div [ display2, Color.text Color.black, cs "pa2 heading-text" ] [ text "Welcome to the SWM Release Schedule Vote" ]
-            , Options.styled div [ headline, cs "black pa2 mv3" ] [ text "This vote is open to all Swarm token holders." ]
-            , div [] (renderAuditLog model)
+            [ Options.styled div [ display2, Color.text Color.black, cs "pa2 heading-text" ] [ text <| "Welcome to the ballot for " ++ model.currentBallot.openingDesc ]
+            , Options.styled div [ headline, cs "black pa2 mv3" ] [ text <| "This vote is open to all " ++ model.currentBallot.erc20Abrv ++ " token holders." ]
             , div
                 [ style [ ( "max-width", "700px" ) ], class "center" ]
-                [ resultsParas
+                [ if ballotOver then
+                    resultsParas
+                  else
+                    introParagraphs
                 , ballotIntegrity model
                 , div [ class "mv3" ]
                     [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmAddressR) ] [ text "Continue" ]

@@ -16,7 +16,7 @@ rschedBallot =
     , startTime = 1509372000
     , endTime = 1510009200
     , ballotTitle = "SWM Token Release Schedule"
-    , description = "This ballot will decide the release schedule of the SWM token. There are four possible schedules, different in size and frequency of each step in the schedule."
+    , description = "This ballot will decide the release schedule of SWM tokens. There are four possible schedules, differring in the size and frequency of each step in the schedule."
     , erc20Addr = swmErc20Addr
     , erc20Balance = Nothing
     , erc20Abrv = swmErc20Abrv
@@ -26,7 +26,7 @@ rschedBallot =
 
 rSchedOpeningDesc : String
 rSchedOpeningDesc =
-    "This option for the release of SWM tokens corresponds to the following specification:"
+    "This ballot is to decide the release schedule of SWM tokens."
 
 
 renderReleaseScheduleTitle : ReleaseSchedule -> String

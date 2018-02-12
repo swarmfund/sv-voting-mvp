@@ -259,7 +259,7 @@ updateFromWeb3 msg model =
                         else if Just data == model.candidateTx.data then
                             { model | txidCheck = TxidSuccess } ! []
                         else
-                            { model | txidCheck = TxidFail "Warning! Data mismatch!" } ! []
+                            { model | txidCheck = TxidFail <| "Warning! Transaction data does not match expected! Please try again using txData: " ++ (model.candidateTx.data ? "<Error: tx data not found in voting interface! You should probably never see this message.") } ! []
                     else
                         { model | txidCheck = TxidFail "Transaction not yet confirmed" } ! []
 

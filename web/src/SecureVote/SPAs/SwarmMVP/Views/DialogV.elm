@@ -65,8 +65,8 @@ settingsDialogV model =
         ]
 
 
-infoDialogV : Html Msg
-infoDialogV =
+infoDialogV : Model -> Html Msg
+infoDialogV model =
     let
         codeSourceSection =
             div []
@@ -93,11 +93,7 @@ infoDialogV =
                 , text <| String.concat delegateExplanationCopy
                 ]
     in
-    div [] <|
-        combinedHowToVoteCopy
-            ++ [ delegateExplanationSection
-               , codeSourceSection
-               ]
+    div [] <| combinedHowToVoteCopy model ++ [ delegateExplanationSection, codeSourceSection ]
 
 
 gethDialogV : Model -> Html Msg
