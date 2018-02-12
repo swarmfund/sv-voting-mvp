@@ -16,6 +16,7 @@ window.addEventListener('load', function() {
         web3js = new Web3(web3.currentProvider);
         mmDetected = true;
     } else {
+        let web3;
         web3js = new Web3();
         web3 = web3js;
     }
