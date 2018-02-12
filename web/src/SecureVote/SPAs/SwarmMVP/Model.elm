@@ -94,7 +94,7 @@ initModel dev mainTitle =
 
 initEthNode : String
 initEthNode =
-    "http://eth-aws-nv-node-02.secure.vote:38545/microgov"
+    "https://eth-aws-nv-node-02.secure.vote:8545/microgov"
 
 
 devEthNode : String

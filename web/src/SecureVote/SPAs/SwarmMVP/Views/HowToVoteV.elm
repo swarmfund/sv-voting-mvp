@@ -13,11 +13,11 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmVoteR))
 
 
-combinedHowToVoteCopy : List (Html Msg)
-combinedHowToVoteCopy =
+combinedHowToVoteCopy : Model -> List (Html Msg)
+combinedHowToVoteCopy model =
     let
         ballotExplanationCopy =
-            "This ballot is to decide on the release schedule of the SWM token."
+            "This ballot is to decide: " ++ model.currentBallot.description
 
         rangeVotingCopy =
             [ "Each vote consists of a choosing a score within the range -3 to +3."
@@ -61,8 +61,7 @@ howToVoteView model =
         []
         [ Card.text [ cs "center tc" ]
             [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "How To Vote" ]
-            , div [ class "mw7 center tl" ]
-                combinedHowToVoteCopy
+            , div [ class "mw7 center tl" ] <| combinedHowToVoteCopy model
             , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmVoteR) ] [ text "Continue" ]
             ]
         ]

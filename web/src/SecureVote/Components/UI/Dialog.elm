@@ -24,7 +24,7 @@ dialog model =
                     customDialogV content
 
                 InfoDialog ->
-                    infoDialogV
+                    infoDialogV model
 
                 GethDialog ->
                     gethDialogV model
