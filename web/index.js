@@ -20,7 +20,9 @@ window.addEventListener('load', function() {
         web3 = web3js;
     }
 
-    const DEV = (process.env.DEV.toLowerCase() === "true") || false;
+    const _DEV_ = process.env.DEV;
+
+    const DEV = (_DEV_ && _DEV_.toLowerCase() === "true") || false;
     if (!DEV) {
         require('./js/birds.js');
     }

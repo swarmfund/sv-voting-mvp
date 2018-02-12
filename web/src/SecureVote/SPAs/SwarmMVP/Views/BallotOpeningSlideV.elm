@@ -2,7 +2,6 @@ module SecureVote.SPAs.SwarmMVP.Views.BallotOpeningSlideV exposing (..)
 
 import Html exposing (Html, a, div, em, p, span, strong, text)
 import Html.Attributes exposing (class, href, style, target)
-import Material.Card as Card
 import Material.Options as Options exposing (cs, css)
 import Material.Typography exposing (body1, display1, display2, display3, display4, title)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))

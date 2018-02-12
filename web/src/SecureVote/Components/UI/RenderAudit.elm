@@ -6,6 +6,7 @@ import Html exposing (Html, div, li, span, table, td, text, th, thead, tr, ul)
 import Html.Attributes exposing (class)
 import Maybe.Extra exposing ((?))
 import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult)
+import SecureVote.Eth.Utils exposing (isLegacyAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import Tuple exposing (second)
 
@@ -36,10 +37,17 @@ renderResults model { nVotes, totals } =
         procHS ( t, score ) =
             ( text t, span [ sCls score ] [ text <| D.toString score ] )
 
+        convHash h =
+            if isLegacyAddress model.currentBallot.contractAddr then
+                h
+                {- We get the titles given to us with the legacy address -}
+            else
+                Dict.get h model.optHashToTitle ? ""
+
         titledTotals =
             List.map procHS <|
                 List.filter (\( t, s ) -> t /= "") <|
-                    List.map (\( h, s ) -> ( Dict.get h model.optHashToTitle ? "", s )) sortedTotals
+                    List.map (\( h, s ) -> ( convHash h, s )) sortedTotals
 
         commonCs =
             class "pa3"
@@ -47,12 +55,15 @@ renderResults model { nVotes, totals } =
         trCs =
             class "striped--near-white"
 
+        thCs =
+            class "black"
+
         {- process (title, score) tuples (note: they are `Html msg`s) -}
         procTS ( t, s ) =
             [ td [ commonCs, class "tl" ] [ t ], td [ commonCs, class "tr" ] [ s ] ]
     in
     table [ class "ma3 collapse w-70 center" ] <|
-        [ thead [ trCs ] [ th [ commonCs ] [ text "Option" ], th [ commonCs ] [ text "Votes" ] ] ]
+        [ thead [ trCs ] [ th [ commonCs, thCs ] [ text "Option" ], th [ commonCs, thCs ] [ text "Votes" ] ] ]
             ++ List.map (tr [ trCs ] << procTS) titledTotals
 
 
