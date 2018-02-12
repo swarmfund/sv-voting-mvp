@@ -65,20 +65,17 @@ openingSlide model =
     in
     fullPageSlide 9483579329
         model
-        []
-        [ Card.text [ cs "center tc" ]
-            [ headline <| "Welcome to the ballot for: " ++ model.currentBallot.ballotTitle
-            , Options.styled div [ cs "black pa2 mv3 f4" ] [ text subtitleText ]
-            , div
-                [ style [ ( "max-width", "700px" ) ], class "center" ]
-              <|
-                [ if ballotOver then
-                    resultsParas
-                  else
-                    introParagraphs
-                , ballotIntegrity model
-                , continueBtn
-                ]
+        ("Welcome to the ballot for: " ++ model.currentBallot.ballotTitle)
+        [ Options.styled div [ cs "black pa2 mv3 f4" ] [ text subtitleText ]
+        , div
+            [ style [ ( "max-width", "700px" ) ], class "center" ]
+          <|
+            [ if ballotOver then
+                resultsParas
+              else
+                introParagraphs
+            , ballotIntegrity model
+            , continueBtn
             ]
         ]
 

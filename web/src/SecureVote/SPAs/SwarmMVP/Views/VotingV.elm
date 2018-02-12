@@ -107,15 +107,12 @@ votingView model =
     in
     fullPageSlide 923844759
         model
-        []
-        [ Card.text [ cs "center tc" ]
-            [ div [ class "pv2" ] [ headline "Cast Your Vote" ]
-            , div [ class "ba dib pa2 ma1", style [ ( "min-width", "50%" ) ] ]
-                [ subhead "Ballot Summary:"
-                , displayResults
-                ]
-            , ballotDetailsSection
+        "Cast Your Vote"
+        [ div [ class "ba dib pa2 ma1", style [ ( "min-width", "50%" ) ] ]
+            [ subhead "Ballot Summary:"
+            , displayResults
             ]
+        , ballotDetailsSection
         ]
 
 
