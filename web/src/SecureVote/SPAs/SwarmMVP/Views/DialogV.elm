@@ -8,6 +8,7 @@ import Material.Textfield as Textf
 import Material.Typography as Typo exposing (menu, title)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
+import SecureVote.Components.UI.RenderAudit exposing (renderAuditLog)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Utils exposing (isValidTxid)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRender)
@@ -291,4 +292,4 @@ customDialogV content =
 
 fullAuditDialogV : Model -> Html msg
 fullAuditDialogV model =
-    div [] []
+    div [] <| renderAuditLog False model

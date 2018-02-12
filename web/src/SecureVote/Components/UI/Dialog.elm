@@ -45,7 +45,6 @@ dialog model =
         -- Tachyons has no Max-Height :(
         -- possible flex attrs: flex flex-column justify-between
         [ cs "w-80 w-70-l"
-        , cs "overflow-scroll"
         , css "max-height" "80%"
         , Options.id "dialog-container"
         ]
@@ -58,7 +57,7 @@ dialog model =
                 ]
             ]
         , Dialog.content
-            [ cs "overflow-y-scroll db" ]
+            [ cs "overflow-y-scroll db mv4", css "max-height" "60vh" ]
             [ div
                 [ class "db " ]
                 [ innerHtml ]

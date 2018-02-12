@@ -80,11 +80,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
             }
         }
 
-        if (contractAddr == legacyContractAddr){
-            getBallotOpts(implRecieveBallotOptsCBLegacy);
-        } else {
-            getBallotOpts(implRecieveBallotOptsCB);
-        }
+        getBallotOpts(isLegacy(contractAddr) ? implRecieveBallotOptsCBLegacy : implRecieveBallotOptsCB);
 
         try {
             const doErr = err => {
@@ -268,16 +264,23 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
 
     // AUDITOR STUFF
 
+    // keep track of the current audit session, and if we start a second audit session stop giving us updates.
+    let auditCounter = 0;
 
-    const auditUpdateF = (statusUpdate) => {
-        console.log(statusUpdate)
-        app.ports.gotAuditMsgImpl.send(statusUpdate);
+    const auditUpdateF = (i) => (statusUpdate) => {
+        if (i === auditCounter) {
+            console.log(statusUpdate)
+            app.ports.gotAuditMsgImpl.send(statusUpdate);
+        } else {
+            console.log("Got out of date message for audit session:", i, ". Message:", statusUpdate);
+        }
     }
 
     app.ports.getBallotResults.subscribe(wrapper((args) => {
-        console.log("Calling AuditWeb with: ", args);
+        auditCounter++;
+        console.log("Calling AuditWeb session", auditCounter, "with:", args);
         try {
-            const resp = AuditWeb.main(args)(auditUpdateF)();
+            const resp = AuditWeb.main(args)(auditUpdateF(auditCounter))();
         } catch (err) {
             console.error("AuditWeb.main threw error: ", err);
         }

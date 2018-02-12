@@ -292,3 +292,13 @@ formatBalance =
 rawTokenBalance18DpsToBalance : Decimal -> String
 rawTokenBalance18DpsToBalance =
     formatBalance << Decimal.toString << decimalTo18dps
+
+
+legacyAddress : String
+legacyAddress =
+    "0x2bb10945e9f0c9483022dc473ab4951bc2a77d0f"
+
+
+isLegacyAddress : String -> Bool
+isLegacyAddress addr =
+    String.toLower addr == String.toLower legacyAddress

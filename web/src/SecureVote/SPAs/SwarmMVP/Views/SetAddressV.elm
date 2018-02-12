@@ -2,7 +2,6 @@ module SecureVote.SPAs.SwarmMVP.Views.SetAddressV exposing (..)
 
 import Html exposing (Html, div, p, span, strong, text)
 import Html.Attributes exposing (class)
-import Material.Card as Card
 import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
 import Maybe.Extra exposing ((?), isNothing)
