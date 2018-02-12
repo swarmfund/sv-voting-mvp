@@ -143,7 +143,7 @@ if (TARGET_ENV === 'development') {
                     ],
                     use: [
                         "elm-hot-loader",
-                        "elm-webpack-loader?verbose=true&warn=true&maxInstances=2"
+                        "elm-webpack-loader?verbose=true&warn=true&maxInstances=2&debug=true"
                     ]
                 }
             ]
@@ -158,7 +158,6 @@ if (TARGET_ENV === 'development') {
             hot: true,
             // For SPAs: serve index.html in place of 404 responses
             historyApiFallback: true,
-            watchContentBase: true,
             watchOptions: {
                 ignored: [/node_modules/, /bower_components/]
             }

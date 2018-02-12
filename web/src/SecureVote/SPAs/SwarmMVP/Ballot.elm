@@ -1,6 +1,5 @@
 module SecureVote.SPAs.SwarmMVP.Ballot exposing (..)
 
-import Debug as D
 import Maybe.Extra exposing (combine)
 import SecureVote.Eth.Utils exposing (keccak256OverString, toHex)
 import SecureVote.SPAs.SwarmMVP.Ballots.DevBasicBallot exposing (allDevBallots_, devBasicBallot)

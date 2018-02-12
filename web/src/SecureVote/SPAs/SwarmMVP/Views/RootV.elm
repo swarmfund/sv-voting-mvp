@@ -66,7 +66,7 @@ slideHost model slideParis extraHtml =
         drawSlide ( route, slide ) =
             if route == currSlide then
                 div [ class <| joinCs [ commonCs, slideInCs ] ] [ slide ]
-            else if List.member route model.history then
+            else if List.member route <| List.take 1 model.history then
                 div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
             else if model.lastRoute == Just route then
                 div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
@@ -76,4 +76,4 @@ slideHost model slideParis extraHtml =
         slides =
             List.map drawSlide slideParis
     in
-    div [ class "w-100", id "sv-main" ] (slides ++ extraHtml)
+    div [ class "w-100", id "sv-main", style [ ( "max-height", "90%" ) ] ] (slides ++ extraHtml)

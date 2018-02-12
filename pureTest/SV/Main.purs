@@ -10,6 +10,7 @@ import Data.Maybe (Maybe(..))
 import Node.ChildProcess (CHILD_PROCESS)
 import Test.SV.CompleteCycle (completeBallotTest)
 import Test.SV.Encryption (encTests)
+import Test.SV.EthTests (ethTests)
 import Test.SV.HexBinTests (hexBinTests, intBitTests)
 import Test.SV.SpecProperties (specProperties)
 import Test.Spec (describe)
@@ -23,6 +24,6 @@ main = run' { slow: 120000, timeout: Just 180000 } [consoleReporter] do
     describe "Hex / Binary tests" hexBinTests
     describe "BitString tests" intBitTests
     describe "Encryption Tests" encTests
+    describe "Eth Tests" ethTests
     describe "A complete ballot test" completeBallotTest
     describe "Ballot Spec Tests" specProperties
-

@@ -5,24 +5,21 @@ import Html exposing (Html, a, b, div, em, img, li, p, pre, span, text, ul)
 import Html.Attributes exposing (class, href, src, target)
 import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
-import Material.Typography as Typo exposing (headline, menu, title)
+import Material.Typography as Typo exposing (menu, title)
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
+import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Utils exposing (isValidTxid)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRender)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary, defaultDelegate, getBallotTxid, getDelegateAddress, getEthNodeTemp, setBallotTxid, setEthNodeTemp, toStrDropQts)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(CheckTxid, SetProvider))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(ListAllVotesR))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(..))
 import SecureVote.SPAs.SwarmMVP.Views.HowToVoteV exposing (combinedHowToVoteCopy)
 import SecureVote.SPAs.SwarmMVP.Views.SetDelegateV exposing (delegateExplanationCopy)
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (orderedBallotBits)
 import SecureVote.Types.VBit exposing (vBitsToInt, vblToList)
-
-
-subhead : String -> Html Msg
-subhead s =
-    Options.styled div [ title, cs "black db mv3" ] [ text s ]
 
 
 subsubhead : String -> Html Msg
@@ -70,7 +67,7 @@ infoDialogV model =
     let
         codeSourceSection =
             div []
-                [ Options.styled span [ headline, cs "black db mv3" ] [ text "About this voting tool" ]
+                [ subhead "About This Voting Tool"
                 , text "This voting tool was built by "
                 , a [ href "https://secure.vote", target "_blank" ] [ text "SecureVote" ]
                 , text " for "
@@ -89,11 +86,25 @@ infoDialogV model =
 
         delegateExplanationSection =
             div []
-                [ Options.styled span [ headline, cs "black db mv3" ] [ text "What is Vote Delegation?" ]
-                , text <| String.concat delegateExplanationCopy
+                [ subhead "What Is Vote Delegation?"
+                , text <| String.concat <| delegateExplanationCopy model
                 ]
+
+        ballotInfo =
+            if model.route /= ListAllVotesR then
+                div []
+                    [ subhead "Smart Contract Information"
+                    , p [] [ text "The address of the smart contract for this ballot is: ", codeSection [ text model.currentBallot.contractAddr ] ]
+                    ]
+            else
+                span [] []
     in
-    div [] <| combinedHowToVoteCopy model ++ [ delegateExplanationSection, codeSourceSection ]
+    div [] <|
+        combinedHowToVoteCopy model
+            ++ [ delegateExplanationSection
+               , ballotInfo
+               , codeSourceSection
+               ]
 
 
 gethDialogV : Model -> Html Msg
@@ -275,3 +286,8 @@ checkTxComponent model =
 customDialogV : DialogHtml msg -> Html msg
 customDialogV content =
     div [] [ dialogHtmlRender [] content ]
+
+
+fullAuditDialogV : Model -> Html msg
+fullAuditDialogV model =
+    div [] []

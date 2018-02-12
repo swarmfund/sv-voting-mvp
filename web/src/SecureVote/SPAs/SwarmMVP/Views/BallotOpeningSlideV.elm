@@ -3,17 +3,17 @@ module SecureVote.SPAs.SwarmMVP.Views.BallotOpeningSlideV exposing (..)
 import Html exposing (Html, a, div, em, p, span, strong, text)
 import Html.Attributes exposing (class, href, style, target)
 import Material.Card as Card
-import Material.Color as Color exposing (Hue(Red), Shade(S500))
 import Material.Options as Options exposing (cs, css)
-import Material.Typography exposing (body1, display1, display2, display3, headline, title)
+import Material.Typography exposing (body1, display1, display2, display3, display4, title)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
-import SecureVote.Eth.Types exposing (AuditDoc(..))
+import SecureVote.Components.UI.RenderAudit exposing (isAuditSuccessMsg, renderAudit)
+import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(..))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(FullAuditDialog), Route(..))
 
 
 openingSlide : Model -> Html Msg
@@ -23,7 +23,7 @@ openingSlide model =
             model.currentBallot.endTime < model.now
 
         introText =
-            [ [ text <| "Ballot description: " ++ model.currentBallot.description ]
+            [ [ text <| "Ballot description: " ++ model.currentBallot.openingDesc ]
             , [ text "You will be presented with a number of options. Each option has a description explaining it in more detail."
               ]
             , [ text "When you vote, you allocate each option a number from -3 to +3 (inclusive). It's important to choose a vote for each option. (This method of voting is called 'Range Voting'.)" ]
@@ -31,56 +31,53 @@ openingSlide model =
             , [ text "When you're ready, let's vote!" ]
             ]
 
-        resultsText =
-            [ renderAuditLog model
-            ]
-
         introParagraphs =
             div [ class "center" ] <| List.map renderPara introText
 
         resultsParas =
-            div [ class "center" ] <| List.map renderPara resultsText
+            div [ class "mb3" ]
+                [ div [ class "mb3" ] [ renderAudit model ]
+                , btn 893479357 model [ PriBtn, Attr (class "ph2"), Click (SetDialog "Voting Audit Log" FullAuditDialog), OpenDialog ] [ text "Full Voting Audit Log" ]
+                ]
 
         renderPara txt =
             Options.styled span [ body1, cs "black db pa1 mv2" ] txt
 
-        renderAuditMsg auditMsg =
-            let
-                wrapper attrs msg =
-                    Options.styled span ([ cs "db" ] ++ attrs) [ text msg ]
-            in
-            case auditMsg of
-                AuditLog msg ->
-                    wrapper [] msg
+        continueBtn =
+            if ballotOver then
+                span [] []
+            else
+                div [ class "mv3" ]
+                    [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmAddressR) ] [ text "Continue" ]
+                    ]
 
-                AuditLogErr msg ->
-                    wrapper [ cs "red" ] msg
+        auditComplete =
+            List.length (List.filter isAuditSuccessMsg model.auditMsgs) /= 0
 
-                AuditFail msg ->
-                    wrapper [ cs "red bold" ] msg
-
-                AuditSuccess res ->
-                    wrapper [] <| toString res
-
-        renderAuditLog model =
-            List.map renderAuditMsg model.auditMsgs
+        subtitleText =
+            if ballotOver then
+                if auditComplete then
+                    "Results:"
+                else
+                    "Counting Votes..."
+            else
+                "This vote is open to all " ++ model.currentBallot.erc20Abrv ++ " token holders."
     in
     fullPageSlide 9483579329
         model
         []
         [ Card.text [ cs "center tc" ]
-            [ Options.styled div [ display2, Color.text Color.black, cs "pa2 heading-text" ] [ text <| "Welcome to the ballot for " ++ model.currentBallot.openingDesc ]
-            , Options.styled div [ headline, cs "black pa2 mv3" ] [ text <| "This vote is open to all " ++ model.currentBallot.erc20Abrv ++ " token holders." ]
+            [ headline <| "Welcome to the ballot for: " ++ model.currentBallot.ballotTitle
+            , Options.styled div [ cs "black pa2 mv3 f4" ] [ text subtitleText ]
             , div
                 [ style [ ( "max-width", "700px" ) ], class "center" ]
+              <|
                 [ if ballotOver then
                     resultsParas
                   else
                     introParagraphs
                 , ballotIntegrity model
-                , div [ class "mv3" ]
-                    [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmAddressR) ] [ text "Continue" ]
-                    ]
+                , continueBtn
                 ]
             ]
         ]
@@ -140,7 +137,7 @@ ballotIntegrity model =
                             successMsg <| "✅ Voting open! 🗳 Voting closes on: " ++ formatTsAsDate endTime ++ " local time"
     in
     div [ class "mt1 mb3" ]
-        [ Options.styled div [ cs "black mb2", headline ] [ text "Checking ballot details:" ]
+        [ subhead "Checking ballot details:"
         , row
             [ text "Ballot open:" ]
             ballotOpenHtml

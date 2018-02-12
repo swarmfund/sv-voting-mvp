@@ -5,12 +5,13 @@ import Html.Attributes exposing (class, style)
 import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs)
-import Material.Typography exposing (display2, headline)
+import Material.Typography as Typo exposing (display2)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
+import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmVoteR))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
 
 
 combinedHowToVoteCopy : Model -> List (Html Msg)
@@ -27,24 +28,27 @@ combinedHowToVoteCopy model =
 
         submitVoteCopy =
             [ "Once you have finished selecting values for your vote options, your ballot will be encrypted. "
-            , "You will then be presented with instructions to submit your vote either via MyEtherWallet or another wallet, and to validate the integrity of your ballot if you wish."
+            , "You will then be presented with instructions to submit your vote either via MyEtherWallet, MetaMask, or another wallet, and to validate the integrity of your ballot if you wish."
             ]
 
         ballotExplanationSection =
-            div []
-                [ Options.styled span [ headline, cs "black db mv3" ] [ text "What is this Ballot?" ]
-                , text ballotExplanationCopy
-                ]
+            if model.route /= ListAllVotesR then
+                div []
+                    [ subhead "What Is This Ballot?"
+                    , p [] [ text ballotExplanationCopy ]
+                    ]
+            else
+                div [] []
 
         rangeVotingSection =
             div []
-                [ Options.styled span [ headline, cs "black db mv3" ] [ text "How to use Range Voting" ]
+                [ subhead "How to Use Range Voting"
                 , ul [] <| List.map (\copy -> li [] [ text copy ]) rangeVotingCopy
                 ]
 
         submitVoteSection =
             div []
-                [ Options.styled span [ headline, cs "black db mv3" ] [ text "How can I submit my vote?" ]
+                [ subhead "How Can I Submit My Vote?"
                 , text <| String.concat submitVoteCopy
                 ]
     in
@@ -60,7 +64,7 @@ howToVoteView model =
         model
         []
         [ Card.text [ cs "center tc" ]
-            [ Options.styled span [ display2, Color.text Color.black, cs "db pa2 heading-text" ] [ text "How To Vote" ]
+            [ headline "How To Vote"
             , div [ class "mw7 center tl" ] <| combinedHowToVoteCopy model
             , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmVoteR) ] [ text "Continue" ]
             ]

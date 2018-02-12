@@ -1,6 +1,7 @@
 module SecureVote.Democs.SwarmMVP.Const where
 
 
+-- -- | DEPRECATED
 -- This is the first block after Oct 30 14:00 UTC (when the ballot started)
-balanceAt :: Int
-balanceAt = 4458227
+-- balanceAt :: Int
+-- balanceAt = 4458227

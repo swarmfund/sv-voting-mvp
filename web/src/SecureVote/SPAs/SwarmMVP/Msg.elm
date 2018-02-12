@@ -21,11 +21,14 @@ type Msg
     | SetField String String
     | PageGoForward Route
     | PageGoBack
+    | PageGoHome
     | SetDialog String (DialogRoute Msg)
       -- ** Voting msgs
     | SetBallotRange Int Float
+    | ModBallotRange Int (Maybe Int -> Maybe Int)
     | ConstructBallotPlaintext
     | SetBallot (BallotParams Msg)
+    | VoteWMetaMask
       -- ** Eth related msgs
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)
     | SetEthNode String
@@ -61,6 +64,8 @@ type FromWeb3Msg
     | GetBallotOpts (RemoteData String (List String))
     | GotTxidStatus (Result String GotTxidResp)
     | GetBallotPeriod (RemoteData String { startTime : Int, endTime : Int })
+    | GotMetaMask
+    | GotMetaMaskTxid String
 
 
 type FromCurve25519Msg

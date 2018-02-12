@@ -1,14 +1,32 @@
 port module SecureVote.Eth.Web3 exposing (..)
 
 import Debug
-import Decimal exposing (fromString)
+import Decimal exposing (Decimal, fromString)
 import Json.Decode as Decode exposing (Decoder, Value, bool, decodeValue, int, string)
 import Json.Decode.Pipeline exposing (decode, required)
+import Maybe exposing (withDefault)
 import Maybe.Extra exposing (combine)
-import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult, BallotTotals, InitRecord)
+import SecureVote.Eth.Models exposing (CandidateEthTx, MinEthTx)
+import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult, InitRecord)
 import SecureVote.Eth.Utils exposing (dropEthPrefix)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
+
+
+port gotMetamaskImpl : (Value -> msg) -> Sub msg
+
+
+gotMetamask : Sub Msg
+gotMetamask =
+    gotMetamaskImpl
+        (\val ->
+            case Decode.decodeValue bool val of
+                Ok _ ->
+                    FromWeb3 GotMetaMask
+
+                Err err ->
+                    LogErr err
+        )
 
 
 port checkTxid : String -> Cmd msg
@@ -136,6 +154,35 @@ onIncomingWeb3Error err =
 port constructDataParam : ConsDataParamReq -> Cmd msg
 
 
+port castMetaMaskVoteImpl : MinEthTx -> Cmd msg
+
+
+castMetaMaskVote : CandidateEthTx -> Cmd msg
+castMetaMaskVote { from, to, value, data, gas } =
+    castMetaMaskVoteImpl
+        { from = withDefault "" from
+        , to = withDefault "ERROR - THIS SHOULD BE FILLED AND YOU SHOULD NEVER SEE THIS" to
+        , value = value
+        , data = withDefault "ERROR - THIS SHOULD BE FILLED AND YOU SHOULD NEVER SEE THIS" data
+        , gas = gas
+        }
+
+
+port metamaskTxidImpl : (Value -> msg) -> Sub msg
+
+
+metamaskTxid : Sub Msg
+metamaskTxid =
+    metamaskTxidImpl <|
+        \val ->
+            case decodeValue string val of
+                Ok txid ->
+                    FromWeb3 <| GotMetaMaskTxid txid
+
+                Err err ->
+                    errHelper "MetaMask returned an error: " err
+
+
 port implDataParam : (Value -> msg) -> Sub msg
 
 
@@ -195,7 +242,7 @@ port gotAuditMsgImpl : (Value -> msg) -> Sub msg
 decodeAuditMsg : Value -> Msg
 decodeAuditMsg auditVal =
     let
-        procSuccessKVs : Decoder (List ( String, String )) -> Decoder BallotTotals
+        procSuccessKVs : Decoder (List ( String, String )) -> Decoder (List ( String, Decimal ))
         procSuccessKVs =
             Decode.andThen
                 (\listOfStringRes ->
