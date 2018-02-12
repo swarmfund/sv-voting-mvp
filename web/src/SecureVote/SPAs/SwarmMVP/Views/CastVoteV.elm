@@ -117,11 +117,9 @@ castVoteView model =
     in
     fullPageSlide 123413553
         model
-        []
-        [ Card.text [ cs "center tc" ] <|
-            [ Options.styled div [ cs "pb3" ] [ headline "Choose Your Vote" ] ]
-                ++ balanceV
-                ++ [ div [ class "mw7 center black" ] optionList
-                   , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs ] [ text "Continue" ]
-                   ]
-        ]
+        "Choose Your Vote"
+    <|
+        balanceV
+            ++ [ div [ class "mw7 center black" ] optionList
+               , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs ] [ text "Continue" ]
+               ]

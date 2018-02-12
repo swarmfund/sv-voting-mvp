@@ -43,7 +43,7 @@ settingsDialogV model =
                 BtnNop
     in
     div []
-        [ div []
+        [ div [ class "w-100" ]
             [ Options.styled span [ menu, cs "" ] [ text "Ethereum Node URL" ]
             , Textf.render Mdl
                 [ 7785646743 ]
@@ -59,6 +59,7 @@ settingsDialogV model =
                 []
             , btn 456467568 model [ PriBtn, Click <| setEthNodeMsgs, btnDisabled ] [ text "Update" ]
             ]
+        , div [] [ text "Note: Ethereum nodes require ", em [] [ text "full" ], text " historical access for auditing past ballots. Auditing results will fail if they're not syncing in archive mode." ]
         ]
 
 

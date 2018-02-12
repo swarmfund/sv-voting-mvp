@@ -1,7 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Views.RootV exposing (..)
 
 import Html exposing (Attribute, Html, div, h1, h2, h3, img, p, span, text)
-import Html.Attributes exposing (class, id, src, style)
+import Html.Attributes exposing (attribute, class, id, src, style)
 import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Dialog exposing (dialog)
@@ -64,16 +64,18 @@ slideHost model slideParis extraHtml =
             "w-100 slider"
 
         drawSlide ( route, slide ) =
-            if route == currSlide then
-                div [ class <| joinCs [ commonCs, slideInCs ] ] [ slide ]
-            else if List.member route <| List.take 1 model.history then
-                div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
-            else if model.lastRoute == Just route then
-                div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
-            else
-                div [] []
+            div [ attribute "data-sv-slide" <| toString route, class "" ]
+                [ if route == currSlide then
+                    div [ class <| joinCs [ commonCs, slideInCs ] ] [ slide ]
+                  else if List.member route <| List.take 1 model.history then
+                    div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
+                  else if model.lastRoute == Just route then
+                    div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
+                  else
+                    div [] []
+                ]
 
         slides =
             List.map drawSlide slideParis
     in
-    div [ class "w-100", id "sv-main", style [ ( "max-height", "90%" ) ] ] (slides ++ extraHtml)
+    div [ class "w-100", id "sv-main" ] (slides ++ extraHtml)

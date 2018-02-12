@@ -62,10 +62,7 @@ howToVoteView : Model -> Html Msg
 howToVoteView model =
     fullPageSlide 3453456456
         model
-        []
-        [ Card.text [ cs "center tc" ]
-            [ headline "How To Vote"
-            , div [ class "mw7 center tl" ] <| combinedHowToVoteCopy model
-            , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmVoteR) ] [ text "Continue" ]
-            ]
+        "How To Vote"
+        [ div [ class "mw7 center tl" ] <| combinedHowToVoteCopy model
+        , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmVoteR) ] [ text "Continue" ]
         ]

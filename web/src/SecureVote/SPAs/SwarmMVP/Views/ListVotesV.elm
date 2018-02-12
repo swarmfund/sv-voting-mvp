@@ -23,13 +23,13 @@ listVotesView model =
             sortBy .startTime <| Dict.values model.allBallots
 
         currentBallots =
-            filter (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime) allBallots
+            List.sortBy .endTime <| filter (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime) allBallots
 
         futureBallots =
-            filter (\{ startTime, endTime } -> startTime > model.now && endTime > model.now) allBallots
+            List.sortBy .startTime <| filter (\{ startTime, endTime } -> startTime > model.now && endTime > model.now) allBallots
 
         pastBallots =
-            filter (\{ startTime, endTime } -> model.now >= endTime) allBallots
+            List.sortBy ((*) -1 << .endTime) <| filter (\{ startTime, endTime } -> model.now >= endTime) allBallots
 
         drawIfNotEmpty bs v =
             if length bs == 0 then
@@ -96,12 +96,8 @@ listVotesView model =
     in
     fullPageSlide 3409830456
         model
-        []
-        [ Card.text [ cs "center tc" ] <|
-            [ headline model.mainTitle
-            , Options.styled hr [] []
-            ]
-                ++ currBallotV
-                ++ futureBallotV
-                ++ pastBallotV
-        ]
+        model.mainTitle
+    <|
+        currBallotV
+            ++ futureBallotV
+            ++ pastBallotV

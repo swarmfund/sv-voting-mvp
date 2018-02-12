@@ -46,24 +46,21 @@ delegateView model =
     in
     fullPageSlide 3453456456
         model
-        []
-        [ Card.text [ cs "center tc" ]
-            [ headline "Choose a Delegate"
-            , p [ class "mw7 center" ] [ text <| String.concat <| delegateExplanationCopy model ]
-            , Textf.render Mdl
-                [ 7674564333 ]
-                model.mdl
-                [ Options.onInput <| setDelegateAddress
-                , Textf.label "Delegate's Address (optional)"
-                , Textf.floatingLabel
-                , Textf.value <| getDelegateAddress model ? ""
-                , Textf.error addrErrMsg |> Options.when addrErr
-                , css "min-width" "400px"
-                , cs "db center"
-                ]
-                []
-            , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click clickMsgs, btnDisabled ] [ text "Continue" ]
+        "Choose a Delegate"
+        [ p [ class "mw7 center" ] [ text <| String.concat <| delegateExplanationCopy model ]
+        , Textf.render Mdl
+            [ 7674564333 ]
+            model.mdl
+            [ Options.onInput <| setDelegateAddress
+            , Textf.label "Delegate's Address (optional)"
+            , Textf.floatingLabel
+            , Textf.value <| getDelegateAddress model ? ""
+            , Textf.error addrErrMsg |> Options.when addrErr
+            , css "min-width" "400px"
+            , cs "db center"
             ]
+            []
+        , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click clickMsgs, btnDisabled ] [ text "Continue" ]
         ]
 
 
