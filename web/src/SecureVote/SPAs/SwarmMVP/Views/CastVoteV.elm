@@ -14,6 +14,7 @@ import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.Eth.Utils exposing (rawTokenBalance18DpsToBalance)
+import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(DlogTxt))
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, getUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
@@ -60,6 +61,12 @@ castVoteView model =
             let
                 optBtnCs =
                     [ class "f3 relative ba br2 b--silver bg-white-20 bg-animate hover-bg-gold ph1 pt2 pointer shadow-1 noselect z-999", style [ ( "padding-bottom", "1px" ), ( "user-select", "none" ) ] ]
+
+                btnDisabledFlag =
+                    if DlogTxt "" == description then
+                        Disabled
+                    else
+                        BtnNop
             in
             div [ class "center mw-5 cf mb4 mt3 db w-100 bb bw1 b--silver" ]
                 [ div [ class "h-100 w-100 w-100-m w-30-l fl mt2 mb3 tl-l v-mid" ]
@@ -104,6 +111,7 @@ castVoteView model =
                         [ SecBtn
                         , Click (SetDialog (title ++ ": Details") (BallotDialog description))
                         , OpenDialog
+                        , btnDisabledFlag
                         ]
                         [ text "Details" ]
                     ]
