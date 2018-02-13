@@ -45,7 +45,7 @@ const CopyWebpackPluginConfig = new CopyWebpackPlugin([
 ]);
 
 
-const pursCommonF = () => ({
+const pursCommonF = ({outputDir}) => ({
     module: {
         rules: [
             {
@@ -56,6 +56,7 @@ const pursCommonF = () => ({
                         loader: "purs-loader",
                         query: {
                             bundle: true,
+                            output: outputDir || 'output',
                             src: ["bower_components/purescript-*/src/**/*.purs", "pureSrc/**/*.purs"]
                         }
                     }
@@ -73,7 +74,7 @@ const pursCommonF = () => ({
 });
 
 
-const buildAuditWeb = merge(pursCommonF(), {
+const buildAuditWeb = pursArgs => merge(pursCommonF(pursArgs || {}), {
     resolve: {
         extensions: [".purs", ".js", ".json", ".ts"]
     },
@@ -126,7 +127,7 @@ const common = {
 
 if (TARGET_ENV === 'development') {
     console.log('Building for dev...');
-    module.exports = merge(common, buildAuditWeb, {
+    module.exports = merge(common, buildAuditWeb({}), {
         plugins: [
             // Suggested for hot-loading
             new webpack.NamedModulesPlugin(),
@@ -167,7 +168,7 @@ if (TARGET_ENV === 'development') {
 
 if (TARGET_ENV === 'production') {
     console.log('Building for prod...');
-    module.exports = merge(common, buildAuditWeb, {
+    module.exports = merge(common, buildAuditWeb({outputDir: ".cache/output"}), {
         plugins: [
             // Delete everything from output directory and report to user
             new CleanWebpackPlugin([_dist], {
