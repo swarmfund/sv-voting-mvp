@@ -19,6 +19,8 @@ type Msg
       -- ** UI Maintenance msgs
     | SetElevation Int Bool
     | SetField String String
+    | RemoveFieldVal String
+    | SetBoolField String Bool
     | PageGoForward Route
     | PageGoBack
     | PageGoHome

@@ -12,7 +12,7 @@ import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.Eth.Utils exposing (isValidEthAddress)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (getDelegateAddress, setDelegateAddress)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (defaultDelegate, dlgtAddrField, getBoolField, getDelegateAddress, getField, setBoolField)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToCurve25519Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
@@ -36,40 +36,63 @@ delegateView model =
                 BtnNop
 
         ( addrErr, addrErrMsg ) =
-            validAddress model
+            validAddress (getField dlgtAddressK model)
+
+        dlgtSetting =
+            "setting.delegate." ++ toString model.currentBallot.id
+
+        dlgtAddressK =
+            dlgtAddrField model.currentBallot
+
+        clickMsgs_ extra =
+            MultiMsg <|
+                extra
+                    ++ [ ConstructBallotPlaintext
+                       , PageGoForward SwmSubmitR
+                       ]
 
         clickMsgs =
-            MultiMsg
-                [ ConstructBallotPlaintext
-                , PageGoForward SwmSubmitR
+            clickMsgs_ []
+
+        showDlgtFieldMsg =
+            setBoolField dlgtSetting True
+
+        showDlgtField =
+            getBoolField model dlgtSetting ? False
+
+        dlgtForm =
+            if showDlgtField then
+                [ Textf.render Mdl
+                    [ 7674564333 ]
+                    model.mdl
+                    [ Options.onInput <| SetField dlgtAddressK
+                    , Textf.label "Delegate's Address (optional)"
+                    , Textf.floatingLabel
+                    , Textf.value <| getField dlgtAddressK model ? ""
+                    , Textf.error addrErrMsg |> Options.when addrErr
+                    , css "max-width" "400px"
+                    , cs "w-100 db center"
+                    ]
+                    []
+                , btn 9458439437 model [ SecBtn, Attr (class "ma2"), Click <| clickMsgs_ [ RemoveFieldVal dlgtAddressK ] ] [ text "Skip" ]
+                , btn 5475855442 model [ PriBtn, Attr (class "ma2"), Click clickMsgs, btnDisabled ] [ text "Continue" ]
+                ]
+            else
+                [ btn 394839423 model [ SecBtn, Attr (class "ma2"), Click showDlgtFieldMsg ] [ text "Set a Delegate" ]
+                , btn 945839437 model [ PriBtn, Attr (class "ma2"), Click clickMsgs ] [ text "Skip" ]
                 ]
     in
     fullPageSlide 3453456456
         model
         "Choose a Delegate"
+    <|
         [ p [ class "mw7 center" ] [ text <| String.concat <| delegateExplanationCopy model ]
-        , Textf.render Mdl
-            [ 7674564333 ]
-            model.mdl
-            [ Options.onInput <| setDelegateAddress
-            , Textf.label "Delegate's Address (optional)"
-            , Textf.floatingLabel
-            , Textf.value <| getDelegateAddress model ? ""
-            , Textf.error addrErrMsg |> Options.when addrErr
-            , css "max-width" "400px"
-            , cs "w-100 db center"
-            ]
-            []
-        , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click clickMsgs, btnDisabled ] [ text "Continue" ]
         ]
+            ++ dlgtForm
 
 
-validAddress : Model -> ( Bool, String )
-validAddress model =
-    let
-        delegateAddress =
-            getDelegateAddress model
-    in
+validAddress : Maybe String -> ( Bool, String )
+validAddress delegateAddress =
     case delegateAddress of
         Nothing ->
             ( False, "Please paste in your Delegate's Eth address" )

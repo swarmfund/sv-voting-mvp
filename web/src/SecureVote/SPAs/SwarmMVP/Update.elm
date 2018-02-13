@@ -42,6 +42,12 @@ update msg model =
         SetField fieldName value ->
             { model | fields = Dict.insert fieldName value model.fields } ! []
 
+        RemoveFieldVal k ->
+            { model | fields = Dict.remove k model.fields } ! []
+
+        SetBoolField k v ->
+            { model | boolFields = Dict.insert k v model.boolFields } ! []
+
         PageGoForward route ->
             { model | route = route, history = model.route :: model.history, lastPageDirection = PageForward, lastRoute = Nothing } ! [ scrollToTop "sv-main" ]
 
