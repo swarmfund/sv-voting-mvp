@@ -61,18 +61,18 @@ votingView model =
             case model.metamaskTxid of
                 Nothing ->
                     div [ class "mv2" ]
-                        [ btn 758678435 model [ SecBtn, Attr (class "ph3"), Click (SetDialog "Cast your vote using MyEtherWallet" MEWDialog), OpenDialog ] [ text "Cast using M.E.W." ]
-                        , btn 483974399 model [ SecBtn, Attr (class "ph3"), Click VoteWMetaMask ] [ text "Cast using MetaMask" ]
-                        , btn 785784536 model [ SecBtn, Attr (class "ph3"), Click (SetDialog "Cast using Other" GethDialog), OpenDialog ] [ text "Cast using Other" ]
+                        [ btn 758678435 model [ SecBtn, Attr (class "pa2"), Click (SetDialog "Cast your vote using MyEtherWallet" MEWDialog), OpenDialog ] [ text "Cast using M.E.W." ]
+                        , btn 483974399 model [ SecBtn, Attr (class "pa2"), Click VoteWMetaMask ] [ text "Cast using MetaMask" ]
+                        , btn 785784536 model [ SecBtn, Attr (class "pa2"), Click (SetDialog "Cast using Other" GethDialog), OpenDialog ] [ text "Cast using Other" ]
                         ]
 
                 Just txid ->
-                    div [ class "mv2 f5" ] [ text "Vote cast using MetaMask.", br [] [], text <| "TXID: " ++ txid ]
+                    div [ class "mv2 f5 w-100 overflow-x-hidden" ] [ text "Vote cast using MetaMask.", br [] [], text <| "TXID: " ++ txid ]
 
         endBtns model =
             div []
-                [ btn 987572349 model [ PriBtn, Attr (class "mv3 mh2"), Click (SetDialog "Verify Your Ballot" VerifyDialog), OpenDialog ] [ text "Verify Ballot" ]
-                , btn 843973394 model [ SecBtn, Attr (class "mv3 mh2"), Click PageGoHome ] [ text "Back to Start" ]
+                [ btn 987572349 model [ PriBtn, Attr (class "ma2"), Click (SetDialog "Verify Your Ballot" VerifyDialog), OpenDialog ] [ text "Verify Ballot" ]
+                , btn 843973394 model [ SecBtn, Attr (class "ma2"), Click PageGoHome ] [ text "Back to Start" ]
                 ]
 
         ballotDetails =

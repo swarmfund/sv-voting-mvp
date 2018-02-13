@@ -2,7 +2,7 @@ module SecureVote.SPAs.SwarmMVP.Views.ListVotesV exposing (..)
 
 import Dict
 import Html exposing (Html, div, hr, span, text)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, style)
 import List exposing (filter, length, map, sortBy)
 import Material.Card as Card
 import Material.Color as Color
@@ -101,3 +101,7 @@ listVotesView model =
         currBallotV
             ++ futureBallotV
             ++ pastBallotV
+
+
+
+--            ++ [ div [ style [ ( "height", "4vh" ) ] ] [] ]

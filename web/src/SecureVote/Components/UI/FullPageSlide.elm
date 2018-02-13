@@ -23,7 +23,7 @@ fullPageSlide : Int -> Model -> String -> List (Html Msg) -> Html Msg
 fullPageSlide id model title innerHtmls =
     let
         backOpts =
-            [ Icon, Attr (class "fl sv-button-large"), Click PageGoBack ]
+            [ Icon, Attr (class "sv-button-large"), Click PageGoBack ]
                 ++ (if List.length model.history == 0 then
                         [ Disabled ]
                     else
@@ -36,40 +36,51 @@ fullPageSlide id model title innerHtmls =
         infoOpts =
             [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Info" InfoDialog) ]
     in
-    div [ class "db w-100 mv5", style [ ( "height", "90%" ) ] ]
-        [ div
-            [ class "dib w-10" ]
-            []
-        , Card.view
-            [ cs "v-mid center dib w-80"
-            , css "max-height" "100%"
-            , Color.background (Color.color Color.Grey Color.S50)
-            , if Dict.get id model.elevations ? False then
-                Elevation.e8
-              else
-                Elevation.e2
-            , Options.onMouseEnter (SetElevation id True)
-            , Options.onMouseLeave (SetElevation id False)
-            , Elevation.transition 125
-            ]
-          <|
-            [ Card.actions []
-                [ btn 885338576 model backOpts [ Icon.view "arrow_back" [ Icon.size24 ] ]
-                , div [ class "fr dib" ]
-                    [ btn 130572984 model infoOpts [ Icon.view "info_outline" [ Icon.size24 ] ]
-                    , btn 345647875 model settingsOpts [ Icon.view "settings" [ Icon.size24 ] ]
+    div [ class "flex flex-column h-100" ]
+        [ div [ class "db w-100", style [ ( "height", "63px" ), ( "min-height", "63px" ) ] ] []
+        , div [ class "db w-100 flex-auto flex flex-row" ]
+            [ div
+                [ class "dib w-10" ]
+                []
+            , div [ class "dib w-80 flex flex-column", style [ ( "max-height", "100%" ) ] ]
+                [ div [ class "center w-100 flex-auto" ]
+                    [ Card.view
+                        [ cs "center w-100 flex flex-column"
+                        , css "max-height" "100%"
+                        , Color.background (Color.color Color.Grey Color.S50)
+                        , if Dict.get id model.elevations ? False then
+                            Elevation.e8
+                          else
+                            Elevation.e2
+                        , Options.onMouseEnter (SetElevation id True)
+                        , Options.onMouseLeave (SetElevation id False)
+                        , Elevation.transition 125
+                        ]
+                      <|
+                        [ Card.actions [ cs "db pa0 flex flex-row", css "height" "4rem" ]
+                            [ btn 885338576 model backOpts [ Icon.view "arrow_back" [ Icon.size24 ] ]
+                            , div [ class "dib flex-auto" ] []
+                            , div [ class "dib" ]
+                                [ btn 130572984 model infoOpts [ Icon.view "info_outline" [ Icon.size24 ] ]
+                                , btn 345647875 model settingsOpts [ Icon.view "settings" [ Icon.size24 ] ]
+                                ]
+                            ]
+                        , Card.text [ cs "center tc ma0 pa0 w-100 db flex flex-column", css "max-height" "100%" ] <|
+                            [ div [ class "mh3" ] [ headline title ]
+                            , hr [ class "mb0" ] []
+                            , div [ class "overflow-y-scroll flex-auto ph3 ph4-ns" ] <|
+                                [ div [ class "pt3" ] [] ]
+                                    ++ innerHtmls
+                                    ++ [ div [ class "mb4" ] [] ]
+                            ]
+                        ]
                     ]
                 ]
-            , Card.text [ cs "center tc mb0 pb0" ] <|
-                [ headline title
-                , hr [ class "mb0" ] []
-                , div [ class "overflow-y-scroll", style [ ( "max-height", "75vh" ) ] ] <|
-                    [ div [ class "pt3" ] [] ] ++ innerHtmls ++ [ div [ class "pb3 mb1" ] [] ]
-                ]
+            , div
+                [ class "dib w-10" ]
+                []
             ]
-        , div
-            [ class "dib w-10" ]
-            []
+        , div [ class "db w-100", style [ ( "height", "45px" ), ( "min-height", "45px" ) ] ] []
         ]
 
 
