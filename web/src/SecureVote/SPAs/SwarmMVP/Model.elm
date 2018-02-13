@@ -23,6 +23,7 @@ type alias Model =
     , dialogHtml : { title : String, route : DialogRoute Msg }
     , elevations : Dict Int Bool
     , fields : Dict String String
+    , boolFields : Dict String Bool
     , ballotRange : Dict Int Int
     , ballotBits : Dict Int (Result String RangeBallot3Bits)
     , ballotAllDone : Bool
@@ -68,6 +69,7 @@ initModel dev mainTitle =
     , dialogHtml = { title = "Error: Dialog has not been updated.", route = NotFoundDialog }
     , elevations = Dict.empty
     , fields = Dict.empty
+    , boolFields = Dict.empty
     , ballotRange = Dict.empty
     , ballotBits = Dict.empty
     , ballotAllDone = False

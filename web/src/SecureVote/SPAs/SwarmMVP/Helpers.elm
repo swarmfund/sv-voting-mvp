@@ -8,8 +8,9 @@ import Html exposing (Html, pre)
 import Html.Attributes exposing (class)
 import ParseInt exposing (parseIntRadix, toRadix)
 import Result.Extra exposing (isOk)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(SetField))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(SetBoolField, SetField))
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits, intsToRangeBallot3Bits)
 
 
@@ -43,24 +44,34 @@ setBallotTxid =
     SetField txidCheckId
 
 
-delegateAddrId : String
-delegateAddrId =
-    "delegateAddress"
+dlgtAddrField : BallotParams msg -> String
+dlgtAddrField b =
+    "delegate.address." ++ toString b.id
+
+
+getField : String -> Model -> Maybe String
+getField k m =
+    Dict.get k m.fields
+
+
+setBoolField : String -> Bool -> Msg
+setBoolField =
+    SetBoolField
+
+
+getBoolField : Model -> String -> Maybe Bool
+getBoolField model k =
+    Dict.get k model.boolFields
 
 
 getDelegateAddress : Model -> Maybe String
 getDelegateAddress model =
-    Dict.get delegateAddrId model.fields
+    Dict.get (dlgtAddrField model.currentBallot) model.fields
 
 
 defaultDelegate : String
 defaultDelegate =
     "0x9999999999999999999999999999999999999999"
-
-
-setDelegateAddress : String -> Msg
-setDelegateAddress =
-    SetField delegateAddrId
 
 
 ethNodeTemp : String
