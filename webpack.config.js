@@ -55,6 +55,7 @@ const pursCommonF = ({outputDir}) => ({
                     {
                         loader: "purs-loader",
                         query: {
+                            warnings: false,
                             bundle: true,
                             output: outputDir || 'output',
                             src: ["bower_components/purescript-*/src/**/*.purs", "pureSrc/**/*.purs"]
