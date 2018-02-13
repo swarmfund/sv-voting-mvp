@@ -9,16 +9,17 @@ import curve25519Ports from './src/SecureVote/Crypto/Curve25519';
 
 window.addEventListener('load', function() {
     let web3js;
+    let mmWeb3;
     let mmDetected = false;
 
     if (typeof web3 !== 'undefined') {
         console.log("Metamask detected...", web3.currentProvider);
         web3js = new Web3(web3.currentProvider);
         mmDetected = true;
+        mmWeb3 = web3;
     } else {
-        let web3;
         web3js = new Web3();
-        web3 = web3js;
+        mmWeb3 = web3js;
     }
 
     const _DEV_ = process.env.DEV;
@@ -37,7 +38,7 @@ window.addEventListener('load', function() {
             dev: DEV
         });
         console.log("Environment variables are: ", process.env.MAIN_TITLE, process.env.DEV);
-        web3Ports(web3js, {mmDetected, mmWeb3: web3}, app);
+        web3Ports(web3js, {mmDetected, mmWeb3}, app);
         curve25519Ports(app);
     }, 400);
 
