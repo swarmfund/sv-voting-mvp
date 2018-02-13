@@ -56,8 +56,8 @@ delegateView model =
             , Textf.floatingLabel
             , Textf.value <| getDelegateAddress model ? ""
             , Textf.error addrErrMsg |> Options.when addrErr
-            , css "min-width" "400px"
-            , cs "db center"
+            , css "max-width" "400px"
+            , cs "w-100 db center"
             ]
             []
         , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click clickMsgs, btnDisabled ] [ text "Continue" ]

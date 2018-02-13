@@ -56,7 +56,7 @@ swmAddressV model =
 
         devBtn =
             if model.dev then
-                [ btn 394879384 model [ PriBtn, Attr (class "ph2"), Click devMsgs ] [ text "Dev Continue" ] ]
+                [ btn 394879384 model [ PriBtn, Attr (class "pa2"), Click devMsgs ] [ text "Dev Continue" ] ]
             else
                 []
 
@@ -69,8 +69,8 @@ swmAddressV model =
         [ Options.styled span [ cs "dark-gray db pa2 mv3 f4" ] [ text <| "Please enter your Ethereum address holding " ++ erc20Abrv ++ " tokens below" ]
         , Options.styled p [ cs "pa2" ] [ strong [] [ text "Note: " ], text <| "Your address is only used to confirm your " ++ erc20Abrv ++ " token balance. ", strong [] [ text "This is an optional step." ] ]
         , div [ class "center" ]
-            [ div [ class "flex flex-column items-center" ]
-                [ div [ class "flex flex-column items-start" ]
+            [ div [ class "flex flex-column items-center mh2" ]
+                [ div [ class "w-100 flex flex-column items-start" ]
                     [ Textf.render Mdl
                         [ 83543983 ]
                         model.mdl
@@ -79,7 +79,8 @@ swmAddressV model =
                         , Textf.floatingLabel
                         , Textf.value <| getUserErc20Addr model ? ""
                         , Textf.error addrErrMsg |> Options.when addrErr
-                        , css "min-width" "400px"
+                        , css "max-width" "400px"
+                        , cs "w-100 center"
                         ]
                         []
                     ]
@@ -87,11 +88,11 @@ swmAddressV model =
             , div [ class "mv3" ] <|
                 [ btn 394893489
                     model
-                    [ SecBtn, Attr (class "ph2"), Click (msgs True) ]
+                    [ SecBtn, Attr (class "pa2"), Click (msgs True) ]
                     [ text "Skip" ]
                 , btn 894823489
                     model
-                    [ PriBtn, Attr (class "ph2"), Click (msgs False), btnDisabled ]
+                    [ PriBtn, Attr (class "pa2"), Click (msgs False), btnDisabled ]
                     [ text "Continue" ]
                 ]
                     ++ devBtn

@@ -276,7 +276,8 @@ checkTxComponent model =
                 , Textf.floatingLabel
                 , Textf.value <| getBallotTxid model ? ""
                 , Textf.error txidErrMsg |> Options.when txidErr
-                , css "min-width" "400px"
+                , css "max-width" "400px"
+                , cs "db w-100"
                 ]
                 []
             ]

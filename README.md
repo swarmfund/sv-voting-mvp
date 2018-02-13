@@ -6,6 +6,45 @@ This repository contains three key items:
 * The web UI for voters
 * The auditing software (for voters, or anyone, really)
 
+## Running ballots
+
+Ballots are stored on the Ethereum chain. Currently the only integrity check is the _name_ of the ballot options.
+
+To run a ballot, you should do these things in roughly this order:
+
+* Set some environment variables in your build host or `.env` file. Particularly you'll need `MAIN_TITLE` for the title
+  of the website. See [#web-ui](#web-ui) for more.
+* Deploy a copy of this repository with `yarn build-web` (builds to `_dist`)
+* Generate admin tools locally: `yarn admin-prod` (builds into `_pureDist`)
+* Generate an encryption keypair with `node _pureDist/admin.js --genBallotKey`. Save the `SECRET KEY` privately somewhere,
+  and copy the `PUBLIC KEY` for use in a moment.
+* Run `yarn sol-compile` to generate copies of the smart contract binaries.
+* Run `yarn sol-deploy` to prepare a copy of the ballot smart contract for deployment, being sure to set correct start 
+  and end times, and use the `PUBLIC KEY` you generated before. You'll need to release the `SECRET KEY` at the end of
+  the ballot.
+
+Example `yarn sol-deploy`: 
+
+```
+yarn sol-deploy --startTime 1518420000 --endTime 1518421966 \
+  --ballotEncPubkey 0x3ae1a05881fe3bc1abcebde6898ed30716111c52fef9a7895dd82a2b8a595163 \
+  --optionNamesJson '["Option 1", "Option 2", "Option 3 with some caveat and a long title", "the last option", "not really"]'
+```
+
+Note: `--optionNamesJson` needs to be formatted well. You should confirm the options before generating the final code.
+
+* Copy the contract code generated and deploy it to your chosen Ethereum network in the usual way.
+* Note down the address of the deployed contract.
+* Edit `./web/src/SecureVote/SPAs/SwarmMVP/Ballot.elm` using the example as a template and fill in all relevant details,
+  including the ERC20 address you'd like the ballot to be paired with. Be sure to add your new variable name to the list
+  of `allBallots`. This is required for it to show up in the UI.
+* Deploy a new version of the UI (after testing) with the details of the new ballot.
+* Tell your token holders and wait for the ballot to complete.
+* After the ballot is complete use the `revealSecKey` method of the ballot contract and publish the `SECRET KEY` you generated
+  earlier.
+* After the `SECRET KEY` has been published (and confirmed), go to the ballot page in the UI and the audit suite will kick
+  in, download the ballots, and show you the results. 
+
 ## Developing
 
 * Install Elm-Package: https://guide.elm-lang.org/install.html
