@@ -13,6 +13,7 @@ allDevBallots_ =
     , devBasic4
     , devBasic5
     , devBasic6
+    , devBasic7
     ]
 
 
@@ -136,6 +137,28 @@ devBasic6 =
     , voteOptions =
         [ { id = 3943587392, title = "Option 1", description = DlogTxt "desc opt 1" }
         , { id = 4946547867, title = "Option 2", description = DlogTxt "desc opt 2" }
+        , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
+        , { id = 4946547868, title = "the last option", description = DlogTxt "desc opt 4" }
+        , { id = 4946547869, title = "not really", description = DlogTxt "desc opt 5" }
+        ]
+    }
+
+
+devBasic7 : BallotParams msg
+devBasic7 =
+    { ballotTitle = "Dev Perpetual Ballot"
+    , contractAddr = "0x927304A1Cb2bb35b90C9b9BB35dcBaC2CB25c1Af"
+    , description = "Perpetual ballot for testing, note that option 1 and 2 should have disabled buttons for description."
+    , endTime = 2018421966
+    , startTime = 0
+    , id = 3904856
+    , erc20Balance = Nothing
+    , erc20Abrv = "DEV"
+    , erc20Addr = devErc20Addr
+    , openingDesc = "This is a perpetual ballot for testing."
+    , voteOptions =
+        [ { id = 3943587392, title = "Option 1", description = DlogTxt "" }
+        , { id = 4946547867, title = "Option 2", description = DlogTxt "" }
         , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
         , { id = 4946547868, title = "the last option", description = DlogTxt "desc opt 4" }
         , { id = 4946547869, title = "not really", description = DlogTxt "desc opt 5" }

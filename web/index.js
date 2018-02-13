@@ -28,6 +28,8 @@ window.addEventListener('load', function() {
         require('./js/birds.js');
     }
 
+    document.title = process.env.MAIN_TITLE + " - By SecureVote";
+
     setTimeout(() => {
         const Elm = require('./src/SecureVote/SPAs/SwarmMVP/Main.elm');
         const app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen'), {
