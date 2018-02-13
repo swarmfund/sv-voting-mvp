@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+CACHE_DIR="node_modules"
+
 if [ $INSTALL_WEBPACK ]; then
   echo "##> Installing webpack..."
   npm install -g webpack
@@ -7,8 +9,8 @@ if [ $INSTALL_WEBPACK ]; then
 fi
 
 # prep for netlify cache stuff
-echo "Restoring .cache to netlify: \n`ls $NETLIFY_CACHE_DIR/.cache`\n"
-cp -a $NETLIFY_CACHE_DIR/.cache .cache || true
+echo "Restoring .cache at $CACHE_DIR/.cache: \n`ls $CACHE_DIR/.cache`\n"
+cp -a $CACHE_DIR/.cache .cache || true
 
 # get cached elm stuff
 mkdir -p .cache
@@ -35,5 +37,5 @@ ls -al .cache
 echo ""
 
 # save netlify cache
-cp -a .cache $NETLIFY_CACHE_DIR/.cache
-echo "Saved .cache to netlify: \n`ls $NETLIFY_CACHE_DIR/.cache`\n"
+cp -a .cache $CACHE_DIR/.cache
+echo "Saved .cache to $CACHE_DIR/.cache: \n`ls $CACHE_DIR/.cache`\n"
