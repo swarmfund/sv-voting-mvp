@@ -74,6 +74,7 @@
     "----- WEB / ELM COMMANDS": "",
     "elm-live-deprecated": "yarn _live",
     "web": "webpack-dev-server --port 3000 --open --progress",
+    "web-prod": "MAIN_TITLE='SWM Governance (Dev/Prod)' DEV=false yarn web",
     "build-web": "./build_prod.sh",
     "_live": "elm-live ./web/src/SecureVote/SPAs/SwarmMVP/Main.elm --output=./web/sv-swarm.js --dir=./web --open --debug",
     "----- PureScript (Aduit + Admin)": "",
