@@ -12,13 +12,18 @@ Ballots are stored on the Ethereum chain. Currently the only integrity check is 
 
 To run a ballot, you should do these things in roughly this order:
 
+### Initial Setup 
+ 
 * Set some environment variables in your build host or `.env` file. Particularly you'll need `MAIN_TITLE` for the title
   of the website. See [#web-ui](#web-ui) for more.
 * Deploy a copy of this repository with `yarn build-web` (builds to `_dist`)
+* Run `yarn sol-compile` to generate copies of the smart contract binaries.
 * Generate admin tools locally: `yarn admin-prod` (builds into `_pureDist`)
+
+### For each ballot
+
 * Generate an encryption keypair with `node _pureDist/admin.js --genBallotKey`. Save the `SECRET KEY` privately somewhere,
   and copy the `PUBLIC KEY` for use in a moment.
-* Run `yarn sol-compile` to generate copies of the smart contract binaries.
 * Run `yarn sol-deploy` to prepare a copy of the ballot smart contract for deployment, being sure to set correct start 
   and end times, and use the `PUBLIC KEY` you generated before. You'll need to release the `SECRET KEY` at the end of
   the ballot.
