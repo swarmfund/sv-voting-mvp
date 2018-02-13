@@ -40,7 +40,6 @@
     "purs-loader": "^3.1.2",
     "ramda": "^0.25.0",
     "sanctuary": "^0.13.2",
-    "sodium": "^2.0.1",
     "style-loader": "^0.19.0",
     "text-encoding": "^0.6.4",
     "truffle": "^4.0.0-beta.2",
