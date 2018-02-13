@@ -5,7 +5,7 @@ const merge = require('webpack-merge');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-require('dotenv').config();
+require('dotenv').config({systemvars: true});
 
 
 var TARGET_ENV = function () {

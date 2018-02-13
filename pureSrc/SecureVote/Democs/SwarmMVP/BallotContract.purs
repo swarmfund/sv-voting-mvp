@@ -17,7 +17,7 @@ import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Trans.Class (lift)
 import Control.Parallel (parTraverse)
 import Crypt.NaCl (BoxPublicKey, BoxSecretKey, toUint8Array)
-import Data.Array (elem, filter, foldl, head, init, last, length, range, replicate, sortBy, tail, takeWhile, zip, (:))
+import Data.Array (concat, elem, filter, foldl, head, init, last, length, range, replicate, sortBy, tail, takeWhile, zip, (:))
 import Data.Array as A
 import Data.ArrayBuffer.Typed (toIntArray)
 import Data.ArrayBuffer.Types (ArrayView, Uint8, Uint8Array)
@@ -50,7 +50,7 @@ import SecureVote.Democs.SwarmMVP.Admin (main)
 import SecureVote.Democs.SwarmMVP.Ballot (delegateAddr)
 import SecureVote.Democs.SwarmMVP.BannedAddrs (bannedAddresses)
 import SecureVote.Democs.SwarmMVP.Types (Address, Delegate, SwmBallot, Vote, Voter, Votes, VotesRecord, getVoter, getVotes, toAddress, toDelegate, toSwmBallot, toVoter, voteToInt, voterToString)
-import SecureVote.Utils.Array (fromList)
+import SecureVote.Utils.Array (fromList, chunk)
 import SecureVote.Utils.ArrayBuffer (UI8AShowable(..), fromEthHex, fromEthHexE, fromHex, fromHexE, toHex)
 import SecureVote.Utils.ArrayBuffer as SVAB
 import SecureVote.Utils.Monads (mToE)
@@ -238,7 +238,7 @@ swmNVotes contract = do
 
 findEthBlockEndingInZeroBefore :: forall e. Int -> Aff (console :: CONSOLE, now :: NOW | e) Int
 findEthBlockEndingInZeroBefore targetTime = do
-    let initLowBlock = 4000000
+    let initLowBlock = 0
     currBlock <- truncate <$> getBlockNumber
     Tuple currBlockTs lowTs <- sequential $ Tuple <$> parallel (getBlockTimestamp currBlock) <*> parallel (getBlockTimestamp initLowBlock)
 
@@ -275,7 +275,7 @@ findEthBlockEndingInZeroBefore targetTime = do
                 GT -> go tTime hTs hB lTs lB
       where
         go tTime hTs hB lTs lB = do
-            AffC.log $ "Block search: High: " <> show (Tuple (hB*10) hTs) <> ", Low: " <> show (Tuple (lB*10) lTs) <> ", Target: " <> show tTime
+            AffC.log $ "Block search: blockN diff: " <> show ((hB*10) - (lB*10)) <> ", Target: " <> show tTime
 
             let testBlockN = (hB - lB) / 2 + lB
             newTs <- getBlockTimestamp (testBlockN * 10)
@@ -408,7 +408,9 @@ getBallots contract n incBallotProgress
     | n <= 0 = pure []
     | otherwise = do
         let allVoteIds = range 0 (n-1)
-        parTraverse getBallot allVoteIds
+        let (chunks :: Array (Array Int)) = chunk 10 allVoteIds
+        let (toPar :: Array (Aff _ (Array EncBallot))) = (parTraverse getBallot) <$> chunks
+        map concat $ sequence $ toPar
     where
         getBallot i = do
             encBallot <- keyFromEthHex $ ballotPropHelperAff "encryptedBallots" [i] contract
