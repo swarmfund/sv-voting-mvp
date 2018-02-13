@@ -258,14 +258,14 @@ findEthBlockEndingInZeroBefore targetTime = do
         then throwError $ error $ "Cannot find Eth block at " <> show targetTime <> " because it is outside range: " <> show lowTs <> ", " <> show currBlockTs
         else case Tuple (compare gHTs targetTime) (compare gLTs targetTime) of
             -- if upper guess is LT target time
-            Tuple LT _ -> runF {hTs: currBlockTs, hB: currBlock/10, lTs: gHTs, lB: gBH/10}
+            Tuple LT _ -> runF {hTs: currBlockTs, hB: currBlock, lTs: gHTs, lB: gBH}
             -- if lower guess is GT target time
-            Tuple _ GT -> runF {hTs: gLTs, hB: gBL/10, lTs: lowTs, lB: initLowBlock/10}
+            Tuple _ GT -> runF {hTs: gLTs, hB: gBL, lTs: lowTs, lB: initLowBlock}
             -- if we hit the money in any way
             Tuple EQ _ -> pure gBH
             Tuple _ EQ -> pure gBL
             -- otherwise we're in between
-            Tuple GT LT -> runF {hTs: gHTs, hB: gBH/10, lTs: gLTs, lB: gBL/10}
+            Tuple GT LT -> runF {hTs: gHTs, hB: gBH, lTs: gLTs, lB: gBL}
   where
     _findLastEthBlockBefore :: forall e2. Int -> {hTs :: Int, hB :: Int, lTs :: Int, lB :: Int} -> Aff (console :: CONSOLE | e2) Int
     _findLastEthBlockBefore tTime {hTs, hB, lTs, lB} = do
@@ -275,15 +275,15 @@ findEthBlockEndingInZeroBefore targetTime = do
                 GT -> go tTime hTs hB lTs lB
       where
         go tTime hTs hB lTs lB = do
-            AffC.log $ "Block search: blockN diff: " <> show ((hB*10) - (lB*10)) <> ", Target: " <> show tTime
+            AffC.log $ "Block search: blockN diff: " <> show ((hB) - (lB)) <> ", Target: " <> show tTime
 
             let testBlockN = (hB - lB) / 2 + lB
-            newTs <- getBlockTimestamp (testBlockN * 10)
+            newTs <- getBlockTimestamp (testBlockN)
 
             case compare newTs tTime of
                 GT -> _findLastEthBlockBefore tTime {hTs: newTs, hB: testBlockN, lTs, lB}
-                EQ -> pure $ testBlockN * 10
-                LT -> if hB - lB == 1 then pure $ lB * 10 else _findLastEthBlockBefore tTime {hTs, hB, lTs: newTs, lB: testBlockN}
+                EQ -> pure $ testBlockN
+                LT -> if hB - lB == 1 then pure $ lB else _findLastEthBlockBefore tTime {hTs, hB, lTs: newTs, lB: testBlockN}
     truncate :: Int -> Int
     truncate a = a - (mod a 10)
 
@@ -305,8 +305,12 @@ runBallotCount :: forall a e.
     {silent::Boolean} ->
     (StatusUpdate -> Unit) ->
     Aff (now :: NOW, console :: CONSOLE, avar :: AVAR | e) (Either String (Tuple BallotResult AllDetails))
-runBallotCount ballotStartBlock votingAddr contract erc20 {silent} updateF =
+runBallotCount ballotStartTime votingAddr contract erc20 {silent} updateF =
       do  -- Aff monad
+        _ <- pure $ updateF $ mkSULog $ "Finding Eth block close to time: " <> show ballotStartTime <> " (takes 10-20 seconds)"
+        ballotStartBlock <- findEthBlockEndingInZeroBefore ballotStartTime
+        _ <- pure $ updateF $ mkSULog $ "Using block " <> show ballotStartBlock <> " for ERC20 balances."
+
         nowTime <- liftEff' $ currentTimestamp
         endTime <- swmEndTime contract
         log $ "Ballot end time: " <> (toString endTime) <> "\nCurrent Time:    " <> (toString nowTime)

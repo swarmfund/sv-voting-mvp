@@ -7,6 +7,7 @@ const HTMLWebpackPlugin = require('html-webpack-plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 require('dotenv').config({systemvars: true});
 
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 var TARGET_ENV = function () {
     console.log('Generating TARGET_ENV');
@@ -126,9 +127,9 @@ const common = {
 };
 
 
-if (TARGET_ENV === 'development') {
+const buildDev = (toMerge) => {
     console.log('Building for dev...');
-    module.exports = merge(common, buildAuditWeb({}), {
+    module.exports = merge(common, buildAuditWeb({}), toMerge || {}, {
         plugins: [
             // Suggested for hot-loading
             new webpack.NamedModulesPlugin(),
@@ -165,6 +166,13 @@ if (TARGET_ENV === 'development') {
             }
         }
     });
+}
+if (TARGET_ENV === "development") {
+    buildDev();
+}
+
+if (TARGET_ENV === "web-analyse") {
+    buildDev({plugins:[new BundleAnalyzerPlugin()]});
 }
 
 if (TARGET_ENV === 'production') {
@@ -232,4 +240,9 @@ if (TARGET_ENV === 'audit-web') {
             filename: filename
         }
     });
+}
+
+
+if (TARGET_ENV === 'web-analyse') {
+
 }

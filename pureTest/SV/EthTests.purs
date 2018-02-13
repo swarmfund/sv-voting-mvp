@@ -40,7 +40,7 @@ runBlockTest :: Aff _ Unit
 runBlockTest = do
     targetBlockTs <- liftEff $ randomInt 1438269988 1518486687 -- timestamp between block 1 and block 5080184
     foundBlockN <- findEthBlockEndingInZeroBefore targetBlockTs
-    let nextBlockN = foundBlockN + 10
+    let nextBlockN = foundBlockN + 1
     blockTs <- getBlockTimestamp foundBlockN
     blockNextTs <- getBlockTimestamp nextBlockN
     (blockTs <= targetBlockTs && targetBlockTs < blockNextTs) `shouldEqual` true
