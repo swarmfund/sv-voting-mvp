@@ -55,8 +55,8 @@ const pursCommonF = ({outputDir}) => ({
                     {
                         loader: "purs-loader",
                         query: {
-                            warnings: false,
-                            bundle: true,
+                            warnings: false,  // disable warnings for build time
+                            // bundle: true,   // disable bundle in attempt to reduce build time
                             output: outputDir || 'output',
                             src: ["bower_components/purescript-*/src/**/*.purs", "pureSrc/**/*.purs"]
                         }
@@ -70,7 +70,8 @@ const pursCommonF = ({outputDir}) => ({
     },
     externals: {
         sodium: 'sodium',
-        'decimal.js': 'Decimal'
+        'decimal.js': 'Decimal',
+        'yargs': 'yargs', // disable to avoid failure if purs not bundled
     }
 });
 
@@ -178,8 +179,7 @@ if (TARGET_ENV === 'production') {
                 verbose: true,
                 dry: false
             }),
-            CopyWebpackPluginConfig,
-            new UglifyJSPlugin()
+            CopyWebpackPluginConfig
         ],
         module: {
             rules: [
