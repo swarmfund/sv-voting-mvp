@@ -43,9 +43,9 @@ fullPageSlide id model title innerHtmls =
                 [ class "dib w-10" ]
                 []
             , div [ class "dib w-80 flex flex-column", style [ ( "max-height", "100%" ) ] ]
-                [ div [ class "center w-100 flex-auto" ]
+                [ div [ class "center w-100 flex-auto flex flex-column" ]
                     [ Card.view
-                        [ cs "center w-100 flex flex-column"
+                        [ cs "center w-100 flex-auto flex flex-column"
                         , css "max-height" "100%"
                         , Color.background (Color.color Color.Grey Color.S50)
                         , if Dict.get id model.elevations ? False then
@@ -74,6 +74,7 @@ fullPageSlide id model title innerHtmls =
                                     ++ [ div [ class "mb4" ] [] ]
                             ]
                         ]
+                    , div [ style [ ( "flex-grow", "9999" ) ] ] []
                     ]
                 ]
             , div
