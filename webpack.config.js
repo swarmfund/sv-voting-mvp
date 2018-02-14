@@ -180,6 +180,7 @@ if (TARGET_ENV === 'production') {
                 verbose: true,
                 dry: false
             }),
+            new UglifyJSPlugin(),
             CopyWebpackPluginConfig
         ],
         module: {
