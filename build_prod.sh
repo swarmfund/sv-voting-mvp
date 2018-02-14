@@ -24,20 +24,35 @@ if [ $REPOSITORY_URL ]; then
   echo ""
 fi
 
+
+function check_error {
+  EXIT_CODE="$@"
+  if [ $EXIT_CODE -ne 0 ]; then
+    echo "Exit check failed: $EXIT_CODE"
+    exit $EXIT_CODE
+  fi
+}
+
+
 function do_webpack {
   # sysconfcpus workaround: https://github.com/elm-lang/elm-compiler/issues/1473
   if sysconfcpus -n 1 webpack "$@" --progress ; then
+    check_error $?
     echo "sysconfcpus -n 1 build succeeeded"
   else
     echo "sysconfcpus failed, falling back to regular build"
     webpack "$@" --progress
+    check_error $?
   fi
 }
 
 # do build
 echo "Building now..."
 time do_webpack "$@"
+WEBPACK_RET=$?
+check_error $WEBPACK_RET
 echo "Build Complete"
+
 
 if [ $REPOSITORY_URL ]; then
   # save in cache

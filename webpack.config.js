@@ -124,7 +124,8 @@ const common = {
     ],
     resolve: {
         extensions: [".js", ".json", ".ts"]
-    }
+    },
+    bail: true
 };
 
 
@@ -205,6 +206,7 @@ if (TARGET_ENV === 'production') {
         resolve: {
             extensions: [".purs", ".js", ".json", ".ts"]
         },
+        bail: true
     });
 
 
