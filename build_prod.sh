@@ -24,9 +24,19 @@ if [ $REPOSITORY_URL ]; then
   echo ""
 fi
 
+function do_webpack {
+  # sysconfcpus workaround: https://github.com/elm-lang/elm-compiler/issues/1473
+  if sysconfcpus -n 1 webpack "$@" --progress ; then
+    echo "sysconfcpus -n 1 build succeeeded"
+  else
+    echo "sysconfcpus failed, falling back to regular build"
+    webpack "$@" --progress
+  fi
+}
+
 # do build
 echo "Building now..."
-time webpack "$@" --progress
+time do_webpack "$@"
 echo "Build Complete"
 
 if [ $REPOSITORY_URL ]; then

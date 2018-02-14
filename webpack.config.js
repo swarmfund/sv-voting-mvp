@@ -58,7 +58,8 @@ const pursCommonF = ({outputDir}) => ({
                             warnings: false,  // disable warnings for build time
                             bundle: true,   // disable bundle in attempt to reduce build time
                             output: outputDir || 'output',
-                            src: ["bower_components/purescript-*/src/**/*.purs", "pureSrc/**/*.purs"]
+                            src: ["bower_components/purescript-*/src/**/*.purs", "pureSrc/**/*.purs"],
+                            jobs: 1,
                         }
                     }
                 ]
@@ -190,7 +191,11 @@ if (TARGET_ENV === 'production') {
                     ],
                     use: [
                         {
-                            loader: "elm-webpack-loader"
+                            loader: "elm-webpack-loader",
+                            query: {
+                                maxInstances: 1,
+                                verbose: true
+                            }
                         }
                     ]
                 }
