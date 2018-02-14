@@ -13,12 +13,12 @@ function check_error {
 
 function do_webpack {
   # sysconfcpus workaround: https://github.com/elm-lang/elm-compiler/issues/1473
-  if sysconfcpus -n 1 webpack "$@" --progress ; then
+  if sysconfcpus -n 1 webpack "$@" --progress 2>&1 ; then
     check_error $?
     echo "sysconfcpus -n 1 build succeeeded"
   else
     echo "sysconfcpus failed, falling back to regular build"
-    webpack "$@" --progress
+    webpack "$@" --progress 2>&1
     check_error $?
   fi
 }
@@ -48,11 +48,11 @@ fi
 
 # prepping build by precompiling purs and elm
 echo "Compiling purescirpt"
-pulp build -j 1 # build all deps we've downloaded
+pulp build -j 1 2>&1 # build all deps we've downloaded
 check_error $?
 
 echo "Compiling elm"
-elm-make web/src/SecureVote/SPAs/SwarmMVP/Main.elm  --output temp-32489734985.html  # compile elm
+elm-make web/src/SecureVote/SPAs/SwarmMVP/Main.elm  --output temp-32489734985.html 2>&1 # compile elm
 check_error $?
 
 
