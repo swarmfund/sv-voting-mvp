@@ -51,9 +51,9 @@ echo "Compiling purescirpt"
 pulp build -j 1 2>&1 # build all deps we've downloaded
 check_error $?
 
-echo "Compiling elm"
-yarn run elm-make web/src/SecureVote/SPAs/SwarmMVP/Main.elm  --output temp-32489734985.html 2>&1 # compile elm
-check_error $?
+# echo "Compiling elm"
+# yarn run elm-make web/src/SecureVote/SPAs/SwarmMVP/Main.elm  --output temp-32489734985.html 2>&1 # compile elm
+# check_error $?
 
 
 # do build
