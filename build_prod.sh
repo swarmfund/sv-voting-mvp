@@ -2,6 +2,27 @@
 
 CACHE_DIR="node_modules"
 
+function check_error {
+  EXIT_CODE="$@"
+  if [ $EXIT_CODE -ne 0 ]; then
+    echo "Exit check failed: $EXIT_CODE"
+    exit $EXIT_CODE
+  fi
+}
+
+
+function do_webpack {
+  # sysconfcpus workaround: https://github.com/elm-lang/elm-compiler/issues/1473
+  if sysconfcpus -n 1 webpack "$@" --progress ; then
+    check_error $?
+    echo "sysconfcpus -n 1 build succeeeded"
+  else
+    echo "sysconfcpus failed, falling back to regular build"
+    webpack "$@" --progress
+    check_error $?
+  fi
+}
+
 if [ $INSTALL_WEBPACK ]; then
   echo "##> Installing webpack..."
   npm install -g webpack
@@ -25,26 +46,15 @@ if [ $REPOSITORY_URL ]; then
 fi
 
 
-function check_error {
-  EXIT_CODE="$@"
-  if [ $EXIT_CODE -ne 0 ]; then
-    echo "Exit check failed: $EXIT_CODE"
-    exit $EXIT_CODE
-  fi
-}
+# prepping build by precompiling purs and elm
+echo "Compiling purescirpt"
+pulp build -j 1 # build all deps we've downloaded
+check_error $?
 
+echo "Compiling elm"
+elm-make web/src/SecureVote/SPAs/SwarmMVP/Main.elm  --output temp-32489734985.html  # compile elm
+check_error $?
 
-function do_webpack {
-  # sysconfcpus workaround: https://github.com/elm-lang/elm-compiler/issues/1473
-  if sysconfcpus -n 1 webpack "$@" --progress ; then
-    check_error $?
-    echo "sysconfcpus -n 1 build succeeeded"
-  else
-    echo "sysconfcpus failed, falling back to regular build"
-    webpack "$@" --progress
-    check_error $?
-  fi
-}
 
 # do build
 echo "Building now..."
