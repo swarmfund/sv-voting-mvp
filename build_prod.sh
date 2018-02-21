@@ -13,7 +13,7 @@ function check_error {
 
 function do_webpack {
   # sysconfcpus workaround: https://github.com/elm-lang/elm-compiler/issues/1473
-  if sysconfcpus -n 1 webpack "$@" --progress 2>&1 ; then
+  if $HOME/sysconfcpus -n 1 webpack "$@" --progress 2>&1 ; then
     check_error $?
     echo "sysconfcpus -n 1 build succeeeded"
   else
@@ -65,6 +65,19 @@ ls node_modules/elm/Elm-Platform/
 ls node_modules/elm/Elm-Platform/0.18.0/
 ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/
 ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/
+
+
+echo "Trying to get a version of sysconfcpus..."
+git clone https://github.com/obmarg/libsysconfcpus.git
+cd libsysconfcpus
+./configure --prefix=$HOME
+echo "prefix used: $HOME"
+make install
+cd ..
+echo "ls $HOME\n"
+ls $HOME
+echo "done ls $HOME\n"
+echo "\"Installed\" sysconfcpus"
 
 # do build
 echo "Building now..."
