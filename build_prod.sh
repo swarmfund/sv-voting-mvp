@@ -18,7 +18,7 @@ function do_webpack {
     echo "sysconfcpus -n 1 build succeeeded"
   else
     echo "sysconfcpus failed, falling back to regular build"
-    webpack "$@" --progress 2>&1
+    yarn run webpack "$@" --progress 2>&1
     check_error $?
   fi
 }
@@ -48,7 +48,7 @@ fi
 
 # prepping build by precompiling purs and elm
 echo "Compiling purescirpt"
-pulp build -j 1 2>&1 # build all deps we've downloaded
+yarn run pulp build -j 1 # build all deps we've downloaded
 check_error $?
 
 # echo "Compiling elm"
