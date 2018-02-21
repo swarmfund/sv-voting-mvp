@@ -18,7 +18,7 @@ function do_webpack {
     echo "sysconfcpus -n 1 build succeeeded"
   else
     echo "sysconfcpus failed, falling back to regular build"
-    yarn run webpack "$@" --progress 2>&1
+    webpack "$@" --progress 2>&1
     check_error $?
   fi
 }
@@ -48,6 +48,7 @@ fi
 
 # prepping build by precompiling purs and elm
 echo "Compiling purescirpt"
+# using yarn run bc we got a weird error from netlify about not finding `purs` once
 yarn run pulp build -j 1 # build all deps we've downloaded
 check_error $?
 
