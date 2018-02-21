@@ -56,6 +56,9 @@ check_error $?
 # yarn run elm-make web/src/SecureVote/SPAs/SwarmMVP/Main.elm  --output temp-32489734985.html 2>&1 # compile elm
 # check_error $?
 
+echo "Manually installing elm - yarn seems to miss it..."
+npm install elm
+echo "Elm installed"
 
 ls node_modules/elm/
 ls node_modules/elm/Elm-Platform/
