@@ -57,17 +57,16 @@ check_error $?
 # check_error $?
 
 
-# do build
-echo "Building now..."
-time do_webpack "$@"
-WEBPACK_RET=$?
-
 ls node_modules/elm/
 ls node_modules/elm/Elm-Platform/
 ls node_modules/elm/Elm-Platform/0.18.0/
 ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/
 ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/
 
+# do build
+echo "Building now..."
+time do_webpack "$@"
+WEBPACK_RET=$?
 check_error $WEBPACK_RET
 echo "Build Complete"
 
