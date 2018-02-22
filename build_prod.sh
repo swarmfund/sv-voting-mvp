@@ -76,7 +76,7 @@ make install
 cd ..
 echo "ls $HOME\n"
 ls $HOME
-ecgi "ls $HOME/bin\n"
+echo "ls $HOME/bin\n"
 ls $HOME/bin
 echo "done ls $HOME\n"
 echo "\"Installed\" sysconfcpus"
