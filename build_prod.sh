@@ -13,7 +13,7 @@ function check_error {
 
 function do_webpack {
   # sysconfcpus workaround: https://github.com/elm-lang/elm-compiler/issues/1473
-  if $HOME/sysconfcpus -n 1 webpack "$@" --progress 2>&1 ; then
+  if $HOME/bin/sysconfcpus -n 1 webpack "$@" --progress 2>&1 ; then
     check_error $?
     echo "sysconfcpus -n 1 build succeeeded"
   else
@@ -76,6 +76,8 @@ make install
 cd ..
 echo "ls $HOME\n"
 ls $HOME
+ecgi "ls $HOME/bin\n"
+ls $HOME/bin
 echo "done ls $HOME\n"
 echo "\"Installed\" sysconfcpus"
 
