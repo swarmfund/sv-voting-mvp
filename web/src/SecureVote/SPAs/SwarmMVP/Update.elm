@@ -98,7 +98,7 @@ update msg model =
                 doAuditIfBallotEnded =
                     if b.endTime < model.now then
                         -- ensure we use the NEW ballot, not prev ballot :/
-                        [ auditCmd { model | currentBallot = b } ]
+                        [ auditCmd { model | currentBallot = b } b ]
                     else
                         []
             in
@@ -171,11 +171,7 @@ update msg model =
             Material.update Mdl msg_ model
 
 
-auditCmd model =
-    let
-        b =
-            model.currentBallot
-    in
+auditCmd model b =
     getBallotResults { ethUrl = model.ethNode, ethRPCAuth = "", votingAddr = b.contractAddr, erc20Addr = b.erc20Addr }
 
 
@@ -287,7 +283,7 @@ updateFromWeb3 msg model =
                             -- if the ballot has actually ended, but the UI had the wrong time, AND that wrong time was in the future, ONLY THEN trigger an audit
                             if endTime < model.now && model.now <= cb_.endTime then
                                 { cb = { cb_ | startTime = startTime, endTime = endTime }
-                                , cmds = [ auditCmd model ]
+                                , cmds = [ auditCmd model cb_ ]
                                 }
                             else
                                 { cb = cb_, cmds = [] }
