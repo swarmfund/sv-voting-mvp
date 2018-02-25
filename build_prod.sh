@@ -45,11 +45,25 @@ if [ $REPOSITORY_URL ]; then
   echo ""
 fi
 
+echo "Trying to get a version of sysconfcpus..."
+git clone https://github.com/obmarg/libsysconfcpus.git
+cd libsysconfcpus
+./configure --prefix=$HOME
+echo "prefix used: $HOME"
+make install
+cd ..
+echo "ls $HOME\n"
+ls $HOME
+echo "ls $HOME/bin\n"
+ls $HOME/bin
+echo "done ls $HOME\n"
+echo "\"Installed\" sysconfcpus"
+
 
 # prepping build by precompiling purs and elm
 echo "Compiling purescirpt"
 # using yarn run bc we got a weird error from netlify about not finding `purs` once
-yarn run pulp build -j 1 # build all deps we've downloaded
+$HOME/bin/sysconfcpus -n 1 yarn run pulp build -j 1 # build all deps we've downloaded
 check_error $?
 
 # echo "Compiling elm"
@@ -68,20 +82,6 @@ ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/
 
 yarn run elm-package install -y
 check_error $?
-
-echo "Trying to get a version of sysconfcpus..."
-git clone https://github.com/obmarg/libsysconfcpus.git
-cd libsysconfcpus
-./configure --prefix=$HOME
-echo "prefix used: $HOME"
-make install
-cd ..
-echo "ls $HOME\n"
-ls $HOME
-echo "ls $HOME/bin\n"
-ls $HOME/bin
-echo "done ls $HOME\n"
-echo "\"Installed\" sysconfcpus"
 
 # do build
 echo "Building now..."
