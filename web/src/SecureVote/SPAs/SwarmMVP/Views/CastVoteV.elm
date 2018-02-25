@@ -12,7 +12,7 @@ import Maybe exposing (withDefault)
 import Maybe.Extra exposing ((?), isJust)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
-import SecureVote.Components.UI.Typo exposing (headline)
+import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Utils exposing (rawTokenBalance18DpsToBalance)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(DlogTxt))
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, getUserErc20Addr)
@@ -122,12 +122,19 @@ castVoteView model =
                 [ ConstructBallotPlaintext
                 , PageGoForward SwmDelegateR
                 ]
+
+        descriptionReminder =
+            div [ class "mb4" ]
+                [ subhead model.currentBallot.ballotTitle
+                , text <| model.currentBallot.description
+                ]
     in
     fullPageSlide 123413553
         model
         "Choose Your Vote"
     <|
         balanceV
-            ++ [ div [ class "mw7 center black" ] optionList
+            ++ [ descriptionReminder
+               , div [ class "mw7 center black" ] optionList
                , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs ] [ text "Continue" ]
                ]

@@ -1,7 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Ballots.DevBasicBallot exposing (..)
 
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotOption, BallotParams)
-import SecureVote.SPAs.SwarmMVP.Const exposing (devErc20Addr)
+import SecureVote.SPAs.SwarmMVP.Const exposing (devErc20Addr, swmErc20Abrv, swmErc20Addr)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(..))
 
 
@@ -14,6 +14,8 @@ allDevBallots_ =
     , devBasic5
     , devBasic6
     , devBasic7
+    , ioTypes
+    , goodInvestmentROI
     ]
 
 
@@ -170,4 +172,50 @@ devBasic7 =
         , { id = 4946547869, title = "not really", description = DlogTxt "desc opt 5" }
         ]
     , discussionLink = Just "https://secure.vote"
+    }
+
+
+ioTypes : BallotParams msg
+ioTypes =
+    { ballotTitle = "Which type of investment opportunities would you like to see on Swarm?"
+    , contractAddr = "0x927304A1Cb2bb35b90C9b9BB35dcBaC2CB25c1Af"
+    , description = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
+    , endTime = 1618421966
+    , startTime = 0
+    , id = 3489673
+    , erc20Balance = Nothing
+    , erc20Abrv = swmErc20Abrv
+    , erc20Addr = swmErc20Addr
+    , openingDesc = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
+    , discussionLink = Just "https://discuss.swarm.fund/t/which-type-of-investment-opportunities-would-you-like-to-see-on-swarm/45/1"
+    , voteOptions =
+        [ { id = 8349834983, title = "Real Estate", description = DlogTxt "" }
+        , { id = 8349834984, title = "Crypto hedge funds", description = DlogTxt "" }
+        , { id = 8349834985, title = "Renewables Funds (solar, geo thermal, etc)", description = DlogTxt "" }
+        , { id = 8349834986, title = "Impact Funds", description = DlogTxt "" }
+        , { id = 8349834987, title = "Cannabis Funds", description = DlogTxt "" }
+        ]
+    }
+
+
+goodInvestmentROI : BallotParams msg
+goodInvestmentROI =
+    { ballotTitle = "What do you consider a good investment? (Return vs Risk)"
+    , contractAddr = "0x927304A1Cb2bb35b90C9b9BB35dcBaC2CB25c1Af"
+    , description = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
+    , endTime = 1618421966
+    , startTime = 0
+    , id = 3489349876
+    , erc20Balance = Nothing
+    , erc20Abrv = swmErc20Abrv
+    , erc20Addr = swmErc20Addr
+    , openingDesc = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
+    , discussionLink = Just "https://discuss.swarm.fund/t/which-type-of-investment-opportunities-would-you-like-to-see-on-swarm/45/1"
+    , voteOptions =
+        [ { id = 8449834983, title = "5% - No risk", description = DlogTxt "" }
+        , { id = 8449834984, title = "25% - Some risk", description = DlogTxt "" }
+        , { id = 8449834985, title = "100%+ - High risk", description = DlogTxt "" }
+        , { id = 8449834986, title = "10X - VC territory", description = DlogTxt "" }
+        , { id = 8449834987, title = "100X - “Insane, do you call this an investment?”", description = DlogTxt "" }
+        ]
     }
