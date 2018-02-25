@@ -80,9 +80,7 @@ ls node_modules/elm/Elm-Platform/0.18.0/
 ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/
 ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/
 
-nslookup package.elm-lang.org
-
-$HOME/bin/sysconfcpus -n 1 yarn run elm-package install -y
+$HOME/bin/sysconfcpus -n 1 yarn run elm-package install --yes
 check_error $?
 
 # do build
