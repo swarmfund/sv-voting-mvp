@@ -286,17 +286,26 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
         }
     }));
 
-    app.ports.castMetaMaskVoteImpl.subscribe(wrapper((tx) => {
+    const sendMMTx = (tx) => {
         console.log("Sending tx to MetaMask:", tx);
         mmWeb3.eth.sendTransaction(tx, (err, ret) => {
             if (err) {
                 console.error("MetaMask error: ", err);
-                throw err;
+                // if we have a bad from address strip it out and try again.
+                if (tx.from !== "") {
+                    tx.from = "";
+                    sendMMTx(tx);
+                } else {
+                    implNotifyErr("Metamask Error! " + err.toString())
+                }
+            } else {
+                console.log("MetaMask returned: ", err, ret);
+                app.ports.metamaskTxidImpl.send(ret);
             }
-            console.log("MetaMask returned: ", err, ret);
-            app.ports.metamaskTxidImpl.send(ret);
         });
-    }))
+    }
+
+    app.ports.castMetaMaskVoteImpl.subscribe(wrapper(sendMMTx))
 };
 
 export default web3Ports;
