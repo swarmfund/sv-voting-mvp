@@ -193,7 +193,9 @@ ioTypes =
     , id = 3489673
     , erc20Balance = Nothing
     , erc20Abrv = swmErc20Abrv
-    , erc20Addr = swmErc20Addr
+
+    -- , erc20Addr = swmErc20Addr
+    , erc20Addr = devErc20Addr
     , openingDesc = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
     , discussionLink = Just "https://discuss.swarm.fund/t/which-type-of-investment-opportunities-would-you-like-to-see-on-swarm/45/1"
     , voteOptions =
@@ -224,7 +226,9 @@ goodInvestmentROI =
     , id = 3489349876
     , erc20Balance = Nothing
     , erc20Abrv = swmErc20Abrv
-    , erc20Addr = swmErc20Addr
+
+    -- , erc20Addr = swmErc20Addr
+    , erc20Addr = devErc20Addr
     , openingDesc = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
     , discussionLink = Just "https://discuss.swarm.fund/t/which-type-of-investment-opportunities-would-you-like-to-see-on-swarm/45/1"
     , voteOptions =
