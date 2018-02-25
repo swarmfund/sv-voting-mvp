@@ -24,10 +24,16 @@ openingSlide model =
         b =
             model.currentBallot
 
+        getDomain l =
+            String.split "/" l
+                |> List.drop 2
+                |> List.head
+                |> Maybe.withDefault l
+
         discussionLink =
             case b.discussionLink of
                 Just l ->
-                    [ [ text <| "A discussion for this topic has been started at " ++ l ]
+                    [ [ text <| "A discussion for this topic has been started at " ++ getDomain l ]
                     , [ btn 3948573984 model [ PriBtn, Link l ] [ text "Discuss This Ballot" ] ]
                     ]
 
