@@ -77,6 +77,7 @@
     "web-prod": "MAIN_TITLE='SWM Governance (Dev/Prod)' DEV=false yarn web",
     "build-web": "./build_prod.sh",
     "_live": "elm-live ./web/src/SecureVote/SPAs/SwarmMVP/Main.elm --output=./web/sv-swarm.js --dir=./web --open --debug",
+    "elm-install": "elm-package install --yes",
     "----- PureScript (Aduit + Admin)": "",
     "audit-dev": "pulp -w build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Auditor -j 2 --to _pureDist/audit.js -o ./output ",
     "audit-prod": "pulp build --src-path pureSrc --main SecureVote.Democs.SwarmMVP.Auditor -j 2 --to _pureDist/audit.js -o ./output",
