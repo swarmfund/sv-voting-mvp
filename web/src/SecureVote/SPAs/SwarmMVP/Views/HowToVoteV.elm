@@ -18,7 +18,7 @@ combinedHowToVoteCopy : Model -> List (Html Msg)
 combinedHowToVoteCopy model =
     let
         ballotExplanationCopy =
-            "This ballot is to decide: " ++ model.currentBallot.description
+            model.currentBallot.description
 
         rangeVotingCopy =
             [ "Each vote consists of a choosing a score within the range -3 to +3."

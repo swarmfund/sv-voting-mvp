@@ -2,11 +2,12 @@ module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 
 import Dict exposing (fromList)
 import Dom.Scroll exposing (toTop)
+import List.Extra exposing (zip)
 import Material
 import Material.Helpers as MHelp exposing (map1st, map2nd)
 import Material.Snackbar as Snackbar
 import Maybe exposing (andThen)
-import Maybe.Extra exposing ((?), values)
+import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Utils exposing (keccak256OverString)
@@ -88,15 +89,16 @@ update msg model =
 
         SetBallot b ->
             let
-                ( m_, cmds_ ) =
-                    update (ToWeb3 ReInit) <| resetAllBallotFields { model | currentBallot = b, optHashToTitle = optHashToTitle } b
+                oTitles =
+                    List.map .title b.voteOptions
 
-                optHashToTitle =
-                    fromList <| values <| List.map (\{ title } -> keccak256OverString title |> Maybe.map (\h -> ( h, title ))) b.voteOptions
+                ( m_, cmds_ ) =
+                    update (ToWeb3 <| ReInit oTitles) <| resetAllBallotFields { model | currentBallot = b } b
 
                 doAuditIfBallotEnded =
                     if b.endTime < model.now then
-                        [ getBallotResults { ethUrl = model.ethNode, ethRPCAuth = "", votingAddr = b.contractAddr, erc20Addr = b.erc20Addr } ]
+                        -- ensure we use the NEW ballot, not prev ballot :/
+                        [ auditCmd { model | currentBallot = b } b ]
                     else
                         []
             in
@@ -169,6 +171,10 @@ update msg model =
             Material.update Mdl msg_ model
 
 
+auditCmd model b =
+    getBallotResults { ethUrl = model.ethNode, ethRPCAuth = "", votingAddr = b.contractAddr, erc20Addr = b.erc20Addr }
+
+
 addSnack : String -> Model -> ( Model, Cmd Msg )
 addSnack err model =
     let
@@ -216,8 +222,8 @@ updateToWeb3 web3msg model =
         CheckTxid txid ->
             { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]
 
-        ReInit ->
-            model ! [ getInit model.currentBallot.contractAddr, getEncryptionPublicKey model.currentBallot.contractAddr ]
+        ReInit oTitles ->
+            model ! [ getInit { addr = model.currentBallot.contractAddr, oTitles = oTitles }, getEncryptionPublicKey model.currentBallot.contractAddr ]
 
 
 updateFromWeb3 : FromWeb3Msg -> Model -> ( Model, Cmd Msg )
@@ -250,21 +256,42 @@ updateFromWeb3 msg model =
                         optCheck =
                             model.currentBallot.voteOptions == voteOptionsRSched && doBallotOptsMatchRSched opts
                     in
-                    ballotOptSuccess model optCheck
+                    ballotOptSuccess model { isGood = optCheck, hashes = [ "no need for hashes in legacy" ] }
 
                 _ ->
                     ballotOptElse model resp
 
         GetBallotOpts resp ->
             case resp of
-                Success opts ->
-                    ballotOptSuccess model (doBallotOptsMatch model.currentBallot.voteOptions opts)
+                Success d ->
+                    if d.isGood then
+                        ballotOptSuccess model d
+                    else
+                        ballotOptElse model resp
 
                 _ ->
                     ballotOptElse model resp
 
         GetBallotPeriod resp ->
-            { model | ballotOpen = resp } ! []
+            let
+                cb_ =
+                    model.currentBallot
+
+                { cb, cmds } =
+                    case resp of
+                        Success { startTime, endTime } ->
+                            -- if the ballot has actually ended, but the UI had the wrong time, AND that wrong time was in the future, ONLY THEN trigger an audit
+                            if endTime < model.now && model.now <= cb_.endTime then
+                                { cb = { cb_ | startTime = startTime, endTime = endTime }
+                                , cmds = [ auditCmd model cb_ ]
+                                }
+                            else
+                                { cb = cb_, cmds = [] }
+
+                        _ ->
+                            { cb = cb_, cmds = [] }
+            in
+            { model | ballotOpen = resp, currentBallot = cb } ! cmds
 
         GotTxidStatus txidE ->
             case txidE of
@@ -337,12 +364,19 @@ mFail model errMsg =
     }
 
 
-ballotOptSuccess : Model -> Bool -> ( Model, Cmd Msg )
-ballotOptSuccess model b =
-    if b then
-        { model | ballotVerificationPassed = Success True } ! []
+ballotOptSuccess : Model -> { isGood : Bool, hashes : List String } -> ( Model, Cmd Msg )
+ballotOptSuccess model { isGood, hashes } =
+    if isGood then
+        let
+            b =
+                model.currentBallot
+
+            optHashToTitle =
+                fromList <| zip hashes <| List.map .title b.voteOptions
+        in
+        { model | ballotVerificationPassed = Success isGood, optHashToTitle = optHashToTitle } ! []
     else
-        mFail model "Release schedule options in voting front end do not match smart contract!" ! []
+        mFail model "Release schedule options in voting interface do not match smart contract!" ! []
 
 
 ballotOptElse : Model -> RemoteData String a -> ( Model, Cmd Msg )

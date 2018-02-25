@@ -1,7 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Ballots.DevBasicBallot exposing (..)
 
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotOption, BallotParams)
-import SecureVote.SPAs.SwarmMVP.Const exposing (devErc20Addr)
+import SecureVote.SPAs.SwarmMVP.Const exposing (devErc20Addr, swmErc20Abrv, swmErc20Addr)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(..))
 
 
@@ -14,6 +14,8 @@ allDevBallots_ =
     , devBasic5
     , devBasic6
     , devBasic7
+    , ioTypes
+    , goodInvestmentROI
     ]
 
 
@@ -30,6 +32,7 @@ devBasicBallot =
     , erc20Abrv = "DEVERC20"
     , erc20Addr = devErc20Addr
     , openingDesc = "This is the opening description for the basic ballot!!!"
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -51,6 +54,7 @@ devBasic2 =
     , erc20Addr = devErc20Addr
     , openingDesc = "This is the description of the second test ballot"
     , voteOptions = devBasic2VOs
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -79,6 +83,7 @@ devBasic3 =
         , { id = 4946547867, title = "Option 2", description = DlogTxt "desc opt 2" }
         , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
         ]
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -99,6 +104,7 @@ devBasic4 =
         , { id = 4946547867, title = "Option 2", description = DlogTxt "desc opt 2" }
         , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
         ]
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -119,6 +125,7 @@ devBasic5 =
         , { id = 4946547867, title = "Option 2", description = DlogTxt "desc opt 2" }
         , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
         ]
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -141,6 +148,7 @@ devBasic6 =
         , { id = 4946547868, title = "the last option", description = DlogTxt "desc opt 4" }
         , { id = 4946547869, title = "not really", description = DlogTxt "desc opt 5" }
         ]
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -162,5 +170,72 @@ devBasic7 =
         , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
         , { id = 4946547868, title = "the last option", description = DlogTxt "desc opt 4" }
         , { id = 4946547869, title = "not really", description = DlogTxt "desc opt 5" }
+        ]
+    , discussionLink = Just "https://secure.vote"
+    }
+
+
+
+{-
+   deploy cmd
+
+   node bin/solidity/deploy.js --testing --startTime 1519516800 --endTime 1520121600 --ballotEncPubkey 0x07b86b2ed34fe9c2f69b0840a41a1d09bbdb4ec52565b909f32d8491a9dbdd7b --optionNamesJson '["Real Estate", "Crypto hedge funds", "Renewables Funds (solar, geo thermal, etc)", "Impact Funds", "Cannabis Funds"]'
+-}
+
+
+ioTypes : BallotParams msg
+ioTypes =
+    { ballotTitle = "Which type of investment opportunities would you like to see on Swarm?"
+    , contractAddr = "0x080dba74c58775afce8ed4d0306bb44322f1a134"
+    , description = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
+    , endTime = 1520121600
+    , startTime = 1519516800
+    , id = 3489673
+    , erc20Balance = Nothing
+    , erc20Abrv = swmErc20Abrv
+
+    -- , erc20Addr = swmErc20Addr
+    , erc20Addr = devErc20Addr
+    , openingDesc = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
+    , discussionLink = Just "https://discuss.swarm.fund/t/which-type-of-investment-opportunities-would-you-like-to-see-on-swarm/45/1"
+    , voteOptions =
+        [ { id = 8349834983, title = "Real Estate", description = DlogTxt "" }
+        , { id = 8349834984, title = "Crypto hedge funds", description = DlogTxt "" }
+        , { id = 8349834985, title = "Renewables Funds (solar, geo thermal, etc)", description = DlogTxt "" }
+        , { id = 8349834986, title = "Impact Funds", description = DlogTxt "" }
+        , { id = 8349834987, title = "Cannabis Funds", description = DlogTxt "" }
+        ]
+    }
+
+
+
+{-
+   deploy cmd
+
+   node bin/solidity/deploy.js --testing --startTime 1519516800 --endTime 1520121600 --ballotEncPubkey 0x07b86b2ed34fe9c2f69b0840a41a1d09bbdb4ec52565b909f32d8491a9dbdd7b --optionNamesJson '["5% - No risk", "25% - Some risk", "100%+ - High risk", "10X - VC territory", "100X - “Insane, do you call this an investment?”"]'
+-}
+
+
+goodInvestmentROI : BallotParams msg
+goodInvestmentROI =
+    { ballotTitle = "What do you consider a good investment? (Return vs Risk)"
+    , contractAddr = "0x5d66847071924595fe9e1020a19323e31afc9276"
+    , description = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
+    , endTime = 1520121600
+    , startTime = 1519516800
+    , id = 3489349876
+    , erc20Balance = Nothing
+    , erc20Abrv = swmErc20Abrv
+
+    -- , erc20Addr = swmErc20Addr
+    , erc20Addr = devErc20Addr
+    , openingDesc = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
+    , discussionLink = Just "https://discuss.swarm.fund/t/which-type-of-investment-opportunities-would-you-like-to-see-on-swarm/45/1"
+    , voteOptions =
+        [ { id = 8449834983, title = "5% - No risk", description = DlogTxt "" }
+        , { id = 8449834984, title = "25% - Some risk", description = DlogTxt "" }
+        , { id = 8449834985, title = "100%+ - High risk", description = DlogTxt "" }
+        , { id = 8449834986, title = "10X - VC territory", description = DlogTxt "" }
+        , { id = 8449834987, title = "100X - “Insane, do you call this an investment?”", description = DlogTxt "" }
         ]
     }

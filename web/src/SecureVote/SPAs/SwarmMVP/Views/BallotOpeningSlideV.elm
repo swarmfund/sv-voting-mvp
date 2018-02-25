@@ -21,14 +21,36 @@ openingSlide model =
         ballotOver =
             model.currentBallot.endTime < model.now
 
+        b =
+            model.currentBallot
+
+        getDomain l =
+            String.split "/" l
+                |> List.drop 2
+                |> List.head
+                |> Maybe.withDefault l
+
+        discussionLink =
+            case b.discussionLink of
+                Just l ->
+                    [ [ text <| "A discussion for this topic has been started at " ++ getDomain l ]
+                    , [ btn 3948573984 model [ PriBtn, Link l ] [ text "Discuss This Ballot" ] ]
+                    ]
+
+                Nothing ->
+                    []
+
         introText =
-            [ [ text <| "Ballot description: " ++ model.currentBallot.openingDesc ]
-            , [ text "You will be presented with a number of options. Each option has a description explaining it in more detail."
-              ]
-            , [ text "When you vote, you allocate each option a number from -3 to +3 (inclusive). It's important to choose a vote for each option. (This method of voting is called 'Range Voting'.)" ]
-            , [ text "If you'd like, ", a [ href "https://www.youtube.com/watch?v=afEwklJEzFc", target "_blank" ] [ text "here is a video" ], text " walking you through the voting process." ]
-            , [ text "When you're ready, let's vote!" ]
+            [ [ text <| "Ballot description: " ++ b.openingDesc ]
             ]
+                ++ discussionLink
+                ++ [ [ subhead "Voting" ]
+                   , [ text "You will be presented with a number of options. Each option has a description explaining it in more detail."
+                     ]
+                   , [ text "When you vote, you allocate each option a number from -3 to +3 (inclusive). It's important to choose a vote for each option. (This method of voting is called 'Range Voting'.)" ]
+                   , [ text "If you'd like, ", a [ href "https://www.youtube.com/watch?v=afEwklJEzFc", target "_blank" ] [ text "here is a video" ], text " walking you through the voting process." ]
+                   , [ text "When you're ready, let's vote!" ]
+                   ]
 
         introParagraphs =
             div [ class "center" ] <| List.map renderPara introText
@@ -64,7 +86,7 @@ openingSlide model =
     in
     fullPageSlide 9483579329
         model
-        ("Welcome to the ballot for: " ++ model.currentBallot.ballotTitle)
+        model.currentBallot.ballotTitle
         [ Options.styled div [ cs "black pa2 mv3 f4" ] [ text subtitleText ]
         , div
             [ style [ ( "max-width", "700px" ) ], class "center" ]
