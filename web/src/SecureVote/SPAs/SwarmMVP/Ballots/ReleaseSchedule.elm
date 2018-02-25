@@ -21,6 +21,7 @@ rschedBallot =
     , erc20Balance = Nothing
     , erc20Abrv = swmErc20Abrv
     , id = 3948759378
+    , discussionLink = Nothing
     }
 
 

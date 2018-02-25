@@ -16,6 +16,7 @@ type alias BallotParams msg =
     , erc20Balance : Maybe Decimal
     , erc20Abrv : String -- Short abbreviation for token name
     , id : Int -- Just some random integer
+    , discussionLink : Maybe String
     }
 
 

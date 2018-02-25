@@ -30,6 +30,7 @@ devBasicBallot =
     , erc20Abrv = "DEVERC20"
     , erc20Addr = devErc20Addr
     , openingDesc = "This is the opening description for the basic ballot!!!"
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -51,6 +52,7 @@ devBasic2 =
     , erc20Addr = devErc20Addr
     , openingDesc = "This is the description of the second test ballot"
     , voteOptions = devBasic2VOs
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -79,6 +81,7 @@ devBasic3 =
         , { id = 4946547867, title = "Option 2", description = DlogTxt "desc opt 2" }
         , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
         ]
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -99,6 +102,7 @@ devBasic4 =
         , { id = 4946547867, title = "Option 2", description = DlogTxt "desc opt 2" }
         , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
         ]
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -119,6 +123,7 @@ devBasic5 =
         , { id = 4946547867, title = "Option 2", description = DlogTxt "desc opt 2" }
         , { id = 3234536984, title = "Option 3 with some caveat and a long title", description = DlogTxt "desc opt 3" }
         ]
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -141,6 +146,7 @@ devBasic6 =
         , { id = 4946547868, title = "the last option", description = DlogTxt "desc opt 4" }
         , { id = 4946547869, title = "not really", description = DlogTxt "desc opt 5" }
         ]
+    , discussionLink = Just "https://secure.vote"
     }
 
 
@@ -163,4 +169,5 @@ devBasic7 =
         , { id = 4946547868, title = "the last option", description = DlogTxt "desc opt 4" }
         , { id = 4946547869, title = "not really", description = DlogTxt "desc opt 5" }
         ]
+    , discussionLink = Just "https://secure.vote"
     }
