@@ -67,7 +67,7 @@ ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/
 ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/
 
 yarn run elm-package install -y
-
+check_error $?
 
 echo "Trying to get a version of sysconfcpus..."
 git clone https://github.com/obmarg/libsysconfcpus.git
