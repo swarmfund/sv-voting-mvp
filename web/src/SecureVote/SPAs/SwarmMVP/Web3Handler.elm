@@ -68,7 +68,9 @@ decodeBallotOpts : Value -> Msg
 decodeBallotOpts val =
     let
         llDecoder =
-            Decode.bool
+            decode (\isGood hashes -> { isGood = isGood, hashes = hashes })
+                |> required "isGood" Decode.bool
+                |> required "hashes" (Decode.list Decode.string)
     in
     case Decode.decodeValue llDecoder val of
         Ok opts ->

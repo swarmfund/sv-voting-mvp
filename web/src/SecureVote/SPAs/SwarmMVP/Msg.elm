@@ -63,7 +63,7 @@ type FromWeb3Msg
     | GotEncPubkey String
     | Web3Init InitRecord
     | GetBallotOptsLegacy (RemoteData String (List (List Int)))
-    | GetBallotOpts (RemoteData String Bool)
+    | GetBallotOpts (RemoteData String { isGood : Bool, hashes : List String })
     | GotTxidStatus (Result String GotTxidResp)
     | GetBallotPeriod (RemoteData String { startTime : Int, endTime : Int })
     | GotMetaMask

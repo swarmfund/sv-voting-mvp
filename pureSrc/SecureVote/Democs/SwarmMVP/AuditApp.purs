@@ -84,11 +84,7 @@ app {ethUrl, ethRPCAuth, votingAddr, erc20Addr} updateF =
             Right t -> pure t
             Left e -> const (pure 0) =<< (\_ -> updateFAff $ mkSUFail $ e <> startTimeS) =<< (throwError $ error $ e <> startTimeS)
 
-        _ <- updateFAff $ mkSULog $ "Finding Eth block close to time: " <> startTimeS <> " (takes 10-20 seconds)"
-        startBlock <- findEthBlockEndingInZeroBefore startTime
-        _ <- updateFAff $ mkSULog $ "Using block " <> show startBlock <> " for ERC20 balances."
-
-        ballotAns <- runBallotCount startBlock votingAddr contract erc20Contract {silent: false} updateF
+        ballotAns <- runBallotCount startTime votingAddr contract erc20Contract {silent: false} updateF
 
         let exitC = exitCode ballotAns
         let msgStart = exitMsgHeader exitC

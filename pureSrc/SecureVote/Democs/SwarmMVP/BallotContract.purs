@@ -3,7 +3,7 @@ module SecureVote.Democs.SwarmMVP.BallotContract where
 import Prelude
 
 import Control.Apply (lift2)
-import Control.Monad.Aff (Aff, catchError, error, launchAff, liftEff', message, parallel, sequential, throwError)
+import Control.Monad.Aff (Aff, catchError, error, forkAff, joinFiber, launchAff, liftEff', message, parallel, sequential, throwError)
 import Control.Monad.Aff.AVar (AVAR, AVar, makeVar, putVar, readVar, takeVar)
 import Control.Monad.Aff.Compat (EffFnAff(..), fromEffFnAff)
 import Control.Monad.Aff.Console (CONSOLE)
@@ -305,7 +305,7 @@ runBallotCount :: forall a e.
     {silent::Boolean} ->
     (StatusUpdate -> Unit) ->
     Aff (now :: NOW, console :: CONSOLE, avar :: AVAR | e) (Either String (Tuple BallotResult AllDetails))
-runBallotCount ballotStartBlock votingAddr contract erc20 {silent} updateF =
+runBallotCount startTime votingAddr contract erc20 {silent} updateF =
       do  -- Aff monad
         nowTime <- liftEff' $ currentTimestamp
         endTime <- swmEndTime contract
@@ -313,6 +313,12 @@ runBallotCount ballotStartBlock votingAddr contract erc20 {silent} updateF =
         if nowTime < endTime
             then pure $ Left "The ballot has not ended yet!"
             else do
+                startingBlockFibre <- forkAff $ do
+                    optLog $ "Finding Eth block close to time: " <> toStringAs decimal startTime <> " (takes 10-20 seconds)"
+                    startBlock <- findEthBlockEndingInZeroBefore startTime
+                    optLog $ "Using block " <> show startBlock <> " for ERC20 balances."
+                    pure startBlock
+
                 ballotSeckey <- swmBallotSk contract
                 optLog $ "Ballot encryption secret key: " <> (toHex $ toUint8Array ballotSeckey)
 
@@ -340,6 +346,8 @@ runBallotCount ballotStartBlock votingAddr contract erc20 {silent} updateF =
                 -- will use the current block number instead of the historical block number
                 -- currentBlockNum <- getBlockNumber
                 -- balanceMap <- getBalances erc20 currentBlockNum decryptedBallots
+
+                ballotStartBlock <- joinFiber startingBlockFibre
 
                 balanceMap <- catchError (getBalances erc20 ballotStartBlock decryptedBallots) $ \err -> do
                         let _ = updateF $ mkSUFail $ "Error getting balances: " <> message err

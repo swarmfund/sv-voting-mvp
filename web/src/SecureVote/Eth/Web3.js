@@ -167,7 +167,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
                 success: true,
                 errMsg: "",
                 method: "getBallotOptions",
-                response: S.equals(hashes, ballotOpts)
+                response: {isGood: S.equals(hashes, ballotOpts), hashes: ballotOpts}
             })
         }
     };
