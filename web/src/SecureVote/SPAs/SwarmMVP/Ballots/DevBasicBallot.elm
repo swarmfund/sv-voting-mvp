@@ -175,13 +175,21 @@ devBasic7 =
     }
 
 
+
+{-
+   deploy cmd
+
+   node bin/solidity/deploy.js --testing --startTime 1519516800 --endTime 1520121600 --ballotEncPubkey 0x07b86b2ed34fe9c2f69b0840a41a1d09bbdb4ec52565b909f32d8491a9dbdd7b --optionNamesJson '["Real Estate", "Crypto hedge funds", "Renewables Funds (solar, geo thermal, etc)", "Impact Funds", "Cannabis Funds"]'
+-}
+
+
 ioTypes : BallotParams msg
 ioTypes =
     { ballotTitle = "Which type of investment opportunities would you like to see on Swarm?"
-    , contractAddr = "0x927304A1Cb2bb35b90C9b9BB35dcBaC2CB25c1Af"
+    , contractAddr = "0x080dba74c58775afce8ed4d0306bb44322f1a134"
     , description = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
-    , endTime = 1618421966
-    , startTime = 0
+    , endTime = 1520121600
+    , startTime = 1519516800
     , id = 3489673
     , erc20Balance = Nothing
     , erc20Abrv = swmErc20Abrv
@@ -198,13 +206,21 @@ ioTypes =
     }
 
 
+
+{-
+   deploy cmd
+
+   node bin/solidity/deploy.js --testing --startTime 1519516800 --endTime 1520121600 --ballotEncPubkey 0x07b86b2ed34fe9c2f69b0840a41a1d09bbdb4ec52565b909f32d8491a9dbdd7b --optionNamesJson '["5% - No risk", "25% - Some risk", "100%+ - High risk", "10X - VC territory", "100X - “Insane, do you call this an investment?”"]'
+-}
+
+
 goodInvestmentROI : BallotParams msg
 goodInvestmentROI =
     { ballotTitle = "What do you consider a good investment? (Return vs Risk)"
-    , contractAddr = "0x927304A1Cb2bb35b90C9b9BB35dcBaC2CB25c1Af"
+    , contractAddr = "0x5d66847071924595fe9e1020a19323e31afc9276"
     , description = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
-    , endTime = 1618421966
-    , startTime = 0
+    , endTime = 1520121600
+    , startTime = 1519516800
     , id = 3489349876
     , erc20Balance = Nothing
     , erc20Abrv = swmErc20Abrv

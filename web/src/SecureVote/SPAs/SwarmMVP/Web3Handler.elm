@@ -68,7 +68,7 @@ decodeBallotOpts : Value -> Msg
 decodeBallotOpts val =
     let
         llDecoder =
-            Decode.list Decode.string
+            Decode.bool
     in
     case Decode.decodeValue llDecoder val of
         Ok opts ->

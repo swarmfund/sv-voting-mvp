@@ -1,5 +1,6 @@
 module SecureVote.Eth.Utils exposing (..)
 
+import Arithmetic exposing (toBase)
 import Char
 import Decimal exposing (Decimal)
 import Hex
@@ -12,7 +13,7 @@ import SecureVote.Eth.Models exposing (CandidateEthTx, MinEthTx)
 
 keccak256OverString : String -> Maybe String
 keccak256OverString =
-    toHexEth << ethereum_keccak_256 << List.map Char.toCode << String.toList
+    toHexEth << ethereum_keccak_256 << List.concat << List.map (toBase 256 << Char.toCode) << String.toList
 
 
 setCandTxFrom : String -> CandidateEthTx -> CandidateEthTx

@@ -88,8 +88,11 @@ update msg model =
 
         SetBallot b ->
             let
+                oTitles =
+                    List.map .title b.voteOptions
+
                 ( m_, cmds_ ) =
-                    update (ToWeb3 ReInit) <| resetAllBallotFields { model | currentBallot = b, optHashToTitle = optHashToTitle } b
+                    update (ToWeb3 <| ReInit oTitles) <| resetAllBallotFields { model | currentBallot = b, optHashToTitle = optHashToTitle } b
 
                 optHashToTitle =
                     fromList <| values <| List.map (\{ title } -> keccak256OverString title |> Maybe.map (\h -> ( h, title ))) b.voteOptions
@@ -216,8 +219,8 @@ updateToWeb3 web3msg model =
         CheckTxid txid ->
             { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]
 
-        ReInit ->
-            model ! [ getInit model.currentBallot.contractAddr, getEncryptionPublicKey model.currentBallot.contractAddr ]
+        ReInit oTitles ->
+            model ! [ getInit { addr = model.currentBallot.contractAddr, oTitles = oTitles }, getEncryptionPublicKey model.currentBallot.contractAddr ]
 
 
 updateFromWeb3 : FromWeb3Msg -> Model -> ( Model, Cmd Msg )
@@ -257,8 +260,8 @@ updateFromWeb3 msg model =
 
         GetBallotOpts resp ->
             case resp of
-                Success opts ->
-                    ballotOptSuccess model (doBallotOptsMatch model.currentBallot.voteOptions opts)
+                Success True ->
+                    ballotOptSuccess model True
 
                 _ ->
                     ballotOptElse model resp
@@ -342,7 +345,7 @@ ballotOptSuccess model b =
     if b then
         { model | ballotVerificationPassed = Success True } ! []
     else
-        mFail model "Release schedule options in voting front end do not match smart contract!" ! []
+        mFail model "Release schedule options in voting interface do not match smart contract!" ! []
 
 
 ballotOptElse : Model -> RemoteData String a -> ( Model, Cmd Msg )

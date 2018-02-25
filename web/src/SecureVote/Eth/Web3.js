@@ -60,7 +60,8 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
     };
 
 
-    app.ports.getInit.subscribe(wrapper((contractAddr) => {
+    app.ports.getInit.subscribe(wrapper(({addr, oTitles}) => {
+        const contractAddr = addr;
 
         SwmVotingContract = genSwmVotingContract(contractAddr);
 
@@ -80,7 +81,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
             }
         }
 
-        getBallotOpts(isLegacy(contractAddr) ? implRecieveBallotOptsCBLegacy : implRecieveBallotOptsCB);
+        getBallotOpts(isLegacy(contractAddr) ? implRecieveBallotOptsCBLegacy : implRecieveBallotOptsCB(oTitles));
 
         try {
             const doErr = err => {
@@ -147,8 +148,13 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
     };
 
 
-    const implRecieveBallotOptsCB = (err, ballotOpts) => {
-        console.log('implRecieveBallotOptsCB got:', err, ballotOpts)
+    const implRecieveBallotOptsCB = oTitles => (err, ballotOpts) => {
+        const hashes_ = S.map(web3js.sha3, oTitles);
+        const padding = new Array(5-hashes_.length);
+        // hash of empty string
+        padding.fill("0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
+        const hashes = S.concat(hashes_, padding);
+        console.log('implRecieveBallotOptsCB got:', err, ballotOpts, "with titles", oTitles, "and calculated hashes", hashes);
         if (err) {
             app.ports.contractReadResponse.send({
                 success: false,
@@ -161,7 +167,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
                 success: true,
                 errMsg: "",
                 method: "getBallotOptions",
-                response: ballotOpts
+                response: S.equals(hashes, ballotOpts)
             })
         }
     };

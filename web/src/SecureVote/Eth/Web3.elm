@@ -212,7 +212,7 @@ onGotPubkey pubkeyVal =
             errHelper "Error while retrieving encryption public key: " err
 
 
-port getInit : String -> Cmd msg
+port getInit : { addr : String, oTitles : List String } -> Cmd msg
 
 
 port implInit : (Value -> msg) -> Sub msg
