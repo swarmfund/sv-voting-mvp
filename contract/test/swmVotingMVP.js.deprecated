@@ -1,12 +1,10 @@
 var SwarmVotingMVP = artifacts.require("./SwarmVotingMVP.sol");
 var VotingCF = SwarmVotingMVP;  // voting contract factory
 
+require('./testUtils')();
+
 var naclJs = require('js-nacl');
 var crypto = require('crypto');
-
-var TruffleProvider = require('truffle-provider');
-var TestRPC = require('ethereumjs-testrpc');
-var Web3 = require('web3');
 
 const AsyncPar = require('async-parallel');
 
@@ -23,28 +21,12 @@ var hexPk = "0xba781ed1006bd7694282a210485265f1c503f4e6721858b4269ae6d745f7bb4b"
 const swmFund = "0x8bf7b2d536d286b9c5ad9d99f608e9e214de63f0";
 
 
-
-const genRandomBytes32 = () => {
-  return "0x" + crypto.randomBytes(32).toString('hex');
-}
-
-
-let accounts;
-
-
-function wrapTest(f) {
-  return async () => {
-    return await f(accounts, VotingCF);
-  }
-}
-
-
-async function testInstantiation(accounts, contractFactory) {
+async function testInstantiation(accounts) {
   var startTime = Math.round(Date.now() / 1000) + 2;
   var endTime = startTime + 600;
   var shortEndTime = 0;
 
-  const vc = await contractFactory.new(startTime, endTime, hexPk, true, "", "", "", "", "");
+  const vc = await SwarmVotingMVP.new(startTime, endTime, hexPk, true, "", "", "", "", "");
 
   const owner = await vc.owner();
   assert.equal(owner, accounts[0], "Owner must be set on launch.");
@@ -85,12 +67,12 @@ async function testInstantiation(accounts, contractFactory) {
   await sleep(startTime - (Date.now() / 1000) + 1.1)
 
   // try a single ballot first
-  await testABallot(S.Just(vc), S.Just(accounts[0]));
+  await testABallot(accounts)(S.Just(vc), S.Just(accounts[0]));
 
   const nVotes = 10
   try {
     // now a bunch
-    await AsyncPar.map(S.range(0,nVotes), async i => {return await testABallot(S.Just(vc), S.Just(accounts[i]));})
+    await AsyncPar.map(S.range(0,nVotes), async i => {return await testABallot(accounts)(S.Just(vc), S.Just(accounts[i]));})
     // Woot, tested 98 ballots.
   } catch (err) {
     console.log(err.message);
@@ -140,7 +122,7 @@ async function testTestMode(accounts, contractFactory) {
   var endTime = startTime + 600;
   var shortEndTime = 0;
 
-  var vc = await contractFactory.new(startTime, endTime, hexPk, false, "", "", "", "", "");
+  var vc = await SwarmVotingMVP.new(startTime, endTime, hexPk, false, "", "", "", "", "");
 
   const _setEndTimeTx = await vc.setEndTime(0);
   assertOnlyEvent('Error', _setEndTimeTx);
@@ -157,8 +139,7 @@ async function testTestMode(accounts, contractFactory) {
 
 
 
-
-async function testABallot(_vc = S.Nothing, account = S.Nothing) {
+const testABallot = accounts => async (_vc = S.Nothing, account = S.Nothing) => {
   if (S.isNothing(_vc)) {throw Error("must provide voting contract to `testABallot`")}
   const vc = S.fromMaybe_(() => null, _vc);
   const myAddr = S.fromMaybe(accounts[0], account);
@@ -218,18 +199,9 @@ async function testrpcRevert(snapshot) {
 function sleep(s) {return new Promise(res => setTimeout(res, s * 1000))};
 
 
-
-
-
-
-
-
-
 contract('SwarmVotingMVP', function(_accounts) {
-  accounts = _accounts;
-
-  it("should not allow testing functions if testing mode is false", wrapTest(testTestMode));
-  it("should instantiate correctly", wrapTest(testInstantiation));
+  it("should not allow testing functions if testing mode is false", wrapTest(_accounts, testTestMode));
+  it("should instantiate correctly", wrapTest(_accounts, testInstantiation));
   it("pending2", function() {
   });
 });
