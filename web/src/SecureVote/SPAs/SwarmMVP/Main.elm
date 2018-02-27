@@ -6,6 +6,7 @@ import SecureVote.Eth.Web3 exposing (contractReadResponse, getBallotResults, get
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, devEthNode, initEthNode, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..))
+import SecureVote.SPAs.SwarmMVP.Types exposing (Flags)
 import SecureVote.SPAs.SwarmMVP.Update exposing (update)
 import SecureVote.SPAs.SwarmMVP.Views.RootV exposing (rootView)
 import SecureVote.SPAs.SwarmMVP.Web3Handler exposing (decodeRead, readOptsErr)
@@ -42,23 +43,18 @@ initCmds initModel extraCmds =
         [ setWeb3Provider initModel.ethNode
         , perform (SetTime << round << (\t -> t / 1000)) Time.now
         , genKeyPair True
+        , getDemocHashes
         ]
             ++ extraCmds
 
 
-type alias Flags =
-    { mainTitle : String
-    , dev : Bool
-    }
-
-
 processedInitModelCmd : Flags -> ( Model, Cmd Msg )
-processedInitModelCmd { mainTitle, dev } =
+processedInitModelCmd fs =
     -- Note: Only use Msgs that do not
     -- send out commands
     let
         model =
-            initModel dev mainTitle
+            initModel fs
     in
     update
         (MultiMsg

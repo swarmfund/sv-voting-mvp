@@ -66,7 +66,8 @@ getBoolField model k =
 
 getDelegateAddress : Model -> Maybe String
 getDelegateAddress model =
-    Dict.get (dlgtAddrField model.currentBallot) model.fields
+    model.currentBallot
+        |> Maybe.andThen (\b -> Dict.get (dlgtAddrField b) model.fields)
 
 
 defaultDelegate : String

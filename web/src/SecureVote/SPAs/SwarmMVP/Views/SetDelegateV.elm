@@ -20,7 +20,7 @@ import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 delegateExplanationCopy : Model -> List String
 delegateExplanationCopy model =
-    [ "You may optionally select a delegate, though this isn't required. If you would like to, please enter their " ++ model.currentBallot.erc20Abrv ++ " token address below. "
+    [ "You may optionally select a delegate, though this isn't required. If you would like to, please enter their " ++ Maybe.map .erc20Abrv model.currentBallot ? "ERC20" ++ " token address below. "
     , "If your delegate casts a vote, your votes will be replaced with the votes that your delegate chooses. "
     , "If your delegate does not cast a vote, your vote will be cast with the options you have selected. "
     ]
@@ -57,11 +57,16 @@ delegateView model =
         showDlgtFieldMsg =
             setBoolField dlgtSetting True
 
-        showDlgtField =
-            getBoolField model dlgtSetting ? False
+        showDlgtField bM =
+            case bM of
+                Nothing ->
+                    False
+
+                Just b ->
+                    getBoolField model (dlgtSetting b) ? False
 
         dlgtForm =
-            if showDlgtField then
+            if showDlgtField model.currentBallot then
                 [ Textf.render Mdl
                     [ 7674564333 ]
                     model.mdl
