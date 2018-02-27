@@ -46,7 +46,7 @@ import SecureVote.Crypto.Curve25519 (genCurve25519Key, toNonce, toBoxPubkey, toM
 import SecureVote.Crypto.NativeEd25519 (sha256)
 import SecureVote.Democs.SwarmMVP.AuditApp (formatBallotResults)
 import SecureVote.Democs.SwarmMVP.Ballot (makeBallot)
-import SecureVote.Democs.SwarmMVP.BallotContract (AllDetails, BallotResult, EncBallotWVoter, Erc20Contract(..), SwmVotingContract(..), ballotPropHelper, ballotPropHelperAff, ballotPropHelperWBlockNumAff, getAccount, getBallotEncPK, makeErc20Contract, makeVotingContract, noArgs, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot, getBlockNumber)
+import SecureVote.Democs.SwarmMVP.BallotContract (AllDetails, BallotResult, EncBallotWVoter, Erc20Contract(..), SwmVotingContract(..), ballotPropHelper, ballotPropHelperAff, ballotPropHelperWBlockNumAff, getAccount, getBallotEncPK, getBlockNumber, getBlockTimestamp, makeErc20Contract, makeVotingContract, noArgs, releaseSecretKey, runBallotCount, setBallotEndTime, setWeb3Provider, web3CastBallot)
 import SecureVote.Democs.SwarmMVP.KeyGen (generateKey)
 import SecureVote.Utils.ArrayBuffer (fromHex, toHex)
 import SecureVote.Utils.Numbers (intToStr)
@@ -153,6 +153,7 @@ completeBallotTest = do
 
         -- get current block number for later (before we cast ballots)
         blockNum <- getBlockNumber
+        balanceTs <- getBlockTimestamp blockNum
         log $ "Block number: " <> show blockNum
 
         -- create lots of ballots
@@ -192,7 +193,7 @@ completeBallotTest = do
         logUC releaseSKTxid
 
         -- count ballot
-        ballotResultE :: Either String _ <- runBallotCount blockNum votingAddr contract erc20Contract {silent: false} (\_ -> unit)
+        ballotResultE :: Either String _ <- runBallotCount balanceTs votingAddr contract erc20Contract {silent: false} (\_ -> unit)
 
         -- check count results
         ballotSuccess <- logAndPrintResults ballotResultE

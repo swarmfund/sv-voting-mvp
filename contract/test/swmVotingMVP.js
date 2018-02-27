@@ -43,7 +43,7 @@ async function testInstantiation(accounts, contractFactory) {
   var startTime = Math.round(Date.now() / 1000) + 2;
   var endTime = startTime + 600;
   var shortEndTime = 0;
-  
+
   const vc = await contractFactory.new(startTime, endTime, hexPk, true, "", "", "", "", "");
 
   const owner = await vc.owner();
@@ -51,19 +51,19 @@ async function testInstantiation(accounts, contractFactory) {
 
   const _earlyVote = await vc.submitBallot(hexPk, hexPk, {from: accounts[111]});
   assertOnlyEvent('Error', _earlyVote);
-  
+
   const _startTime = await vc.startTime();
   assert.equal(startTime, _startTime, "startTime matches");
-  
+
   const _endTime = await vc.endTime();
   assert.equal(endTime, _endTime, "endTime matches");
-  
+
   const _testMode = await vc.testMode();
   assert.equal(_testMode, true, "We should be in test mode");
-  
+
   const _nVotes = await vc.nVotesCast();
   assert.equal(_nVotes, 0, "Should have no votes at start");
-  
+
   const _pk = await vc.ballotEncryptionPubkey();
   assert.equal(_pk, hexPk, "hex pk should match");
 
@@ -87,9 +87,10 @@ async function testInstantiation(accounts, contractFactory) {
   // try a single ballot first
   await testABallot(S.Just(vc), S.Just(accounts[0]));
 
+  const nVotes = 10
   try {
     // now a bunch
-    await AsyncPar.map(S.range(2,100), async i => {return await testABallot(S.Just(vc), S.Just(accounts[i]));})
+    await AsyncPar.map(S.range(0,nVotes), async i => {return await testABallot(S.Just(vc), S.Just(accounts[i]));})
     // Woot, tested 98 ballots.
   } catch (err) {
     console.log(err.message);
@@ -99,7 +100,7 @@ async function testInstantiation(accounts, contractFactory) {
     throw err;
   }
 
-  assert.equal((await vc.nVotesCast()).toNumber(), 99, "should have cast 99 votes thus far")
+  assert.equal((await vc.nVotesCast()).toNumber(), nVotes + 1, "should have cast " + (nVotes + 1).toString() + " votes thus far")
 
   // check bans
   const addrToBan = accounts[123];
@@ -138,7 +139,7 @@ async function testTestMode(accounts, contractFactory) {
   var startTime = Math.round(Date.now() / 1000);
   var endTime = startTime + 600;
   var shortEndTime = 0;
-  
+
   var vc = await contractFactory.new(startTime, endTime, hexPk, false, "", "", "", "", "");
 
   const _setEndTimeTx = await vc.setEndTime(0);
@@ -161,7 +162,7 @@ async function testABallot(_vc = S.Nothing, account = S.Nothing) {
   if (S.isNothing(_vc)) {throw Error("must provide voting contract to `testABallot`")}
   const vc = S.fromMaybe_(() => null, _vc);
   const myAddr = S.fromMaybe(accounts[0], account);
-  
+
   const encBallot = genRandomBytes32();
   const vtrPubkey = genRandomBytes32();
 
