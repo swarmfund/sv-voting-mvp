@@ -46,10 +46,10 @@ constructBallot votes delegate =
 orderedBallotBits : Model -> Dict Int (Result String RangeBallot3Bits) -> Maybe (List RangeBallot3Bits)
 orderedBallotBits model ballotBitsDict =
     let
-        ballotIds =
-            List.map .id model.currentBallot.voteOptions
+        ballotIds b =
+            List.map .id b
 
         ballotBits =
             Maybe.Extra.combine <| List.map (\id -> Dict.get id ballotBitsDict ? Err "" |> Result.toMaybe) ballotIds
     in
-    ballotBits
+    Maybe.map ballotBits model.currentBallot.voteOptions

@@ -24,6 +24,7 @@ const promiseCb = (resolve, reject, extra = []) => (err, val) => {
 }
 
 
+
 const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
     if (mmDetected) {
         app.ports.gotMetamaskImpl.send(true);
@@ -58,6 +59,16 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
 
         return web3js.eth.contract(abi);
     };
+
+
+    // scan the index to get all ballots
+    app.ports.getDemocHashes.subscribe(wrapper(({indexABI, indexAddr, democHash}) => {
+        const index = web3js.eth.contract(indexABI).at(indexAddr);
+
+        index.nBallots(democHash, (e, n) => {
+
+        })
+    }));
 
 
     app.ports.getInit.subscribe(wrapper(({addr, oTitles}) => {
@@ -203,6 +214,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
     // Port subscriptions
     app.ports.setWeb3Provider.subscribe(wrapper((web3Provider) => {
         web3js.setProvider(new Web3.providers.HttpProvider(web3Provider));
+        window.web3.setProvider(web3js.currentProvider);
         console.log("Web3 provider set to:", web3js.currentProvider);
     }));
 

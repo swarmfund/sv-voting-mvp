@@ -2,7 +2,9 @@
 require('./css/securevote-swarm.css');
 require('./css/vendor/tachyons.min.css');
 require('./css/vendor/material.amber-light_blue.min.css');
-import Web3 from 'web3';
+import Web3Legacy from 'web3';
+import Web3OnePointO from './js/vendor/web3-1.0.min';
+
 
 import web3Ports from './src/SecureVote/Eth/Web3.js';
 import curve25519Ports from './src/SecureVote/Crypto/Curve25519';
@@ -18,13 +20,15 @@ window.addEventListener('load', function() {
 
     if (typeof web3 !== 'undefined') {
         console.log("Metamask detected...", web3.currentProvider);
-        web3js = new Web3(web3.currentProvider);
+        web3js = new Web3Legacy(web3.currentProvider);
         mmDetected = true;
         mmWeb3 = web3;
     } else {
-        web3js = new Web3();
+        web3js = new Web3Legacy();
         mmWeb3 = web3js;
     }
+
+    window.web3 = new Web3OnePointO(web3js.currentProvider);
 
     const _DEV_ = process.env.DEV;
 
@@ -40,7 +44,8 @@ window.addEventListener('load', function() {
     const Elm = require('./src/SecureVote/SPAs/SwarmMVP/Main.elm');
     const app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen'), {
         mainTitle: process.env.MAIN_TITLE,
-        dev: DEV
+        dev: DEV,
+        democHash: process.env.DEMOC_HASH,
     });
     console.log("Environment variables are: ", process.env.MAIN_TITLE, process.env.DEV);
     web3Ports(web3js, {mmDetected, mmWeb3}, app);

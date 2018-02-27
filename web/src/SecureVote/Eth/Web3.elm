@@ -309,3 +309,6 @@ decodeAuditMsg auditVal =
 gotAuditMsg : Sub Msg
 gotAuditMsg =
     gotAuditMsgImpl decodeAuditMsg
+
+
+port getDemocHashes : { indexABI : String, indexAddr : String, democHash : String } -> Cmd Msg

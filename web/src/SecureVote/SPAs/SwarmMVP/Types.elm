@@ -14,3 +14,10 @@ type alias GotTxidResp =
     , gas : Int
     , logMsg : String
     }
+
+
+type alias Flags =
+    { mainTitle : String
+    , dev : Bool
+    , democHash : String
+    }
