@@ -31,12 +31,14 @@ contract LittleGovIndex {
     uint256 public requiredEthForIssue;
     bool public paymentEnabled = false;
 
-    // Events
+    //* EVENTS /
+
     event PaymentMade(uint256 value, uint256 remainder, address sender, address paidTo);
     event NoPayment(address sender);
     event DemocInit(string name, bytes32 democHash, address admin);
 
-    // modifiers
+    //* MODIFIERS /
+
     modifier onlyBy(address _account) {
         require(msg.sender == _account);
         _;
@@ -61,15 +63,23 @@ contract LittleGovIndex {
     }
 
 
-    // functions
+    //* FUNCTIONS /
 
-    // constructor - v simple
+
+    // constructor
     function LittleGovIndex() public {
         owner = msg.sender;
         payTo = msg.sender;
     }
 
-    // payment & owner functions
+    //* GLOBAL INFO */
+
+    function nDemocs() public constant returns (uint256) {
+        return democList.length;
+    }
+
+    //* PAYMENT AND OWNER FUNCTIONS */
+
     function setPayTo(address newPayTo) onlyBy(owner) public {
         payTo = newPayTo;
     }
@@ -95,9 +105,10 @@ contract LittleGovIndex {
         issueWhitelist[addr] = _free;
     }
 
-    // democracy wide functions
+    //* DEMOCRACY FUNCTIONS - INDIVIDUAL */
+
     function initDemoc(string democName) payReq(democWhitelist, requiredEthForDemoc) public payable returns (bytes32) {
-        bytes32 democHash = keccak256(democName, msg.sender, democList.length);
+        bytes32 democHash = keccak256(democName, msg.sender, democList.length, this);
         democList.push(democHash);
         democs[democHash].name = democName;
         democs[democHash].admin = msg.sender;
@@ -105,11 +116,24 @@ contract LittleGovIndex {
         return democHash;
     }
 
+    function getDemocInfo(bytes32 democHash) public constant returns (string name, address admin, uint256 nBallots) {
+        return (democs[democHash].name, democs[democHash].admin, democs[democHash].ballots.length);
+    }
+
     function setAdmin(bytes32 democHash, address newAdmin) onlyBy(democs[democHash].admin) public {
         democs[democHash].admin = newAdmin;
     }
 
-    // issue functions
+    function nBallots(bytes32 democHash) public constant returns (uint256) {
+        return democs[democHash].ballots.length;
+    }
+
+    function getNthBallot(bytes32 democHash, uint256 n) public constant returns (bytes32 specHash, bytes32 extraData, address votingContract) {
+        return (democs[democHash].ballots[n].specHash, democs[democHash].ballots[n].extraData, democs[democHash].ballots[n].votingContract);
+    }
+
+    //* ADD BALLOT TO RECORD */
+
     function addBallot(bytes32 democHash, bytes32 ballotSpecHash, bytes32 extraData, address votingContract)
                       onlyBy(democs[democHash].admin)
                       payReq(issueWhitelist, requiredEthForIssue)

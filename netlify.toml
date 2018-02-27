@@ -6,14 +6,17 @@
   [context.production.environment]
     MAIN_TITLE = "SWM Governance"
     DEV = "false"
+    DEMOC_HASH = "0x"
     YARN_VERSION = "0.18.1"
 
 [context.deploy-preview.environment]
   MAIN_TITLE = "SWM Governance (Staging)"
   DEV = "false"
+  DEMOC_HASH = "0x0123"
   YARN_VERSION = "0.18.1"
 
 [context.branch-deploy.environment]
   MAIN_TITLE = "SWM Governance (Dev, Kovan)"
   DEV = "true"
+  DEMOC_HASH = "0xa892bfd47f632b1f97ec07bc70843ca988d386ddb28e32f4d234477388362300"
   YARN_VERSION = "0.18.1"

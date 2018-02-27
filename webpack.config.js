@@ -16,6 +16,11 @@ var TARGET_ENV = function () {
         case 'web':
             return 'development';
 
+        case 'web-admin':
+            return 'dev-admin-ui';
+        case 'build-web-admin':
+            return 'prod-admin-ui';
+
         case 'admin-dev':
             return 'admin-dev';
         case 'admin-prod':
@@ -89,7 +94,7 @@ const common = {
         fs: "empty"
     },
     entry: {
-        "sv-swarm": ['./web/index.js']
+        "sv-little-gov": ['./web/index.js']
     },
     output: {
         path: path.join(__dirname, _dist),
@@ -113,7 +118,7 @@ const common = {
         ]
     },
     plugins: [
-        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV"]),
+        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH"]),
         CopyWebpackPluginConfig,
         new HTMLWebpackPlugin({
             // using .ejs prevents other loaders causing errors
@@ -129,7 +134,31 @@ const common = {
 };
 
 
-if (TARGET_ENV === 'development') {
+const adminUiInjection = (env) => {
+    if (env === 'dev-admin-ui' || env === 'prod-admin-ui') {
+        return {
+            entry: {"sv-admin": ['./web/admin.js']},
+            devServer: {
+                historyApiFallback: {
+                    index: 'admin.html'
+                }
+            },
+            plugins: [
+                new HTMLWebpackPlugin({
+                    // using .ejs prevents other loaders causing errors
+                    template: 'web/admin.ejs',
+                    // inject details of output file at end of body
+                    inject: 'body'
+                })
+            ]
+        }
+    } else {
+        return {}
+    }
+};
+
+
+if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui') {
     console.log('Building for dev...');
     module.exports = merge(common, buildAuditWeb({}), {
         plugins: [
@@ -167,10 +196,10 @@ if (TARGET_ENV === 'development') {
                 ignored: [/node_modules/, /bower_components/]
             }
         }
-    });
+    }, adminUiInjection(TARGET_ENV));
 }
 
-if (TARGET_ENV === 'production') {
+if (TARGET_ENV === 'production' || TARGET_ENV === 'prod-admin-ui') {
     console.log('Building for prod...');
     module.exports = merge(common, buildAuditWeb({outputDir: ".cache/output"}), {
         plugins: [
