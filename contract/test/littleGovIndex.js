@@ -1,5 +1,7 @@
 var LGIndex = artifacts.require("./LittleGovIndex.sol");
 
+require('./testUtils')();
+
 const AsyncPar = require('async-parallel');
 
 const {create, env} = require('sanctuary');
@@ -8,52 +10,8 @@ const S = create({checkTypes: true, env});
 const bytes32zero = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 
-const genRandomBytes32 = () => {
-  return "0x" + crypto.randomBytes(32).toString('hex');
-}
-
-
-function wrapTest(accounts, f) {
-  return async () => {
-    return await f(accounts, LGIndex);
-  }
-}
-
-
-async function asyncAssertThrow(f, msg) {
-  const didError = true;
-  try{
-    const res = await f();
-    didError = false;
-  } catch (e) {
-  }
-
-  if (!didError) {
-    throw Error("Expected error didn't happen: " + msg.toString())
-  }
-}
-
-
-const toAsync = (f) => async(...args) => {
-  return new Promise((res, rej) => {
-    f(...args, (e, d) => e ? rej(e) : res(d))
-  })
-}
-
-
-const getBalance = toAsync(web3.eth.getBalance)
-const getBlockNumber = toAsync(web3.eth.getBlockNumber)
-
-
-const ERR_REVERT = 'VM Exception while processing transaction: revert';
-const ERR_OP_CODE = 'VM Exception while processing transaction: invalid opcode';
-
-
-const log = (...args) => console.log(...args);
-
-
-async function testOwner(accounts, contractFactory) {
-  const lg = await contractFactory.new();
+async function testOwner(accounts) {
+  const lg = await LGIndex.new();
 
   assert.equal(await lg.owner(), accounts[0], "owner set");
   assert.equal(await lg.payTo(), accounts[0], "payTo set");
@@ -124,90 +82,6 @@ async function testOwner(accounts, contractFactory) {
 
 
 }
-
-
-// async function testTestMode(accounts, contractFactory) {
-//   var startTime = Math.round(Date.now() / 1000);
-//   var endTime = startTime + 600;
-//   var shortEndTime = 0;
-
-//   var vc = await contractFactory.new(startTime, endTime, hexPk, false, "", "", "", "", "");
-
-//   const _setEndTimeTx = await vc.setEndTime(0);
-//   assertOnlyEvent('Error', _setEndTimeTx);
-
-//   const _banAddrTx = await vc.banAddress(accounts[1]);
-//   assertOnlyEvent('Error', _banAddrTx);
-// }
-
-
-
-
-
-
-
-
-
-
-// async function testABallot(_vc = S.Nothing, account = S.Nothing) {
-//   if (S.isNothing(_vc)) {throw Error("must provide voting contract to `testABallot`")}
-//   const vc = S.fromMaybe_(() => null, _vc);
-//   const myAddr = S.fromMaybe(accounts[0], account);
-
-//   const encBallot = genRandomBytes32();
-//   const vtrPubkey = genRandomBytes32();
-
-//   const _submitBallot = await vc.submitBallot(encBallot, vtrPubkey, {from: myAddr});
-
-//   await assertOnlyEvent('SuccessfulVote', _submitBallot);
-
-//   // const _nVotesRet = await vc.nVotesCast();
-//   const _ballotId = await vc.voterToBallotID(myAddr);
-//   const _addr = await vc.associatedAddresses(_ballotId);
-//   const _pkRet = await vc.associatedPubkeys(_ballotId);
-//   const _ballotRet = await vc.encryptedBallots(_ballotId);
-
-//   // note: these two tests do not work in parallel - disabled
-//   // assert.equal(_nVotesRet.toNumber(), expectedVotes, "should have " + expectedVotes.toString() + " vote");
-//   // assert.equal(_ballotId.toNumber(), expectedVotes - 1, "should be " + (expectedVotes - 1) + "th ballot");
-//   assert.equal(_addr, myAddr, "account should match");
-//   assert.equal(_pkRet, vtrPubkey, "pubkey should match");
-//   assert.equal(_ballotRet, encBallot, "ballots should match");
-
-//   return true;
-// }
-
-// async function assertOnlyEvent(eventName, txResponse) {
-//   const _eventName = txResponse.logs[0]['event']
-//   assert.equal(eventName, _eventName, "Event " + eventName + " should be emitted");
-// }
-
-// function sAssertEq(a, b, msg) {
-//   return assert.true(S.equals(a, b), msg);
-// }
-
-
-// async function timeTravel(seconds) {
-//   const response = web3.currentProvider.send({jsonrpc: "2.0", method: "evm_increaseTime", params: [seconds], id: 0});
-//   console.log("Time travelled " + seconds + " seconds; new offset: " + response.result)
-//   return response.result;
-// }
-
-
-// async function getSnapshot() {
-//   const resp = await web3.currentProvider.send({jsonrpc: "2.0", method: "evm_snapshot", params: [], id: 0});
-//   return resp.result;
-// }
-
-// async function testrpcRevert(snapshot) {
-//   const args = snapshot ? [snapshot] : []
-//   return await web3.currentProvider.send({jsonrpc: "2.0", method: "evm_revert", params: args, id: 0});
-// }
-
-
-
-// function sleep(s) {return new Promise(res => setTimeout(res, s * 1000))};
-
 
 
 contract('LittleGovIndex', function(_accounts) {
