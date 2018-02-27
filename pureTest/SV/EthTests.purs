@@ -29,6 +29,7 @@ import Test.Spec.QuickCheck (quickCheck)
 ethTests :: forall e. SpecType e
 ethTests = do
     it "should find blocks reliably" do
+        -- web3URL, web3Auth
         setWeb3Provider "https://eth-aws-nv-node-02.secure.vote:8545" ""
         -- run the block test 3 times for random blocks
         runBlockTest
