@@ -157,8 +157,8 @@ port constructDataParam : ConsDataParamReq -> Cmd msg
 port castMetaMaskVoteImpl : MinEthTx -> Cmd msg
 
 
-castMetaMaskVote : CandidateEthTx -> Cmd msg
-castMetaMaskVote { from, to, value, data, gas } =
+castMetaMaskTx : CandidateEthTx -> Cmd msg
+castMetaMaskTx { from, to, value, data, gas } =
     castMetaMaskVoteImpl
         { from = withDefault "" from
         , to = withDefault "ERROR - THIS SHOULD BE FILLED AND YOU SHOULD NEVER SEE THIS" to
@@ -173,14 +173,21 @@ port metamaskTxidImpl : (Value -> msg) -> Sub msg
 
 metamaskTxid : Sub Msg
 metamaskTxid =
-    metamaskTxidImpl <|
-        \val ->
-            case decodeValue string val of
+    metamaskTxidGen
+        (\r ->
+            case r of
                 Ok txid ->
                     FromWeb3 <| GotMetaMaskTxid txid
 
                 Err err ->
                     errHelper "MetaMask returned an error: " err
+        )
+
+
+metamaskTxidGen : (Result String String -> msg) -> Sub msg
+metamaskTxidGen msg =
+    metamaskTxidImpl <|
+        \val -> msg <| decodeValue string val
 
 
 port implDataParam : (Value -> msg) -> Sub msg

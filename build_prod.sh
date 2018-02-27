@@ -31,78 +31,84 @@ fi
 
 # detect netlify (or other ci)
 if [ $REPOSITORY_URL ]; then
-  # prep for netlify cache stuff
-  echo "Restoring .cache at $CACHE_DIR/.cache: \n`ls $CACHE_DIR/.cache`\n"
-  cp -a $CACHE_DIR/.cache .cache || true
+    echo "DETECTED CI OR NETLIFY"
+    echo ""
 
-  # get cached elm stuff
-  mkdir -p .cache
-  cp -a .cache/elm-stuff elm-stuff || true
+    # prep for netlify cache stuff
+    echo "Restoring .cache at $CACHE_DIR/.cache: \n`ls $CACHE_DIR/.cache`\n"
+    cp -a $CACHE_DIR/.cache .cache || true
 
-  # print cache directory
-  echo "Cache Directory before build:\n"
-  ls -al .cache
-  echo ""
-fi
+    # get cached elm stuff
+    mkdir -p .cache
+    cp -a .cache/elm-stuff elm-stuff || true
 
-echo "Trying to get a version of sysconfcpus..."
-git clone https://github.com/obmarg/libsysconfcpus.git
-cd libsysconfcpus
-./configure --prefix=$HOME
-echo "prefix used: $HOME"
-make install
-cd ..
-echo "ls $HOME\n"
-ls $HOME
-echo "ls $HOME/bin\n"
-ls $HOME/bin
-echo "done ls $HOME\n"
-echo "\"Installed\" sysconfcpus"
+    # print cache directory
+    echo "Cache Directory before build:\n"
+    ls -al .cache
+    echo ""
 
-
-# prepping build by precompiling purs and elm
-echo "Compiling purescirpt"
-# using yarn run bc we got a weird error from netlify about not finding `purs` once
-$HOME/bin/sysconfcpus -n 1 yarn run pulp build -j 1 # build all deps we've downloaded
-check_error $?
-
-# echo "Compiling elm"
-# yarn run elm-make web/src/SecureVote/SPAs/SwarmMVP/Main.elm  --output temp-32489734985.html 2>&1 # compile elm
-# check_error $?
-
-echo "Manually installing elm - yarn seems to miss it..."
-npm install elm
-echo "Elm installed"
-
-ls node_modules/elm/
-ls node_modules/elm/Elm-Platform/
-ls node_modules/elm/Elm-Platform/0.18.0/
-ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/
-ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/
-
-$HOME/bin/sysconfcpus -n 1 yarn elm-install
-check_error $?
-
-# do build
-echo "Building now..."
-time do_webpack "$@"
-WEBPACK_RET=$?
-check_error $WEBPACK_RET
-echo "Build Complete"
+    echo "Trying to get a version of sysconfcpus..."
+    git clone https://github.com/obmarg/libsysconfcpus.git
+    cd libsysconfcpus
+    ./configure --prefix=$HOME
+    echo "prefix used: $HOME"
+    make install
+    cd ..
+    echo "ls $HOME\n"
+    ls $HOME
+    echo "ls $HOME/bin\n"
+    ls $HOME/bin
+    echo "done ls $HOME\n"
+    echo "\"Installed\" sysconfcpus"
 
 
-if [ $REPOSITORY_URL ]; then
-  # save in cache
-  echo "Caching elm stuff"
-  rm -rf .cache/elm-stuff || true
-  cp -a elm-stuff .cache/elm-stuff
+    # prepping build by precompiling purs and elm
+    echo "Compiling purescirpt"
+    # using yarn run bc we got a weird error from netlify about not finding `purs` once
+    $HOME/bin/sysconfcpus -n 1 yarn run pulp build -j 1 # build all deps we've downloaded
+    check_error $?
 
-  # print cache directory
-  echo "Cache Directory after build: (ls -al .cache)\n"
-  ls -al .cache
-  echo ""
+    # echo "Compiling elm"
+    # yarn run elm-make web/src/SecureVote/SPAs/SwarmMVP/Main.elm  --output temp-32489734985.html 2>&1 # compile elm
+    # check_error $?
 
-  # save netlify cache
-  cp -a .cache $CACHE_DIR/.cache
-  echo "Saved .cache to $CACHE_DIR/.cache: \n`ls $CACHE_DIR/.cache`\n"
+    echo "Manually installing elm - yarn seems to miss it..."
+    npm install elm
+    echo "Elm installed"
+
+    ls node_modules/elm/
+    ls node_modules/elm/Elm-Platform/
+    ls node_modules/elm/Elm-Platform/0.18.0/
+    ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/
+    ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/
+
+    $HOME/bin/sysconfcpus -n 1 yarn elm-install
+    check_error $?
+
+    # do build
+    echo "Building now..."
+    time do_webpack "$@"
+    WEBPACK_RET=$?
+    check_error $WEBPACK_RET
+    echo "Build Complete"
+
+
+    # save in cache
+    echo "Caching elm stuff"
+    rm -rf .cache/elm-stuff || true
+    cp -a elm-stuff .cache/elm-stuff
+
+    # print cache directory
+    echo "Cache Directory after build: (ls -al .cache)\n"
+    ls -al .cache
+    echo ""
+
+    # save netlify cache
+    cp -a .cache $CACHE_DIR/.cache
+    echo "Saved .cache to $CACHE_DIR/.cache: \n`ls $CACHE_DIR/.cache`\n"
+
+else
+
+    do_webpack
+
 fi

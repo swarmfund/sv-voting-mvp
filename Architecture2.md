@@ -55,8 +55,8 @@ Polymorphic over `ballotType` (i.e. different internal structures depending on v
 
 ```
 { ballotTitle :: String
-, shortDescription :: String
-, longDescription :: String
+, shortDesc :: String
+, longDesc :: String
 , startTime :: Maybe Int
 , endTime :: Int
 , erc20Addr :: String

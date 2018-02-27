@@ -77,6 +77,7 @@ You'll need to set these environment variables:
 
 * `MAIN_TITLE`: A string corresponding to the main title of the first page, e.g. "SWM Governance".
 * `DEV`: a boolean to indicate if it's a dev environment or not.
+* `DEMOC_HASH`: the Eth encoded hash of the relevant democracy (note: in future this might be handled in-app)
 
 If you're building locally you can put these in a `.env` file in the root of the repo.
 

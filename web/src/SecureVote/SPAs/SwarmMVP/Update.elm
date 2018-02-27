@@ -162,7 +162,7 @@ update msg model =
             { model | auditMsgs = msg :: model.auditMsgs } ! []
 
         VoteWMetaMask ->
-            model ! [ castMetaMaskVote model.candidateTx ]
+            model ! [ castMetaMaskTx model.candidateTx ]
 
         -- ToCurve25519 msg ->
         --     updateToCurve25519 msg model
