@@ -49,7 +49,7 @@ contract LittleGovIndex {
 
             // handle payments
             uint256 remainder = msg.value - v;
-            payTo.transfer(v);  // .transfer so it throws on failure
+            payTo.transfer(v); // .transfer so it throws on failure
             msg.sender.transfer(remainder);
             PaymentMade(v, remainder, msg.sender, payTo);
         } else {
@@ -110,11 +110,7 @@ contract LittleGovIndex {
     }
 
     // issue functions
-    function addBallot(bytes32 democHash,
-                       bytes32 ballotSpecHash,
-                       bytes32 extraData,
-                       address votingContract
-                      )
+    function addBallot(bytes32 democHash, bytes32 ballotSpecHash, bytes32 extraData, address votingContract)
                       onlyBy(democs[democHash].admin)
                       payReq(issueWhitelist, requiredEthForIssue)
                       public
