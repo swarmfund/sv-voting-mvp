@@ -22,7 +22,7 @@ allDevBallots_ =
 marchT1Ballot : BallotParams msg
 marchT1Ballot =
     { voteOptions = marchT1Opts
-    , ballotTitle = "Which type of investment opportunities would you like to see on Swarm?"
+    , ballotTitle = "Asset-backed token investments are attractive when their minimum annual return is:"
     , contractAddr = "0xF1C33B7F72f96EC5aE2E60e747a64E216Da98bc7"
     , description = "This non-binding ballot will help the Swarm Foundation gauge the risk profile of the SWM token holders."
     , openingDesc = "This non-binding ballot will help the Swarm Foundation gauge the risk profile of the SWM token holders."
