@@ -70,7 +70,11 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
             const n = nBI.toNumber();
             console.log("getDemocHashes got", n, "total ballots");
             app.ports.democNBallots.send({democHash, n});
+            S.map(i => {
+                index.getNthBallot(democHash, i, (e, info) => {
 
+                });
+            }, S.range(0, n));
         })
     }));
 
