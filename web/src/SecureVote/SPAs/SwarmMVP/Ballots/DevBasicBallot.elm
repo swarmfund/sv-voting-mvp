@@ -15,7 +15,34 @@ allDevBallots_ =
     , devBasic6
     , devBasic7
     , ioTypes
-    , goodInvestmentROI
+    , marchT1Ballot
+    ]
+
+
+marchT1Ballot : BallotParams msg
+marchT1Ballot =
+    { voteOptions = marchT1Opts
+    , ballotTitle = "Which type of investment opportunities would you like to see on Swarm?"
+    , contractAddr = "0xF1C33B7F72f96EC5aE2E60e747a64E216Da98bc7"
+    , description = "This non-binding ballot will help the Swarm Foundation gauge the risk profile of the SWM token holders."
+    , openingDesc = "This non-binding ballot will help the Swarm Foundation gauge the risk profile of the SWM token holders."
+    , endTime = 1522540740
+    , startTime = 1519851600
+    , id = 83947539478
+    , erc20Balance = Nothing
+    , erc20Abrv = "SWM"
+    , erc20Addr = devErc20Addr
+    , discussionLink = Just "https://discuss.swarm.fund/t/which-type-of-investment-opportunities-would-you-like-to-see-on-swarm/45/2"
+    }
+
+
+marchT1Opts : List (BallotOption msg)
+marchT1Opts =
+    [ { id = 4634534, title = "5% - No risk", description = DlogTxt "" }
+    , { id = 3462542, title = "25% - Some risk", description = DlogTxt "" }
+    , { id = 3456456, title = "100%+ - High risk", description = DlogTxt "" }
+    , { id = 4567456, title = "10X - VC territory", description = DlogTxt "" }
+    , { id = 3464567, title = "100X - “Insane, do you call this an investment?”", description = DlogTxt "" }
     ]
 
 

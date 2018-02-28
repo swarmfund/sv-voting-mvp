@@ -264,10 +264,7 @@ updateFromWeb3 msg model =
         GetBallotOpts resp ->
             case resp of
                 Success d ->
-                    if d.isGood then
-                        ballotOptSuccess model d
-                    else
-                        ballotOptElse model resp
+                    ballotOptSuccess model d
 
                 _ ->
                     ballotOptElse model resp
@@ -383,7 +380,7 @@ ballotOptElse : Model -> RemoteData String a -> ( Model, Cmd Msg )
 ballotOptElse model resp =
     case resp of
         Success _ ->
-            mFail model "Response from Web3 successful but not handled by correct function. This error should never happen." ! []
+            mFail model "Response from Web3 successful but decoding the response failed. This error should never happen." ! []
 
         Failure errMsg ->
             mFail model errMsg ! []
