@@ -82,6 +82,9 @@ if [ $REPOSITORY_URL ]; then
     ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/
     ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/
 
+    # bit drastic - try to avoid netlify's CI thinking we can't compile due to elm-web3
+    rm node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/elm-package
+
     $HOME/bin/sysconfcpus -n 1 yarn run elm-install install
     check_error $?
 
