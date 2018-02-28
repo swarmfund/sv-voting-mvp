@@ -1,7 +1,7 @@
 require('./css/admin-ui.css');
+const R = require('ramda');
 
-const littleBallotBoxABI = require('../_solDist/LittleBallotBox.abi.json');
-const littleGovIndexABI = require('../_solDist/LittleGovIndex.abi.json');
+const getFlags = require('./getFlags');
 
 let web3;
 let web3js;
@@ -23,17 +23,11 @@ window.addEventListener('load', function () {
 
     window.web3 = web3;
 
-    const _DEV_ = process.env.DEV;
-
-    const DEV = (_DEV_ && _DEV_.toLowerCase() === "true") || false;
+    flags = getFlags();
 
     const Elm = require('./src/SecureVote/SPAs/AdminUI/Main.elm');
-    const app = Elm.SecureVote.SPAs.AdminUI.Main.fullscreen({
-        mainTitle: process.env.MAIN_TITLE,
-        dev: DEV,
-        democHash: process.env.DEMOC_HASH
-    });
-    console.log("Environment variables are: ", process.env.MAIN_TITLE, process.env.DEV, process.env.DEMOC_HASH);
+    const app = Elm.SecureVote.SPAs.AdminUI.Main.fullscreen(flags);
+    console.log("Environment variables are: ", R.map(v => v.slice ? v.slice(0,80) : v, flags));
     // web3Ports(web3js, {mmDetected, mmWeb3}, app);
     // curve25519Ports(app);
 

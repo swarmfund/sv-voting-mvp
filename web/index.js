@@ -4,14 +4,12 @@ require('./css/vendor/tachyons.min.css');
 require('./css/vendor/material.amber-light_blue.min.css');
 import Web3Legacy from 'web3';
 import Web3OnePointO from './js/vendor/web3-1.0.min';
-
+const R = require('ramda');
 
 import web3Ports from './src/SecureVote/Eth/Web3.js';
 import curve25519Ports from './src/SecureVote/Crypto/Curve25519';
 
-
-const littleBallotBoxABI = require('../_solDist/LittleBallotBox.abi.json');
-const littleGovIndexABI = require('../_solDist/LittleGovIndex.abi.json');
+const getFlags = require('./getFlags');
 
 window.addEventListener('load', function() {
     let web3js;
@@ -30,24 +28,19 @@ window.addEventListener('load', function() {
 
     window.web3 = new Web3OnePointO(web3js.currentProvider);
 
-    const _DEV_ = process.env.DEV;
+    const flags = getFlags();
 
-    const DEV = (_DEV_ && _DEV_.toLowerCase() === "true") || false;
-    if (!DEV) {
+    if (!flags.dev) {
         require('./js/birds.js');
     }
 
-    document.title = process.env.MAIN_TITLE + " - By SecureVote";
+    document.title = flags.mainTitle + " - By SecureVote";
 
     document.getElementById("loading-screen").classList.add('slide-out');
 
     const Elm = require('./src/SecureVote/SPAs/SwarmMVP/Main.elm');
-    const app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen'), {
-        mainTitle: process.env.MAIN_TITLE,
-        dev: DEV,
-        democHash: process.env.DEMOC_HASH,
-    });
-    console.log("Environment variables are: ", process.env.MAIN_TITLE, process.env.DEV);
+    const app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen'), flags);
+    console.log("Environment variables are: ", R.map(v => v.slice ? v.slice(0,80) : v, flags));
     web3Ports(web3js, {mmDetected, mmWeb3}, app);
     curve25519Ports(app);
-});
+}, 100);

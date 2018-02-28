@@ -311,4 +311,4 @@ gotAuditMsg =
     gotAuditMsgImpl decodeAuditMsg
 
 
-port getDemocHashes : { indexABI : String, indexAddr : String, democHash : String } -> Cmd Msg
+port getDemocHashes : { indexABI : String, indexAddr : String, democHash : String } -> Cmd msg

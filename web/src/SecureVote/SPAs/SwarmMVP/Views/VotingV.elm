@@ -15,14 +15,15 @@ import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Utils exposing (processCandidateTx)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate, getDelegateAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(GethDialog, MEWDialog, VerifyDialog), Route(SwmSubmitR))
 
 
-votingView : Model -> Html Msg
-votingView model =
+votingView : Model -> BallotParams Msg -> Html Msg
+votingView model currBallot =
     let
         tableRow ( desc, value ) =
             tr []
@@ -38,7 +39,7 @@ votingView model =
         displayResults =
             table [ class "mt2 dt--fixed w-auto-l" ]
                 (List.map tableRow
-                    (List.map getResults model.currentBallot.voteOptions)
+                    (List.map getResults currBallot.voteOptions)
                     ++ [ tableRow ( "Delegate", getDelegateAddress model ? "None" ) ]
                 )
 

@@ -20,4 +20,6 @@ type alias Flags =
     { mainTitle : String
     , dev : Bool
     , democHash : String
+    , indexABI : String
+    , indexAddr : String
     }

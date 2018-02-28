@@ -7,7 +7,9 @@ import Html.Attributes exposing (class)
 import Maybe.Extra exposing ((?))
 import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult)
 import SecureVote.Eth.Utils exposing (isLegacyAddress)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import Tuple exposing (second)
 
 
@@ -21,8 +23,8 @@ isAuditSuccessMsg msg =
             False
 
 
-renderResults : Model -> BallotResult -> Html msg
-renderResults model { nVotes, totals } =
+renderResults : Model -> BallotParams Msg -> BallotResult -> Html msg
+renderResults model currBallot { nVotes, totals } =
     let
         sortedTotals =
             List.reverse <| List.sortBy (D.toFloat << second) totals
@@ -38,7 +40,7 @@ renderResults model { nVotes, totals } =
             ( text t, span [ sCls score ] [ text <| D.toString score ] )
 
         convHash h =
-            if isLegacyAddress model.currentBallot.contractAddr then
+            if isLegacyAddress currBallot.contractAddr then
                 h
                 {- We get the titles given to us with the legacy address -}
             else
@@ -67,27 +69,27 @@ renderResults model { nVotes, totals } =
             ++ List.map (tr [ trCs ] << procTS) titledTotals
 
 
-renderAudit : Model -> Html msg
-renderAudit model =
+renderAudit : Model -> BallotParams Msg -> Html msg
+renderAudit model currBallot =
     case List.head <| List.filter isAuditSuccessMsg model.auditMsgs of
         Just (AuditSuccess res) ->
-            div [ class "center" ] [ renderResults model res ]
+            div [ class "center" ] [ renderResults model currBallot res ]
 
         _ ->
-            div [ class "center" ] <| renderAuditLog True model
+            div [ class "center" ] <| renderAuditLog True model currBallot
 
 
-renderAuditLog : Bool -> Model -> List (Html msg)
-renderAuditLog truncate model =
-    List.map (renderAuditMsg model) <|
+renderAuditLog : Bool -> Model -> BallotParams Msg -> List (Html msg)
+renderAuditLog truncate model currBallot =
+    List.map (renderAuditMsg model currBallot) <|
         if truncate then
             List.take 5 model.auditMsgs
         else
             model.auditMsgs
 
 
-renderAuditMsg : Model -> AuditDoc -> Html msg
-renderAuditMsg model auditMsg =
+renderAuditMsg : Model -> BallotParams Msg -> AuditDoc -> Html msg
+renderAuditMsg model currBallot auditMsg =
     let
         wrapper attrs msg =
             span ([ class "db tl pa1 bb bb-silver" ] ++ attrs) [ text msg ]
@@ -103,4 +105,4 @@ renderAuditMsg model auditMsg =
             wrapper [ class "red bold" ] msg
 
         AuditSuccess res ->
-            renderResults model res
+            renderResults model currBallot res

@@ -66,6 +66,8 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
         const index = web3js.eth.contract(indexABI).at(indexAddr);
 
         index.nBallots(democHash, (e, n) => {
+            console.log("getDemocHashes got", n, "total ballots");
+            app.ports.democNVotes({indexAddr, n});
 
         })
     }));

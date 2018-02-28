@@ -118,7 +118,7 @@ const common = {
         ]
     },
     plugins: [
-        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH"]),
+        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR"]),
         CopyWebpackPluginConfig,
         new HTMLWebpackPlugin({
             // using .ejs prevents other loaders causing errors
@@ -134,10 +134,9 @@ const common = {
 };
 
 
-const adminUiInjection = (env) => {
+const adminUiInjection = (env, config) => {
     if (env === 'dev-admin-ui' || env === 'prod-admin-ui') {
-        return {
-            entry: {"sv-admin": ['./web/admin.js']},
+        const toRet = merge(config, {
             devServer: {
                 historyApiFallback: {
                     index: 'admin.html'
@@ -151,16 +150,18 @@ const adminUiInjection = (env) => {
                     inject: 'body'
                 })
             ]
-        }
+        })
+        toRet.entry = {"sv-admin": ['./web/admin.js']};
+        return toRet;
     } else {
-        return {}
+        return config;
     }
 };
 
 
 if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui') {
     console.log('Building for dev...');
-    module.exports = merge(common, buildAuditWeb({}), {
+    const toExport = merge(common, buildAuditWeb({}), {
         plugins: [
             // Suggested for hot-loading
             new webpack.NamedModulesPlugin(),
@@ -196,7 +197,8 @@ if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui') {
                 ignored: [/node_modules/, /bower_components/]
             }
         }
-    }, adminUiInjection(TARGET_ENV));
+    });
+    module.exports = adminUiInjection(TARGET_ENV, toExport)
 }
 
 if (TARGET_ENV === 'production' || TARGET_ENV === 'prod-admin-ui') {
