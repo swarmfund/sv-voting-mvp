@@ -44,6 +44,7 @@ contract SwarmVotingMVP {
     // Private key to be set after ballot conclusion - curve25519
     bytes32 public ballotEncryptionSeckey;
     bool seckeyRevealed = false;
+    bool allowSeckeyBeforeEndTime = false;
 
     // Timestamps for start and end of ballot (UTC)
     uint256 public startTime;
@@ -59,6 +60,7 @@ contract SwarmVotingMVP {
     event CreatedBallot(address creator, uint256 start, uint256 end, bytes32 encPubkey, string o1, string o2, string o3, string o4, string o5);
     event SuccessfulVote(address voter, bytes32 ballot, bytes32 pubkey);
     event SeckeyRevealed(bytes32 secretKey);
+    event AllowEarlySeckey(bool allowEarlySeckey);
     event TestingEnabled();
     event Error(string error);
 
@@ -82,7 +84,7 @@ contract SwarmVotingMVP {
     }
 
     modifier ballotOpen {
-        if (block.timestamp > startTime && block.timestamp < endTime) {
+        if (block.timestamp >= startTime && block.timestamp < endTime) {
             _;
         } else {
             Error("Ballot not open");
@@ -100,7 +102,7 @@ contract SwarmVotingMVP {
     //// ** Functions
 
     // Constructor function - init core params on deploy
-    function SwarmVotingMVP(uint256 _startTime, uint256 _endTime, bytes32 _encPK, bool enableTesting, string opt1, string opt2, string opt3, string opt4, string opt5) public {
+    function SwarmVotingMVP(uint256 _startTime, uint256 _endTime, bytes32 _encPK, bool enableTesting, bool _allowSeckeyBeforeEndTime, string opt1, string opt2, string opt3, string opt4, string opt5) public {
         owner = msg.sender;
 
         startTime = _startTime;
@@ -110,6 +112,9 @@ contract SwarmVotingMVP {
         bannedAddresses[swarmFundAddress] = true;
 
         optionHashes = [keccak256(opt1), keccak256(opt2), keccak256(opt3), keccak256(opt4), keccak256(opt5)];
+
+        allowSeckeyBeforeEndTime = _allowSeckeyBeforeEndTime;
+        AllowEarlySeckey(_allowSeckeyBeforeEndTime);
 
         if (enableTesting) {
             testMode = true;
@@ -137,7 +142,9 @@ contract SwarmVotingMVP {
 
     // Allow the owner to reveal the secret key after ballot conclusion
     function revealSeckey(bytes32 _secKey) onlyOwner public {
-        require(block.timestamp > endTime);
+        if (allowSeckeyBeforeEndTime == false) {
+            require(block.timestamp > endTime);
+        }
 
         ballotEncryptionSeckey = _secKey;
         seckeyRevealed = true;  // this flag allows the contract to be locked

@@ -8,6 +8,7 @@ var provider = TestRPC.provider({port: 34839, accounts: S.map(_ => ({balance: "0
 module.exports = {
   networks: {
     development: {
+      gas: 4500000,
       provider: provider,
       network_id: "*" // Match any network id
     }

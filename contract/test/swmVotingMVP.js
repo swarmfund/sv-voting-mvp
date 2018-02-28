@@ -44,7 +44,7 @@ async function testInstantiation(accounts, contractFactory) {
   var endTime = startTime + 600;
   var shortEndTime = 0;
   
-  const vc = await contractFactory.new(startTime, endTime, hexPk, true, "", "", "", "", "");
+  const vc = await contractFactory.new(startTime, endTime, hexPk, true, false, "", "", "", "", "");
 
   const owner = await vc.owner();
   assert.equal(owner, accounts[0], "Owner must be set on launch.");
@@ -139,7 +139,7 @@ async function testTestMode(accounts, contractFactory) {
   var endTime = startTime + 600;
   var shortEndTime = 0;
   
-  var vc = await contractFactory.new(startTime, endTime, hexPk, false, "", "", "", "", "");
+  var vc = await contractFactory.new(startTime, endTime, hexPk, false, false, "", "", "", "", "");
 
   const _setEndTimeTx = await vc.setEndTime(0);
   assertOnlyEvent('Error', _setEndTimeTx);
@@ -151,7 +151,27 @@ async function testTestMode(accounts, contractFactory) {
 
 
 
+async function testAllowSecKeyBeforeEndTime(accounts, contractFactory) {
+    const startTime = Math.round(Date.now() / 1000) - 2;
+    const endTime = startTime + 600;
 
+    const vcNoEarlySecKey = await contractFactory.new(startTime, endTime, hexPk, false, false, "", "", "", "", "");
+    let errThrown = false;
+    try {
+        const _testNoEarly = await vcNoEarlySecKey.revealSeckey(hexSk);
+    } catch (e) {
+        // all good
+        errThrown = true;
+    }
+
+    if(!errThrown) {
+        throw Error("Expected error to be thrown on bad early release of seckey");
+    }
+
+    const vcYesEarlySecKey = await contractFactory.new(startTime, endTime, hexPk, false, true, "", "", "", "", "");
+    const _testEarly = await vcYesEarlySecKey.revealSeckey(hexSk);
+    assertOnlyEvent('SeckeyRevealed', _testEarly);
+}
 
 
 
@@ -229,6 +249,6 @@ contract('SwarmVotingMVP', function(_accounts) {
 
   it("should not allow testing functions if testing mode is false", wrapTest(testTestMode));
   it("should instantiate correctly", wrapTest(testInstantiation));
-  it("pending2", function() {
+  it("should resepct allowSecKeyBeforeEndTime", wrapTest(testAllowSecKeyBeforeEndTime));
   });
 });
