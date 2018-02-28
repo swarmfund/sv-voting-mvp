@@ -314,4 +314,4 @@ gotAuditMsg =
 port getDemocHashes : { indexABI : String, indexAddr : String, democHash : String } -> Cmd msg
 
 
-port democNVotes : (Value -> msg) -> Sub msg
+port democNBallots : (Value -> msg) -> Sub msg
