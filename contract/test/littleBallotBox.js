@@ -21,7 +21,7 @@ async function testEarlyBallot(accounts) {
     var endTime = startTime + 600;
     var shortEndTime = 0;
 
-    const vc = await LittleBallotBox.new(startTime, endTime, true, true, specHash);
+    const vc = await LittleBallotBox.new(specHash, startTime, endTime, true, true);
     await asyncAssertThrow(() => vc.submitBallotWithPk(hexPk, hexPk, { from: accounts[5] }), "should throw on early ballot");
 }
 
@@ -33,7 +33,7 @@ async function testEncryptionBranching(accounts) {
     /* ENCRYPTION */
 
     // best BB with enc
-    const vcEnc = await LittleBallotBox.new(startTime, endTime, true, true, specHash);
+    const vcEnc = await LittleBallotBox.new(specHash, startTime, endTime, true, true);
 
     // check we're using enc
     assert.isTrue(await vcEnc.useEncryption(), "encryption should be enabled");
@@ -51,7 +51,7 @@ async function testEncryptionBranching(accounts) {
     /* NO ENCRYPTION */
 
     // create ballot box with no enc
-    const vcNoEnc = await LittleBallotBox.new(startTime, endTime, false, true, specHash);
+    const vcNoEnc = await LittleBallotBox.new(specHash, startTime, endTime, false, true);
 
     // assert useEnc is false with no enc
     assert.isFalse(await vcNoEnc.useEncryption(), "encryption should be disabled");
@@ -72,7 +72,7 @@ async function testInstantiation(accounts) {
     var endTime = startTime + 600;
     var shortEndTime = 0;
 
-    const vc = await LittleBallotBox.new(startTime, endTime, true, true, specHash);
+    const vc = await LittleBallotBox.new(specHash, startTime, endTime, true, true);
 
     log(accounts[0]);
     assert.equal(await vc.owner(), accounts[0], "Owner must be set on launch.");
@@ -133,7 +133,7 @@ async function testInstantiation(accounts) {
 }
 
 async function testTestMode(accounts) {
-    var vc = await LittleBallotBox.new(0, 1, hexPk, false, specHash);
+    var vc = await LittleBallotBox.new(specHash, 0, 1, false, false);
     await asyncAssertThrow(() => vc.setEndTime(0), "throws on set end time when not in testing");
 }
 

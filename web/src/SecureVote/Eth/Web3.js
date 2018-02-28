@@ -72,7 +72,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
             app.ports.democNBallots.send({democHash, n});
             S.map(i => {
                 index.getNthBallot(democHash, i, (e, info) => {
-
+                    console.log("getNthBallot: ", info);
                 });
             }, S.range(0, n));
         })

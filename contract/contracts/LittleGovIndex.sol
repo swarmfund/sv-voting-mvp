@@ -1,6 +1,9 @@
 pragma solidity ^0.4.19;
 
 
+import { LittleBallotBox } from "./LittleBallotBox.sol";
+
+
 contract LittleGovIndex {
 
     address public owner;
@@ -134,12 +137,27 @@ contract LittleGovIndex {
 
     //* ADD BALLOT TO RECORD */
 
-    function addBallot(bytes32 democHash, bytes32 ballotSpecHash, bytes32 extraData, address votingContract)
+    function _commitBallot(bytes32 democHash, bytes32 specHash, bytes32 extraData, address votingContract) internal {
+        democs[democHash].ballots.push(Ballot(specHash, extraData, votingContract));
+    }
+
+    function addBallot(bytes32 democHash, bytes32 extraData, address votingContract)
                       onlyBy(democs[democHash].admin)
                       payReq(issueWhitelist, requiredEthForIssue)
                       public
                       payable
                       {
-        democs[democHash].ballots.push(Ballot(ballotSpecHash, extraData, votingContract));
+        LittleBallotBox bb = LittleBallotBox(votingContract);
+        bytes32 specHash = bb.specHash();
+        _commitBallot(democHash, specHash, extraData, votingContract);
+    }
+
+    function deployBallot(bytes32 democHash, bytes32 specHash, bytes32 extraData,
+                          uint64 startTime, uint64 endTime, bool useEncryption, bool testing)
+                          onlyBy(democs[democHash].admin)
+                          payReq(issueWhitelist, requiredEthForIssue)
+                          public payable {
+        LittleBallotBox votingContract = new LittleBallotBox(specHash, startTime, endTime, useEncryption, testing);
+        _commitBallot(democHash, specHash, extraData, address(votingContract));
     }
 }
