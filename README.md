@@ -159,3 +159,10 @@ additionally, if you run `INSTALL_WEBPACK=true yarn build-web` it run `npm insta
 #### Node Version
 
 in addition to the yarn issue we also had issues with node v8.9.4. If you have trouble try v6.9.1.
+
+#### Webpack 4
+
+Some troubles exist with webpack 4 and the loaders used by elm and purescript.
+
+elm-webpack-loader is pinned to a commit for the mean time to get around this. It should be removed once the loader
+itself is fixed.
