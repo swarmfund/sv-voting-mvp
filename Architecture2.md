@@ -57,7 +57,7 @@ Polymorphic over `ballotType` (i.e. different internal structures depending on v
 { ballotTitle :: String
 , shortDesc :: String
 , longDesc :: String
-, startTime :: Maybe Int
+, startTime :: Int
 , endTime :: Int
 , erc20Addr :: String
 , discussionLink :: Maybe String
@@ -68,6 +68,15 @@ Polymorphic over `ballotType` (i.e. different internal structures depending on v
 ```
 
 Note: If `encryptionPK` is not null then the ballot SC must support publishing a secret key with method `getEncSecretKey() public constant returns (bytes32)`.
+
+Also note: in an earlier draft startTimes were optional, but this is somewhat unsafe. Better is to go by the _latest_ time out of:
+
+* when the contract was published
+* and what the startTime says
+
+So it shouldn't be possible to set the start time so early that current token holders are disenfranchised.
+
+The rule is: if the voting contract has the latest start time, use that. If the start time is set to prior to the contract being published, use the timestamp of when the smart contract was published.
 
 ### `OptionsOuter`
 

@@ -157,7 +157,9 @@ contract LittleGovIndex {
                           onlyBy(democs[democHash].admin)
                           payReq(issueWhitelist, requiredEthForIssue)
                           public payable {
-        LittleBallotBox votingContract = new LittleBallotBox(specHash, startTime, endTime, useEncryption, testing);
+        // the start time is max(startTime, block.timestamp) to avoid a DoS whereby a malicious electioneer could disenfranchise
+        // token holders who have recently acquired tokens.
+        LittleBallotBox votingContract = new LittleBallotBox(specHash, max(startTime, block.timestamp), endTime, useEncryption, testing);
         _commitBallot(democHash, specHash, extraData, address(votingContract));
     }
 }

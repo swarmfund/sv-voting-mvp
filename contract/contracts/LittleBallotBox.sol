@@ -100,7 +100,9 @@ contract LittleBallotBox {
     function LittleBallotBox(bytes32 _specHash, uint64 _startTime, uint64 _endTime, bool _useEncryption, bool enableTesting) public {
         owner = msg.sender;
 
-        startTime = _startTime;
+        // take the max of the start time provided and the blocks timestamp to avoid a DoS against recent token holders
+        // (which someone might be able to do if they could set the timestamp in the past)
+        startTime = max(_startTime, block.timestamp);
         endTime = _endTime;
         useEncryption = _useEncryption;
         specHash = _specHash;

@@ -7,7 +7,7 @@ const HTMLWebpackPlugin = require('html-webpack-plugin');
 require('dotenv').config({systemvars: true});
 
 
-var TARGET_ENV = function () {
+const TARGET_ENV = function () {
     console.log('Generating TARGET_ENV');
     switch (process.env.npm_lifecycle_event) {
         case 'build-web':
@@ -35,7 +35,7 @@ var TARGET_ENV = function () {
             return process.env.npm_lifecycle_event;
     }
 }();
-var filename = (TARGET_ENV === 'production') ? '[name]-[hash].js' : '[name].js';
+const filename = '[name]-[hash].js';
 
 
 const _pureDist = '_pureDist';
