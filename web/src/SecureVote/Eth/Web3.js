@@ -63,11 +63,13 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
 
     // scan the index to get all ballots
     app.ports.getDemocHashes.subscribe(wrapper(({indexABI, indexAddr, democHash}) => {
-        const index = web3js.eth.contract(indexABI).at(indexAddr);
+        const indexABIObj = JSON.parse(indexABI);
+        const index = web3js.eth.contract(indexABIObj).at(indexAddr);
 
-        index.nBallots(democHash, (e, n) => {
+        index.nBallots(democHash, (e, nBI) => {
+            const n = nBI.toNumber();
             console.log("getDemocHashes got", n, "total ballots");
-            app.ports.democNVotes({indexAddr, n});
+            app.ports.democNVotes({democHash, n});
 
         })
     }));

@@ -331,6 +331,14 @@ updateFromWeb3 msg model =
         GotMetaMaskTxid txid ->
             { model | metamaskTxid = Just txid } ! []
 
+        GotBallotCount r ->
+            case r of
+                Success { democHash, n } ->
+                    { model | democCounts = Dict.insert democHash n model.democCounts } ! []
+
+                _ ->
+                    update (LogErr "Unable to read democracy from the blockchain! Please try reloading the page.") model
+
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )
 updateFromCurve25519 msg model =

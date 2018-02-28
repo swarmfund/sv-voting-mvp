@@ -5,8 +5,10 @@ import List exposing (foldl, map)
 import Material
 import Material.Snackbar
 import RemoteData exposing (RemoteData(..))
+import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
+import SecureVote.Eth.Nodes exposing (ethNodes)
 import SecureVote.Eth.Types exposing (AuditDoc)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (allBallots, initBallot)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
@@ -51,8 +53,15 @@ type alias Model =
     , optHashToTitle : Dict String String
     , metamask : Bool
     , metamaskTxid : Maybe String
-    , democHashes : Dict Int String
+    , democHashes : Dict Int String --^ Map (index order => democHash)
+    , democCounts : Dict String Int --^ map (democHashes => number of ballots in it)
+    , democIssues : Dict String (Dict Int BallotPrelimInfo) --^ map (democHash => (ballotId => prelimInfo))
+    , specsToDeets : Dict String (RemoteData String BallotSpec) --^ map (specHash => RemoteData BallotSpec) - can error gracefully
     }
+
+
+type alias BallotPrelimInfo =
+    { specHash : String, votingAddr : String, extraData : String }
 
 
 initModel : Flags -> Model
@@ -60,9 +69,9 @@ initModel { dev, mainTitle, democHash } =
     let
         ethNode_ =
             if dev then
-                devEthNode
+                ethNodes.kovan
             else
-                initEthNode
+                ethNodes.mainnet
     in
     { mdl = Material.model
     , snack = Material.Snackbar.model
@@ -99,21 +108,10 @@ initModel { dev, mainTitle, democHash } =
     , metamask = False
     , metamaskTxid = Nothing
     , democHashes = Dict.empty
+    , democCounts = Dict.empty
+    , democIssues = Dict.empty
+    , specsToDeets = Dict.empty
     }
-
-
-initEthNode : String
-initEthNode =
-    "https://eth-aws-nv-node-02.secure.vote:8545/microgov"
-
-
-devEthNode : String
-devEthNode =
-    "https://eth-kovan-aws-nv-node-01.secure.vote:8545/microgovDev"
-
-
-
---    "https://mainnet.infura.io/securevote"
 
 
 type LastPageDirection
