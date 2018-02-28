@@ -11,6 +11,7 @@ import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Success))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
+import SecureVote.Components.UI.Loading exposing (loadingSpinner)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
@@ -86,25 +87,11 @@ votingView model currBallot =
                 , endBtns model
                 ]
 
-        loadingSpinner =
-            div [ id "loading-screen" ]
-                [ text "Waiting for ballot encryption..."
-                , div [ class "cssload-container cssload-orange cssload-small" ]
-                    [ ul [ class "cssload-flex-container" ]
-                        [ li []
-                            [ span [ class "cssload-loading cssload-one" ] []
-                            , span [ class "cssload-loading cssload-two" ] []
-                            , span [ class "cssload-loading-center" ] []
-                            ]
-                        ]
-                    ]
-                ]
-
         ballotDetailsSection =
             if model.ballotAllDone then
                 ballotDetails
             else
-                loadingSpinner
+                loadingSpinner "Waiting for ballot encryption..."
     in
     fullPageSlide 923844759
         model

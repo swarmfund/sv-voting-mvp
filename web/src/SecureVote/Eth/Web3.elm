@@ -315,3 +315,6 @@ port getDemocHashes : { indexABI : String, indexAddr : String, democHash : Strin
 
 
 port democNBallots : (Value -> msg) -> Sub msg
+
+
+port gotBallotInfo : (Value -> msg) -> Sub msg

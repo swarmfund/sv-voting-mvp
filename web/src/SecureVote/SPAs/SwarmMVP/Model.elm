@@ -57,11 +57,12 @@ type alias Model =
     , democCounts : Dict String Int --^ map (democHashes => number of ballots in it)
     , democIssues : Dict String (Dict Int BallotPrelimInfo) --^ map (democHash => (ballotId => prelimInfo))
     , specsToDeets : Dict String (RemoteData String BallotSpec) --^ map (specHash => RemoteData BallotSpec) - can error gracefully
+    , currDemoc : String
     }
 
 
 type alias BallotPrelimInfo =
-    { specHash : String, votingAddr : String, extraData : String }
+    { specHash : String, votingContract : String, extraData : String }
 
 
 initModel : Flags -> Model
@@ -111,6 +112,7 @@ initModel { dev, mainTitle, democHash } =
     , democCounts = Dict.empty
     , democIssues = Dict.empty
     , specsToDeets = Dict.empty
+    , currDemoc = democHash
     }
 
 

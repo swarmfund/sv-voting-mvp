@@ -102,7 +102,7 @@ contract LittleBallotBox {
 
         // take the max of the start time provided and the blocks timestamp to avoid a DoS against recent token holders
         // (which someone might be able to do if they could set the timestamp in the past)
-        startTime = max(_startTime, block.timestamp);
+        startTime = max(_startTime, uint64(block.timestamp));
         endTime = _endTime;
         useEncryption = _useEncryption;
         specHash = _specHash;
@@ -162,5 +162,13 @@ contract LittleBallotBox {
     function setDeprecated() onlyOwner public {
         deprecated = true;
         DeprecatedContract();
+    }
+
+    // utils
+    function max(uint64 a, uint64 b) pure internal returns(uint64) {
+        if (a > b) {
+            return a;
+        }
+        return b;
     }
 }
