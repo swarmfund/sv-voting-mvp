@@ -7,8 +7,10 @@ import List exposing (filter, length, map, sortBy)
 import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs, css)
+import Maybe.Extra exposing ((?), isJust)
 import SecureVote.Components.UI.Elevation exposing (elevation)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
+import SecureVote.Components.UI.Loading exposing (loadingSpinner)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
@@ -94,15 +96,50 @@ listVotesView model =
 
                 -- , Card.actions [ Card.border, cs "tl" ] [ styled span [ Typo.caption ] [ text voteStatus ] ]
                 ]
+
+        totalBallots =
+            Dict.get model.currDemoc model.democCounts
+
+        gotNBallots =
+            (Dict.get model.currDemoc model.democIssues |> Maybe.map Dict.size) ? 0
+
+        doneLoadingBallots =
+            isJust totalBallots && totalBallots == Just gotNBallots
+
+        allBallotsView =
+            currBallotV ++ futureBallotV ++ pastBallotV
+
+        noBallotsView =
+            [ div [ class "v-mid center mb7 mt6" ] [ subhead "No ballots yet. Why don't you create one?" ] ]
+
+        viewBallotsOrEmpty =
+            if List.isEmpty allBallotsView then
+                noBallotsView
+            else
+                allBallotsView
     in
     fullPageSlide 3409830456
         model
         model.mainTitle
     <|
-        currBallotV
-            ++ futureBallotV
-            ++ pastBallotV
+        case ( totalBallots, gotNBallots, doneLoadingBallots ) of
+            ( Nothing, _, _ ) ->
+                [ loadingBallots ]
+
+            ( Just n, i, False ) ->
+                [ ballotsProgress n i ]
+
+            _ ->
+                viewBallotsOrEmpty
 
 
+loadingBallots =
+    div [ class "v-mid center" ]
+        [ loadingSpinner "Loading details from blockchain..."
+        ]
 
---            ++ [ div [ style [ ( "height", "4vh" ) ] ] [] ]
+
+ballotsProgress n i =
+    div [ class "v-mid center" ]
+        [ loadingSpinner <| "Retrieved " ++ toString i ++ " of " ++ toString n ++ " ballots."
+        ]

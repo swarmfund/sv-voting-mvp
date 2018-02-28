@@ -9,6 +9,7 @@ import Material.Snackbar as Snackbar
 import Maybe exposing (andThen)
 import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
+import SecureVote.Ballots.SpecSource exposing (getBallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Utils exposing (keccak256OverString)
 import SecureVote.Eth.Web3 exposing (..)
@@ -16,7 +17,7 @@ import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (doBallotOptsMatchRSched, voteOptionsRSched)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, defaultDelegate, getDelegateAddress, getUserErc20Addr)
-import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, resetAllBallotFields)
+import SecureVote.SPAs.SwarmMVP.Model exposing (BallotPrelimInfo, LastPageDirection(PageBack, PageForward), Model, resetAllBallotFields)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (defaultRoute)
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidFail, TxidInProgress, TxidSuccess))
@@ -234,6 +235,11 @@ updateToWeb3 web3msg model =
             model ! defaultOrB model [] (\b -> [ getInit { addr = b.contractAddr, oTitles = oTitles }, getEncryptionPublicKey b.contractAddr ])
 
 
+doUpdateErr : String -> Model -> ( Model, Cmd Msg )
+doUpdateErr msg m =
+    update (LogErr msg) m
+
+
 updateFromWeb3 : FromWeb3Msg -> Model -> ( Model, Cmd Msg )
 updateFromWeb3 msg model =
     case msg of
@@ -337,7 +343,25 @@ updateFromWeb3 msg model =
                     { model | democCounts = Dict.insert democHash n model.democCounts } ! []
 
                 _ ->
-                    update (LogErr "Unable to read democracy from the blockchain! Please try reloading the page.") model
+                    doUpdateErr "Unable to read democracy from the blockchain! Please try reloading the page." model
+
+        GotBallotInfo r ->
+            case r of
+                Success { democHash, i, specHash, extraData, votingContract } ->
+                    let
+                        ballotPrelim =
+                            BallotPrelimInfo specHash votingContract extraData
+
+                        updateInnerD maybeD =
+                            Just <| Dict.insert i ballotPrelim (maybeD ? Dict.empty)
+
+                        di =
+                            Dict.update democHash updateInnerD model.democIssues
+                    in
+                    { model | democIssues = di } ! [ getBallotSpec specHash ]
+
+                _ ->
+                    doUpdateErr "Got bad ballot info from blockchain. Please check your connection or reload the page" model
 
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )
@@ -356,7 +380,7 @@ updateFromCurve25519 msg model =
                     model_ ! [ constructDataParam { encBallot = encBytes, voterPubkey = keypair.hexPk, votingContractAddr = voteCAddr } ]
 
                 _ ->
-                    update (LogErr "Unable to create Ethereum tx data parameter - missing encrypted ballot, keypair, or voting contract address.") model_
+                    doUpdateErr "Unable to create Ethereum tx data parameter - missing encrypted ballot, keypair, or voting contract address." model_
 
 
 

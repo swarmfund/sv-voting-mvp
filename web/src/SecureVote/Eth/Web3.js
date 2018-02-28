@@ -80,8 +80,10 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
             S.map(i => {
                 index.getNthBallot(democHash, i, handleErrOr((info) => {
                     console.log("getNthBallot: ", info);
-                    [specHash, extraData, votingContract] = info;
-                    app.ports.gotBallotInfo.send({democHash, n, specHash, extraData, votingContract});
+                    const [specHash, extraData, votingContract] = info;
+                    const sendBack = {democHash, i, specHash, extraData, votingContract};
+                    console.log("nthBallot: ", i, sendBack);
+                    app.ports.gotBallotInfo.send(sendBack);
                 }));
             }, S.range(0, n));
         })

@@ -3,8 +3,19 @@ module SecureVote.SPAs.SwarmMVP.Web3Handler exposing (..)
 import Json.Decode as D exposing (Value, int)
 import Json.Decode.Pipeline exposing (decode, required)
 import RemoteData exposing (RemoteData(Failure, Success))
-import SecureVote.Eth.Web3 exposing (ReadResponse, democNBallots)
+import SecureVote.Eth.Types exposing (BallotInfo)
+import SecureVote.Eth.Web3 exposing (ReadResponse, democNBallots, gotBallotInfo)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
+
+
+handleResponse : (RemoteData String a -> FromWeb3Msg) -> Result String a -> Msg
+handleResponse msg res =
+    case res of
+        Ok s ->
+            FromWeb3 <| msg <| Success s
+
+        Err err ->
+            MultiMsg [ LogErr err, FromWeb3 <| msg <| Failure err ]
 
 
 {-| D contract read msg |
@@ -101,4 +112,21 @@ democNVotesSub =
 
                 Err err ->
                     MultiMsg [ LogErr err, FromWeb3 <| GotBallotCount (Failure err) ]
+        )
+
+
+gotBallotInfoSub : Sub Msg
+gotBallotInfoSub =
+    gotBallotInfo
+        (\val ->
+            let
+                decoder =
+                    decode BallotInfo
+                        |> required "democHash" D.string
+                        |> required "i" D.int
+                        |> required "specHash" D.string
+                        |> required "extraData" D.string
+                        |> required "votingContract" D.string
+            in
+            handleResponse GotBallotInfo <| D.decodeValue decoder val
         )
