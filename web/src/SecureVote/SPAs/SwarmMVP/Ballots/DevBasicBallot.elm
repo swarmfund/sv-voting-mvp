@@ -245,7 +245,7 @@ ioTypes =
 
 goodInvestmentROI : BallotParams msg
 goodInvestmentROI =
-    { ballotTitle = "What do you consider a good investment? (Return vs Risk)"
+    { ballotTitle = "Asset-backed token investments are attractive when their minimum annual return is:"
     , contractAddr = "0x5d66847071924595fe9e1020a19323e31afc9276"
     , description = "This non-binding ballot will help inform the Swarm Foundation of the type of funds to focus on in the near future."
     , endTime = 1520121600
