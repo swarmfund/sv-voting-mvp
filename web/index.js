@@ -6,6 +6,9 @@ import Web3Legacy from 'web3';
 import Web3OnePointO from './js/vendor/web3-1.0.min';
 const R = require('ramda');
 
+const Decimal = require('decimal.js');
+window.Decimal = Decimal;
+
 import web3Ports from './src/SecureVote/Eth/Web3.js';
 import curve25519Ports from './src/SecureVote/Crypto/Curve25519';
 

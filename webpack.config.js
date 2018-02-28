@@ -4,7 +4,6 @@ const path = require('path');
 const merge = require('webpack-merge');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 require('dotenv').config({systemvars: true});
 
 
@@ -128,7 +127,8 @@ const common = {
         })
     ],
     resolve: {
-        extensions: [".js", ".json", ".ts"]
+        extensions: [".js", ".json", ".ts"],
+        modules: ['./node_modules'],
     },
     bail: true
 };
@@ -162,6 +162,7 @@ const adminUiInjection = (env, config) => {
 if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui') {
     console.log('Building for dev...');
     const toExport = merge(common, buildAuditWeb({}), {
+        mode: "development",
         plugins: [
             // Suggested for hot-loading
             new webpack.NamedModulesPlugin(),
@@ -178,7 +179,7 @@ if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui') {
                     ],
                     use: [
                         "elm-hot-loader",
-                        "elm-webpack-loader?verbose=true&warn=false&maxInstances=2&debug=true"
+                        "elm-webpack-loader?verbose=true&warn=false&maxInstances=1&debug=true"
                     ]
                 }
             ]
@@ -204,6 +205,7 @@ if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui') {
 if (TARGET_ENV === 'production' || TARGET_ENV === 'prod-admin-ui') {
     console.log('Building for prod...');
     module.exports = merge(common, buildAuditWeb({outputDir: ".cache/output"}), {
+        mode: "production",
         plugins: [
             // Delete everything from output directory and report to user
             new CleanWebpackPlugin([_dist], {
@@ -212,7 +214,6 @@ if (TARGET_ENV === 'production' || TARGET_ENV === 'prod-admin-ui') {
                 verbose: true,
                 dry: false
             }),
-            new UglifyJSPlugin(),
             CopyWebpackPluginConfig
         ],
         module: {
