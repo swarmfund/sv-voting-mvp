@@ -3,7 +3,7 @@ module SecureVote.SPAs.SwarmMVP.Web3Handler exposing (..)
 import Json.Decode as D exposing (Value, int)
 import Json.Decode.Pipeline exposing (decode, required)
 import RemoteData exposing (RemoteData(Failure, Success))
-import SecureVote.Eth.Web3 exposing (ReadResponse, democNBallots, democNVotes)
+import SecureVote.Eth.Web3 exposing (ReadResponse, democNBallots)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 
 
