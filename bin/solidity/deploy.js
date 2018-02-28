@@ -36,6 +36,12 @@ const main = () => {
         describe: 'enable testing functions in the ballot smart contract',
         type: 'boolean'
       },
+      'allowSecKeyEarlyPublish': {
+        demandOption: false,
+        default: false,
+        describe: 'enable a flag in the voting contract to allow the seckey to be published early',
+        type: 'boolean'
+      },
       "deploy": {
         describe: '_automatically_ deploy the contract (no user interaction)',
         type: 'boolean'
@@ -129,7 +135,7 @@ const main = () => {
         const contract = web3.eth.contract(abi);
 
         // set the contract deployment arguments
-        const contractArgs = args.deployOther ? [] : [args.startTime, args.endTime, args.ballotEncPubkey, args.testing, ...optionNames];
+        const contractArgs = args.deployOther ? [] : [args.startTime, args.endTime, args.ballotEncPubkey, args.testing, args.allowSecKeyEarlyPublish, ...optionNames];
 
         // organise our arguments for getting final bytecode
         const bytecodeArgs = R.append({data: "0x" + bin}, contractArgs);
