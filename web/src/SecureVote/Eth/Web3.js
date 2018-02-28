@@ -30,7 +30,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
         app.ports.gotMetamaskImpl.send(true);
     }
 
-    const wrapper = (f) => {
+    const wrapIncoming = (f) => {
         return (...args) => {
             try {
                 f(...args);
@@ -41,6 +41,13 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
             }
         }
     };
+
+
+    const genCB = (f) => (err, thing) => {
+        if (err) {
+
+        }
+    }
 
 
     // "Global" constants
@@ -62,7 +69,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
 
 
     // scan the index to get all ballots
-    app.ports.getDemocHashes.subscribe(wrapper(({indexABI, indexAddr, democHash}) => {
+    app.ports.getDemocHashes.subscribe(wrapIncoming(({indexABI, indexAddr, democHash}) => {
         const indexABIObj = JSON.parse(indexABI);
         const index = web3js.eth.contract(indexABIObj).at(indexAddr);
 
@@ -71,15 +78,17 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
             console.log("getDemocHashes got", n, "total ballots");
             app.ports.democNBallots.send({democHash, n});
             S.map(i => {
-                index.getNthBallot(democHash, i, (e, info) => {
+                index.getNthBallot(democHash, i, handleErrOr((info) => {
                     console.log("getNthBallot: ", info);
-                });
+                    [specHash, extraData, votingContract] = info;
+                    app.ports.gotBallotInfo.send({democHash, n, specHash, extraData, votingContract});
+                }));
             }, S.range(0, n));
         })
     }));
 
 
-    app.ports.getInit.subscribe(wrapper(({addr, oTitles}) => {
+    app.ports.getInit.subscribe(wrapIncoming(({addr, oTitles}) => {
         const contractAddr = addr;
 
         SwmVotingContract = genSwmVotingContract(contractAddr);
@@ -195,7 +204,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
         app.ports.contractReadResponse.send({success, errMsg, method, response});
     };
 
-    const implSendErc20Balance = wrapper((balance) => {
+    const implSendErc20Balance = wrapIncoming((balance) => {
         const toRet = balance.toString(10);
         console.log('implSendErc20Balance got:', toRet);
         app.ports.implErc20Balance.send(toRet);
@@ -220,20 +229,20 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
 
 
     // Port subscriptions
-    app.ports.setWeb3Provider.subscribe(wrapper((web3Provider) => {
+    app.ports.setWeb3Provider.subscribe(wrapIncoming((web3Provider) => {
         web3js.setProvider(new Web3.providers.HttpProvider(web3Provider));
         window.web3.setProvider(web3js.currentProvider);
         console.log("Web3 provider set to:", web3js.currentProvider);
     }));
 
-    app.ports.getErc20Balance.subscribe(wrapper(({contractAddress, userAddress}) => {
+    app.ports.getErc20Balance.subscribe(wrapIncoming(({contractAddress, userAddress}) => {
         console.log("getErc20Balance got params", {contractAddress, userAddress});
         const tokenContract = Erc20Contract.at(contractAddress);
         tokenContract.balanceOf.call(userAddress, handleErrOr(implSendErc20Balance))
     }))
 
 
-    app.ports.constructDataParam.subscribe(wrapper(({encBallot, voterPubkey, votingContractAddr}) => {
+    app.ports.constructDataParam.subscribe(wrapIncoming(({encBallot, voterPubkey, votingContractAddr}) => {
         console.log("constructDataParam got params:", {encBallot, voterPubkey, votingContractAddr});
         const voteC = SwmVotingContract.at(votingContractAddr);
         const data = voteC.submitBallot.getData("0x" + encBallot, "0x" + voterPubkey);
@@ -242,12 +251,12 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
     }))
 
 
-    app.ports.getEncryptionPublicKey.subscribe(wrapper(contractAddr => {
+    app.ports.getEncryptionPublicKey.subscribe(wrapIncoming(contractAddr => {
         const voteC = SwmVotingContract.at(contractAddr);
         voteC.getEncPubkey(handleErrOr(app.ports.gotEncPubkey.send));
     }))
 
-    app.ports.performContractRead.subscribe(wrapper((successF, failF, contractAddr, methodName, args) => {
+    app.ports.performContractRead.subscribe(wrapIncoming((successF, failF, contractAddr, methodName, args) => {
         const voteC = SwmVotingContract.at(contractAddr);
         try {
             const response = voteC[methodName](...args);
@@ -257,7 +266,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
         }
     }))
 
-    app.ports.checkTxid.subscribe(wrapper((txid) => {
+    app.ports.checkTxid.subscribe(wrapIncoming((txid) => {
         const p = new Promise((resolve, reject) => {
             web3js.eth.getTransaction(txid, promiseCb(resolve, reject));
         })
@@ -302,7 +311,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
         }
     }
 
-    app.ports.getBallotResults.subscribe(wrapper((args) => {
+    app.ports.getBallotResults.subscribe(wrapIncoming((args) => {
         auditCounter++;
         console.log("Calling AuditWeb session", auditCounter, "with:", args);
         try {
@@ -331,7 +340,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
         });
     }
 
-    app.ports.castMetaMaskVoteImpl.subscribe(wrapper(sendMMTx))
+    app.ports.castMetaMaskVoteImpl.subscribe(wrapIncoming(sendMMTx))
 };
 
 export default web3Ports;
