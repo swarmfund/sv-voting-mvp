@@ -2,7 +2,7 @@ module SecureVote.SPAs.SwarmMVP.Main exposing (..)
 
 import Html exposing (Html)
 import SecureVote.Crypto.Curve25519 exposing (genKeyPair, onIncomingCurve25519Error, onIncomingEncBytes, onIncomingKeyPair, receiveCurve25519Error, receiveEncryptedBytes, receiveKeyPair)
-import SecureVote.Eth.Web3 exposing (contractReadResponse, getBallotResults, getEncryptionPublicKey, getInit, gotAuditMsg, gotEncPubkey, gotMetamask, gotTxidCheckStatus, gotWeb3Error, implDataParam, implErc20Balance, implInit, metamaskTxid, onContractReadResponse, onGotPubkey, onGotTxidStatus, onIncomingErc20Balance, onIncomingWeb3Error, onInit, onRecieveDataParam, performContractRead, setWeb3Provider)
+import SecureVote.Eth.Web3 exposing (contractReadResponse, getBallotResults, getDemocHashes, getEncryptionPublicKey, getInit, gotAuditMsg, gotEncPubkey, gotMetamask, gotTxidCheckStatus, gotWeb3Error, implDataParam, implErc20Balance, implInit, metamaskTxid, onContractReadResponse, onGotPubkey, onGotTxidStatus, onIncomingErc20Balance, onIncomingWeb3Error, onInit, onRecieveDataParam, performContractRead, setWeb3Provider)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, devEthNode, initEthNode, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..))
@@ -33,17 +33,13 @@ subscriptions model =
         ]
 
 
-initCmds : Model -> List (Cmd Msg) -> Cmd Msg
-initCmds initModel extraCmds =
-    let
-        votingAddr =
-            initModel.currentBallot.contractAddr
-    in
+initCmds : Model -> Flags -> List (Cmd Msg) -> Cmd Msg
+initCmds initModel { democHash, indexABI, indexAddr } extraCmds =
     Cmd.batch <|
         [ setWeb3Provider initModel.ethNode
         , perform (SetTime << round << (\t -> t / 1000)) Time.now
         , genKeyPair True
-        , getDemocHashes
+        , getDemocHashes { democHash = democHash, indexABI = indexABI, indexAddr = indexAddr }
         ]
             ++ extraCmds
 
@@ -70,7 +66,7 @@ initF flags =
         ( iModel, iCmd ) =
             processedInitModelCmd flags
     in
-    ( iModel, initCmds iModel [ iCmd ] )
+    ( iModel, initCmds iModel flags [ iCmd ] )
 
 
 main : Program Flags Model Msg

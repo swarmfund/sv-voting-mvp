@@ -5,6 +5,7 @@ import Html.Attributes exposing (attribute, class, id, src, style)
 import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Dialog exposing (dialog)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageForward), Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
@@ -20,13 +21,13 @@ import SecureVote.SPAs.SwarmMVP.Views.VotingV exposing (votingView)
 rootView : Model -> Html Msg
 rootView model =
     slideHost model
+        ( ListAllVotesR, listVotesView model )
         [ ( SwmAddressR, swmAddressV model )
         , ( SwmHowToVoteR, howToVoteView model )
         , ( SwmVoteR, castVoteView model )
         , ( SwmDelegateR, delegateView model )
         , ( SwmSubmitR, votingView model )
         , ( OpeningSlideR, openingSlide model )
-        , ( ListAllVotesR, listVotesView model )
         ]
         [ img [ src "img/swarm-logo-white-sm.png", class "mv1 mh4-l center db" ] []
         , dialog model
@@ -34,8 +35,8 @@ rootView model =
         ]
 
 
-slideHost : Model -> List ( Route, Html Msg ) -> List (Html Msg) -> Html Msg
-slideHost model slideParis extraHtml =
+slideHost : Model -> ( Route, Html Msg ) -> List ( Route, BallotParams Msg -> Html Msg ) -> List (Html Msg) -> Html Msg
+slideHost model ( rootRoute, rootSlide ) slideParis extraHtml =
     let
         currSlide =
             model.route
@@ -63,19 +64,34 @@ slideHost model slideParis extraHtml =
         commonCs =
             "w-100 slider"
 
-        drawSlide ( route, slide ) =
+        drawParticularSlide route slide =
+            if route == currSlide then
+                div [ class <| joinCs [ commonCs, slideInCs ] ] [ slide ]
+            else if List.member route <| List.take 1 model.history then
+                div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
+            else if model.lastRoute == Just route then
+                div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
+            else
+                div [] []
+
+        drawSlideWrap route inner =
             div [ attribute "data-sv-slide" <| toString route, class "" ]
-                [ if route == currSlide then
-                    div [ class <| joinCs [ commonCs, slideInCs ] ] [ slide ]
-                  else if List.member route <| List.take 1 model.history then
-                    div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
-                  else if model.lastRoute == Just route then
-                    div [ class <| joinCs [ commonCs, slideOutCs route ] ] [ slide ]
-                  else
-                    div [] []
-                ]
+                [ inner ]
+
+        drawSlide maybeBallot ( route, slide ) =
+            drawSlideWrap route <|
+                case maybeBallot of
+                    Just b ->
+                        let
+                            slide_ =
+                                slide b
+                        in
+                        drawParticularSlide route slide_
+
+                    Nothing ->
+                        div [] []
 
         slides =
-            List.map drawSlide slideParis
+            [ drawSlideWrap rootRoute (drawParticularSlide rootRoute rootSlide) ] ++ List.map (drawSlide model.currentBallot) slideParis
     in
     div [ class "w-100", id "sv-main" ] (slides ++ extraHtml)
