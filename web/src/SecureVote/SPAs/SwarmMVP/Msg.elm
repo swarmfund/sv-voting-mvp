@@ -68,6 +68,7 @@ type FromWeb3Msg
     | GetBallotPeriod (RemoteData String { startTime : Int, endTime : Int })
     | GotMetaMask
     | GotMetaMaskTxid String
+    | GotBallotCount (RemoteData String { democHash : String, n : Int })
 
 
 type FromCurve25519Msg

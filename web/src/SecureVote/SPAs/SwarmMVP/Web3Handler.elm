@@ -1,13 +1,13 @@
 module SecureVote.SPAs.SwarmMVP.Web3Handler exposing (..)
 
-import Json.Decode as Decode exposing (Value, int)
+import Json.Decode as D exposing (Value, int)
 import Json.Decode.Pipeline exposing (decode, required)
 import RemoteData exposing (RemoteData(Failure, Success))
-import SecureVote.Eth.Web3 exposing (ReadResponse)
+import SecureVote.Eth.Web3 exposing (ReadResponse, democNVotes)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 
 
-{-| Decode contract read msg |
+{-| D contract read msg |
 -}
 decodeRead : ReadResponse -> Msg
 decodeRead { success, errMsg, response, method } =
@@ -42,7 +42,7 @@ decodeBallotPeriod val =
                 |> required "startTime" int
                 |> required "endTime" int
     in
-    case Decode.decodeValue decoder val of
+    case D.decodeValue decoder val of
         Ok bPeriod ->
             FromWeb3 <| GetBallotPeriod <| Success bPeriod
 
@@ -53,10 +53,10 @@ decodeBallotPeriod val =
 decodeBallotOptsLegacy : Value -> Msg
 decodeBallotOptsLegacy val =
     let
-        llDecoder =
-            Decode.list (Decode.list Decode.int)
+        llDr =
+            D.list (D.list D.int)
     in
-    case Decode.decodeValue llDecoder val of
+    case D.decodeValue llDr val of
         Ok opts ->
             FromWeb3 <| GetBallotOptsLegacy (Success opts)
 
@@ -67,12 +67,12 @@ decodeBallotOptsLegacy val =
 decodeBallotOpts : Value -> Msg
 decodeBallotOpts val =
     let
-        llDecoder =
+        llDr =
             decode (\isGood hashes -> { isGood = isGood, hashes = hashes })
-                |> required "isGood" Decode.bool
-                |> required "hashes" (Decode.list Decode.string)
+                |> required "isGood" D.bool
+                |> required "hashes" (D.list D.string)
     in
-    case Decode.decodeValue llDecoder val of
+    case D.decodeValue llDr val of
         Ok opts ->
             FromWeb3 <| GetBallotOpts (Success opts)
 
@@ -83,3 +83,22 @@ decodeBallotOpts val =
 readOptsErr : String -> Msg
 readOptsErr errMsg =
     MultiMsg [ LogErr errMsg ]
+
+
+democNVotesSub : Sub Msg
+democNVotesSub =
+    democNVotes
+        (\val ->
+            let
+                decoder =
+                    decode (\democHash n -> { democHash = democHash, n = n })
+                        |> required "democHash" D.string
+                        |> required "n" D.int
+            in
+            case D.decodeValue decoder val of
+                Ok ballotCount ->
+                    FromWeb3 <| GotBallotCount (Success ballotCount)
+
+                Err err ->
+                    MultiMsg [ LogErr err, FromWeb3 <| GotBallotCount (Failure err) ]
+        )
