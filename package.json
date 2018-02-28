@@ -65,7 +65,7 @@
   "scripts": {
     "----- SMART CONTRACT COMMANDS": "",
     "sol-test": "cd contract && truffle test",
-    "sol-test-watch": "cd contract && watch 'truffle test' ./test",
+    "sol-test-watch": "cd contract && reflex truffle test",
     "_testrpc": "testrpc -a 201",
     "sol-compile": "./bin/solidity/compile.sh",
     "sol-deploy": "node ./bin/solidity/deploy.js",
