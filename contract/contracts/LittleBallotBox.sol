@@ -47,12 +47,15 @@ contract LittleBallotBox {
     bool seckeyRevealed = false;
 
     // Timestamps for start and end of ballot (UTC)
-    uint256 public startTime = 0;
-    uint256 public endTime;
+    uint64 public startTime = 0;
+    uint64 public endTime;
 
     // specHash by which to validate the ballots integrity
     bytes32 public specHash;
     bool public useEncryption;
+
+    // deprecation flag - doesn't actually do anything besides signal that this contract is deprecated;
+    bool public deprecated = false;
 
     //// ** Events
     event CreatedBallot(address creator, uint256 start, uint256 end, bool encrypted, bytes32 specHash);
@@ -61,6 +64,7 @@ contract LittleBallotBox {
     event SeckeyRevealed(bytes32 secretKey);
     event TestingEnabled();
     event Error(string error);
+    event DeprecatedContract();
 
 
     //// ** Modifiers
@@ -93,7 +97,7 @@ contract LittleBallotBox {
     //// ** Functions
 
     // Constructor function - init core params on deploy
-    function LittleBallotBox(uint256 _startTime, uint256 _endTime, bool _useEncryption, bool enableTesting, bytes32 _specHash) public {
+    function LittleBallotBox(bytes32 _specHash, uint64 _startTime, uint64 _endTime, bool _useEncryption, bool enableTesting) public {
         owner = msg.sender;
 
         startTime = _startTime;
@@ -149,7 +153,12 @@ contract LittleBallotBox {
     }
 
     // Test functions
-    function setEndTime(uint256 newEndTime) onlyTesting onlyOwner public {
+    function setEndTime(uint64 newEndTime) onlyTesting onlyOwner public {
         endTime = newEndTime;
+    }
+
+    function setDeprecated() onlyOwner public {
+        deprecated = true;
+        DeprecatedContract();
     }
 }
