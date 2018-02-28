@@ -23,7 +23,7 @@ marchT1Ballot : BallotParams msg
 marchT1Ballot =
     { voteOptions = marchT1Opts
     , ballotTitle = "Asset-backed token investments are attractive when their minimum annual return is:"
-    , contractAddr = "0xF1C33B7F72f96EC5aE2E60e747a64E216Da98bc7"
+    , contractAddr = "0x76a4E883944906409432464AB1EdDc90dd2543cA"
     , description = "This non-binding ballot will help the Swarm Foundation gauge the risk profile of the SWM token holders."
     , openingDesc = "This non-binding ballot will help the Swarm Foundation gauge the risk profile of the SWM token holders."
     , endTime = 1522540740
