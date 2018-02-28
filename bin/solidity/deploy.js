@@ -118,14 +118,15 @@ const main = () => {
         const endTime = new Date(args.endTime * 1000);
         log("Start Time: " + startTime.toString().yellow, 2);
         log("End Time: " + endTime.toString().yellow, 2);
-        log("Ballot Encryption Pubkey:", 2)
-        log(args.ballotEncPubkey.yellow, 4)
+        log("Allow Early SecKey Reveal: " + args.allowSecKeyEarlyPublish.toString().yellow, 2);
+        log("Ballot Encryption Pubkey:", 2);
+        log(args.ballotEncPubkey.yellow, 4);
         log("Ballot Options: " + ('["' + R.filter(n => n !== "", optionNames).join('", "') + '"]').yellow, 2)
     }
     log("Sending from: " + web3.eth.coinbase.yellow, 2);
-    log("\nBe sure to " + "double and triple check".magenta + " these before you go live!\n")
+    log("\nBe sure to " + "double and triple check".magenta + " these before you go live!\n");
 
-    log(">>> THIS IS THE LAST OPPORTUNITY YOU HAVE TO CHANGE THEM <<<".bgYellow.black + "\n")
+    log(">>> THIS IS THE LAST OPPORTUNITY YOU HAVE TO CHANGE THEM <<<".bgYellow.black + "\n");
 
     const correctDetails = new Confirm("Are these details _all_ correct?");
 

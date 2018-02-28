@@ -32,7 +32,7 @@ marchT1Ballot =
     , erc20Balance = Nothing
     , erc20Abrv = "SWM"
     , erc20Addr = devErc20Addr
-    , discussionLink = Just "https://discuss.swarm.fund/t/which-type-of-investment-opportunities-would-you-like-to-see-on-swarm/45/2"
+    , discussionLink = Just "https://discuss.swarm.fund/t/asset-backed-token-investments-are-attractive-when-their-minimum-annual-return-is/46/1"
     }
 
 
