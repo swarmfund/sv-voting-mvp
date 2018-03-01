@@ -14,6 +14,7 @@ import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Utils exposing (rawTokenBalance18DpsToBalance)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(DlogTxt))
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, getUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
@@ -21,8 +22,8 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmDelegateR))
 
 
-castVoteView : Model -> Html Msg
-castVoteView model =
+castVoteView : Model -> BallotParams Msg -> Html Msg
+castVoteView model currBallot =
     let
         balanceStr =
             let
@@ -30,22 +31,22 @@ castVoteView model =
                     getUserErc20Addr model
 
                 balM =
-                    model.currentBallot.erc20Balance
+                    currBallot.erc20Balance
 
                 ifZeroOr addr b =
                     if eq b zero then
-                        "No tokens for " ++ addr ++ " in ERC20 contract at " ++ model.currentBallot.erc20Addr
+                        "No tokens for " ++ addr ++ " in ERC20 contract at " ++ currBallot.erc20Addr
                     else
                         rawTokenBalance18DpsToBalance b
             in
             Maybe.map2 ifZeroOr userErc20AddrM balM ? "Loading..."
 
         optionList =
-            List.map optionListItem model.currentBallot.voteOptions
+            List.map optionListItem currBallot.voteOptions
 
         balanceV =
             if "" /= (withDefault "" <| getUserErc20Addr model) then
-                [ Options.styled div [ cs "mt2 mb4 pa1 f4" ] [ text <| "Vote weighting (" ++ model.currentBallot.erc20Abrv ++ " balance): " ++ balanceStr ] ]
+                [ Options.styled div [ cs "mt2 mb4 pa1 f4" ] [ text <| "Vote weighting (" ++ currBallot.erc20Abrv ++ " balance): " ++ balanceStr ] ]
             else
                 []
 
@@ -125,8 +126,8 @@ castVoteView model =
 
         descriptionReminder =
             div [ class "mb4" ]
-                [ subhead model.currentBallot.ballotTitle
-                , text <| model.currentBallot.description
+                [ subhead currBallot.ballotTitle
+                , text <| currBallot.description
                 ]
     in
     fullPageSlide 123413553

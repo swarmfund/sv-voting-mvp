@@ -54,13 +54,13 @@ contract FakeErc20 is ERC20Interface {
     // Functions with this modifier can only be executed by the owner
     modifier onlyOwner() {
         if (msg.sender != owner) {
-            throw;
+            revert();
         }
         _;
     }
 
     // Constructor
-    function FakeErc20() {
+    function FakeErc20()  public {
         owner = msg.sender;
         balances[owner] = _totalSupply;
     }

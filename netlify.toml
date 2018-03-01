@@ -6,14 +6,20 @@
   [context.production.environment]
     MAIN_TITLE = "SWM Governance"
     DEV = "false"
+    DEMOC_HASH = "0x"
+    INDEX_ADDR = ""
     YARN_VERSION = "0.18.1"
 
 [context.deploy-preview.environment]
   MAIN_TITLE = "SWM Governance (Staging)"
   DEV = "false"
+  DEMOC_HASH = "0x0123"
+  INDEX_ADDR = ""
   YARN_VERSION = "0.18.1"
 
 [context.branch-deploy.environment]
   MAIN_TITLE = "SWM Governance (Dev, Kovan)"
   DEV = "true"
+  DEMOC_HASH = "0xa892bfd47f632b1f97ec07bc70843ca988d386ddb28e32f4d234477388362300"
+  INDEX_ADDR = "0x53E4E4c2EAC4Ac300963FB711Eb763AF395071cA"
   YARN_VERSION = "0.18.1"

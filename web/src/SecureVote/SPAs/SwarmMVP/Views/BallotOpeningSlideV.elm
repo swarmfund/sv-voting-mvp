@@ -9,20 +9,21 @@ import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.RenderAudit exposing (isAuditSuccessMsg, renderAudit)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(FullAuditDialog), Route(..))
 
 
-openingSlide : Model -> Html Msg
-openingSlide model =
+openingSlide : Model -> BallotParams Msg -> Html Msg
+openingSlide model currBallot =
     let
         ballotOver =
-            model.currentBallot.endTime < model.now
+            currBallot.endTime < model.now
 
         b =
-            model.currentBallot
+            currBallot
 
         getDomain l =
             String.split "/" l
@@ -57,7 +58,7 @@ openingSlide model =
 
         resultsParas =
             div [ class "mb3" ]
-                [ div [ class "mb3" ] [ renderAudit model ]
+                [ div [ class "mb3" ] [ renderAudit model currBallot ]
                 , btn 893479357 model [ PriBtn, Attr (class "ph2"), Click (SetDialog "Voting Audit Log" FullAuditDialog), OpenDialog ] [ text "Full Voting Audit Log" ]
                 ]
 
@@ -82,11 +83,11 @@ openingSlide model =
                 else
                     "Counting Votes..."
             else
-                "This vote is open to all " ++ model.currentBallot.erc20Abrv ++ " token holders."
+                "This vote is open to all " ++ currBallot.erc20Abrv ++ " token holders."
     in
     fullPageSlide 9483579329
         model
-        model.currentBallot.ballotTitle
+        currBallot.ballotTitle
         [ Options.styled div [ cs "black pa2 mv3 f4" ] [ text subtitleText ]
         , div
             [ style [ ( "max-width", "700px" ) ], class "center" ]

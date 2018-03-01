@@ -11,18 +11,20 @@ import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Success))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
+import SecureVote.Components.UI.Loading exposing (loadingSpinner)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Utils exposing (processCandidateTx)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate, getDelegateAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(GethDialog, MEWDialog, VerifyDialog), Route(SwmSubmitR))
 
 
-votingView : Model -> Html Msg
-votingView model =
+votingView : Model -> BallotParams Msg -> Html Msg
+votingView model currBallot =
     let
         tableRow ( desc, value ) =
             tr []
@@ -38,7 +40,7 @@ votingView model =
         displayResults =
             table [ class "mt2 dt--fixed w-auto-l" ]
                 (List.map tableRow
-                    (List.map getResults model.currentBallot.voteOptions)
+                    (List.map getResults currBallot.voteOptions)
                     ++ [ tableRow ( "Delegate", getDelegateAddress model ? "None" ) ]
                 )
 
@@ -85,25 +87,11 @@ votingView model =
                 , endBtns model
                 ]
 
-        loadingSpinner =
-            div [ id "loading-screen" ]
-                [ text "Waiting for ballot encryption..."
-                , div [ class "cssload-container cssload-orange cssload-small" ]
-                    [ ul [ class "cssload-flex-container" ]
-                        [ li []
-                            [ span [ class "cssload-loading cssload-one" ] []
-                            , span [ class "cssload-loading cssload-two" ] []
-                            , span [ class "cssload-loading-center" ] []
-                            ]
-                        ]
-                    ]
-                ]
-
         ballotDetailsSection =
             if model.ballotAllDone then
                 ballotDetails
             else
-                loadingSpinner
+                loadingSpinner "Waiting for ballot encryption..."
     in
     fullPageSlide 923844759
         model

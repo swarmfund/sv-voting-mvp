@@ -9,7 +9,7 @@ const R = require('ramda');
 web3 = new Web3();
 
 
-const log = (msg, offset=0) => {
+const log = (msg, offset = 0) => {
     if (offset > 0) {
         console.log(" ".repeat(offset - 1), msg)
     } else {
@@ -21,85 +21,83 @@ const log = (msg, offset=0) => {
 loadDetails = require('./loadContractDetails');
 
 
+
+const ethHashCheck = (h, lenBytes = 32) => {
+    try {
+        return h.slice(0, 2) === "0x" && h.length === (lenBytes * 2 + 2);
+    } catch (e) {
+        console.error("Error!".red + " " + e.toString().yellow);
+        console.log("exiting...");
+        process.exit();
+    }
+};
+
+
+
 const main = () => {
     const args_ = yargs.options({
-        "deployOther": {
+        "contractName": {
             type: 'string',
             describe: "The contract name of an alternate contract to deploy, do not include '.sol'"
         }
     }).help(false).version(false).argv;
 
-    const args = (args_.deployOther) ? args_ : yargs.options({
-      'testing': {
-        demandOption: false,
-        default: false,
-        describe: 'enable testing functions in the ballot smart contract',
-        type: 'boolean'
-      },
-      "deploy": {
-        describe: '_automatically_ deploy the contract (no user interaction)',
-        type: 'boolean'
-      },
-      "startTime": {
-          demandOption: true,
-          describe: "Start time in Seconds since Unix Epoch (UTC)",
-          type: 'number'
-      },
-      "endTime": {
-        demandOption: true,
-        describe: "End time in Seconds since Unix Epoch (UTC)",
-        type: 'number'
-      },
-      "ballotEncPubkey": {
-          demandOption: true,
-          describe: "The curve25519 _public key_ selected for ballot encryption",
-          type: 'string'
-      },
-      "unsafeSkipChecks": {
-          describe: "This skips all confirmation checks. DRAGONS BE HERE",
-          type: 'boolean'
-      },
-      "web3Provider": {
-          describe: "URI for web3 provider - HTTP only",
-          default: "http://localhost:8545",
-          type: 'string'
-      },
-      "deployOther": {
-          describe: "The contract name of an alternate contract to deploy, do not include '.sol'",
-          type: 'string'
-      },
-      "optionNamesJson": {
-          describe: "A JSON encoded list of options; up to 5 supported. Example: '[\"option 1\", \"option 2\"]'",
-          type: 'string',
-          demandOption: true,
-      }
+    const args = (args_.contractName) ? args_ : yargs.options({
+        'testing': {
+            demandOption: false,
+            default: false,
+            describe: 'enable testing functions in the ballot smart contract',
+            type: 'boolean'
+        },
+        'useEncryption': {
+            demandOption: true,
+            default: false,
+            describe: 'determine whether the smart contract will accept encrypted ballots or not.',
+            type: 'boolean'
+        },
+        "deploy": {
+            describe: '_automatically_ deploy the contract (no user interaction)',
+            default: false,
+            demandOption: false,
+            type: 'boolean'
+        },
+        "startTime": {
+            demandOption: false,
+            default: 0,
+            describe: "Start time in Seconds since Unix Epoch (UTC)",
+            type: 'number'
+        },
+        "endTime": {
+            demandOption: true,
+            describe: "End time in Seconds since Unix Epoch (UTC)",
+            type: 'number'
+        },
+        "unsafeSkipChecks": {
+            describe: "This skips all confirmation checks. DRAGONS BE HERE",
+            type: 'boolean'
+        },
+        "web3Provider": {
+            describe: "URI for web3 provider - HTTP only",
+            default: "http://localhost:8545",
+            type: 'string'
+        },
+        "contractName": {
+            describe: "The contract name of an alternate contract to deploy, do not include '.sol'",
+            type: 'string'
+        },
+        "specHash": {
+            describe: "The Keccak256 (eth-sha3) hash of the ballot spec",
+            type: 'string',
+            demandOption: true,
+        }
     }).version(false).argv;
 
-    if (!args.deployOther && (args.ballotEncPubkey.length != 66 || args.ballotEncPubkey.slice(0,2) != "0x")) {
+    if (!args.contractName && !ethHashCheck(args.specHash)) {
         log("Error:".bgRed.white + " Ballot Encryption Pubkey is not 32 bytes formatted in Ethereum Hex (should be 66 characters long total)")
         process.exit(1);
     }
 
-    let optionNames;
-    if (!args.deployOther) {
-        optionNames = JSON.parse(args.optionNamesJson);
-
-        if (!args.deployOther && (!Array.isArray(optionNames) || optionNames.length == 0 || optionNames.length > 5)) {
-            log("Error:".bgRed.white + " Option Names are either of length  ==0 or >5 (must be >0 and <=5)")
-            process.exit(1);
-        }
-
-        extraOpts = new Array(5 - optionNames.length);
-        extraOpts.fill("");
-        Array.prototype.push.apply(optionNames, extraOpts);
-
-        if (optionNames.length != 5) {
-            log("Error:".bgRed.white + " Option Names is not of length 5! (Note: it should have been automatically extended to contain 5 options, with extra options being empty)")
-            process.exit(1);
-        }
-    }
-
-    const contractName = args.deployOther || "SwarmVotingMVP";
+    const contractName = args.contractName || "LittleBallotBox";
     const [abi, bin] = loadDetails(contractName);
 
 
@@ -107,14 +105,14 @@ const main = () => {
 
     log("\n\nSummary of Deployment:\n".cyan.bold)
 
-    if (!args.deployOther) {
+    if (!args.contractName) {
         const startTime = new Date(args.startTime * 1000);
         const endTime = new Date(args.endTime * 1000);
         log("Start Time: " + startTime.toString().yellow, 2);
         log("End Time: " + endTime.toString().yellow, 2);
-        log("Ballot Encryption Pubkey:", 2)
-        log(args.ballotEncPubkey.yellow, 4)
-        log("Ballot Options: " + ('["' + R.filter(n => n !== "", optionNames).join('", "') + '"]').yellow, 2)
+        log("Use Encryption: " + args.useEncryption.toString().yellow, 2);
+        log("Ballot Specification Hash:", 2)
+        log(args.specHash.yellow, 4)
     }
     log("Sending from: " + web3.eth.coinbase.yellow, 2);
     log("\nBe sure to " + "double and triple check".magenta + " these before you go live!\n")
@@ -129,7 +127,7 @@ const main = () => {
         const contract = web3.eth.contract(abi);
 
         // set the contract deployment arguments
-        const contractArgs = args.deployOther ? [] : [args.startTime, args.endTime, args.ballotEncPubkey, args.testing, ...optionNames];
+        const contractArgs = args.contractName ? [] : [args.startTime, args.endTime, args.useEncryption, args.testing, args.specHash];
 
         // organise our arguments for getting final bytecode
         const bytecodeArgs = R.append({data: "0x" + bin}, contractArgs);
@@ -164,7 +162,7 @@ const main = () => {
                     process.exit(1);
                 } else {
                     log("Tx Hash: " + deployed.transactionHash.green);
-                    if(deployed.address) {
+                    if (deployed.address) {
                         log("Contract Addr: " + deployed.address.green + "\n\n");
                         log("          >>> Job Done - Exiting <<<          ".bgGreen.black)
                         process.exit(0);

@@ -9,14 +9,15 @@ import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.Eth.Utils exposing (isValidEthAddress, setCandTxFrom)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getUserErc20Addr, setUserErc20Addr, userErc20AddrId)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmHowToVoteR))
 
 
-swmAddressV : Model -> Html Msg
-swmAddressV model =
+swmAddressV : Model -> BallotParams Msg -> Html Msg
+swmAddressV model b =
     let
         ( addrErr, addrErrMsg ) =
             validAddress model
@@ -31,7 +32,7 @@ swmAddressV model =
             List.map .id
                 >> List.map (\id_ -> SetBallotRange id_ 0)
             <|
-                model.currentBallot.voteOptions
+                b.voteOptions
 
         msgs isSkip =
             MultiMsg <|
@@ -61,7 +62,7 @@ swmAddressV model =
                 []
 
         erc20Abrv =
-            model.currentBallot.erc20Abrv
+            b.erc20Abrv
     in
     fullPageSlide 384938493
         model

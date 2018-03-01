@@ -9,6 +9,7 @@ import Material.Typography as Typo exposing (display2)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
@@ -17,9 +18,6 @@ import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
 combinedHowToVoteCopy : Model -> List (Html Msg)
 combinedHowToVoteCopy model =
     let
-        ballotExplanationCopy =
-            model.currentBallot.description
-
         rangeVotingCopy =
             [ "Each vote consists of a choosing a score within the range -3 to +3."
             , "+3 indicates best option and -3 indicates the worst option."
@@ -32,13 +30,18 @@ combinedHowToVoteCopy model =
             ]
 
         ballotExplanationSection =
-            if model.route /= ListAllVotesR then
-                div []
-                    [ subhead "What Is This Ballot?"
-                    , p [] [ text ballotExplanationCopy ]
-                    ]
-            else
-                div [] []
+            case ( model.route, model.currentBallot ) of
+                ( ListAllVotesR, _ ) ->
+                    div [] []
+
+                ( _, Just b ) ->
+                    div []
+                        [ subhead "What Is This Ballot?"
+                        , p [] [ text b.description ]
+                        ]
+
+                _ ->
+                    div [] []
 
         rangeVotingSection =
             div []
@@ -58,8 +61,8 @@ combinedHowToVoteCopy model =
     ]
 
 
-howToVoteView : Model -> Html Msg
-howToVoteView model =
+howToVoteView : Model -> BallotParams Msg -> Html Msg
+howToVoteView model currBallot =
     fullPageSlide 3453456456
         model
         "How To Vote"

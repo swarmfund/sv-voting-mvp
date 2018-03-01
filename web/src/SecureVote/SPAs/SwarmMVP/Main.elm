@@ -1,14 +1,15 @@
 module SecureVote.SPAs.SwarmMVP.Main exposing (..)
 
 import Html exposing (Html)
-import SecureVote.Crypto.Curve25519 exposing (genKeyPair, onIncomingCurve25519Error, onIncomingEncBytes, onIncomingKeyPair, receiveCurve25519Error, receiveEncryptedBytes, receiveKeyPair)
-import SecureVote.Eth.Web3 exposing (contractReadResponse, getBallotResults, getEncryptionPublicKey, getInit, gotAuditMsg, gotEncPubkey, gotMetamask, gotTxidCheckStatus, gotWeb3Error, implDataParam, implErc20Balance, implInit, metamaskTxid, onContractReadResponse, onGotPubkey, onGotTxidStatus, onIncomingErc20Balance, onIncomingWeb3Error, onInit, onRecieveDataParam, performContractRead, setWeb3Provider)
+import SecureVote.Crypto.Curve25519 exposing (..)
+import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (setEthNodeTemp)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model, devEthNode, initEthNode, initModel)
+import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..))
+import SecureVote.SPAs.SwarmMVP.Types exposing (Flags)
 import SecureVote.SPAs.SwarmMVP.Update exposing (update)
 import SecureVote.SPAs.SwarmMVP.Views.RootV exposing (rootView)
-import SecureVote.SPAs.SwarmMVP.Web3Handler exposing (decodeRead, readOptsErr)
+import SecureVote.SPAs.SwarmMVP.Web3Handler exposing (decodeRead, democNVotesSub, gotBallotInfoSub, readOptsErr)
 import Task exposing (perform)
 import Time exposing (every, second)
 
@@ -29,36 +30,29 @@ subscriptions model =
         , gotAuditMsg
         , gotMetamask
         , metamaskTxid
+        , democNVotesSub
+        , gotBallotInfoSub
         ]
 
 
-initCmds : Model -> List (Cmd Msg) -> Cmd Msg
-initCmds initModel extraCmds =
-    let
-        votingAddr =
-            initModel.currentBallot.contractAddr
-    in
+initCmds : Model -> Flags -> List (Cmd Msg) -> Cmd Msg
+initCmds initModel { democHash, indexABI, indexAddr } extraCmds =
     Cmd.batch <|
         [ setWeb3Provider initModel.ethNode
         , perform (SetTime << round << (\t -> t / 1000)) Time.now
         , genKeyPair True
+        , getDemocHashes { democHash = democHash, indexABI = indexABI, indexAddr = indexAddr }
         ]
             ++ extraCmds
 
 
-type alias Flags =
-    { mainTitle : String
-    , dev : Bool
-    }
-
-
 processedInitModelCmd : Flags -> ( Model, Cmd Msg )
-processedInitModelCmd { mainTitle, dev } =
+processedInitModelCmd fs =
     -- Note: Only use Msgs that do not
     -- send out commands
     let
         model =
-            initModel dev mainTitle
+            initModel fs
     in
     update
         (MultiMsg
@@ -74,7 +68,7 @@ initF flags =
         ( iModel, iCmd ) =
             processedInitModelCmd flags
     in
-    ( iModel, initCmds iModel [ iCmd ] )
+    ( iModel, initCmds iModel flags [ iCmd ] )
 
 
 main : Program Flags Model Msg

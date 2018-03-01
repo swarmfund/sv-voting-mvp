@@ -4,17 +4,21 @@ const path = require('path');
 const merge = require('webpack-merge');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 require('dotenv').config({systemvars: true});
 
 
-var TARGET_ENV = function () {
+const TARGET_ENV = function () {
     console.log('Generating TARGET_ENV');
     switch (process.env.npm_lifecycle_event) {
         case 'build-web':
             return 'production';
         case 'web':
             return 'development';
+
+        case 'web-admin':
+            return 'dev-admin-ui';
+        case 'build-web-admin':
+            return 'prod-admin-ui';
 
         case 'admin-dev':
             return 'admin-dev';
@@ -31,7 +35,7 @@ var TARGET_ENV = function () {
             return process.env.npm_lifecycle_event;
     }
 }();
-var filename = (TARGET_ENV === 'production') ? '[name]-[hash].js' : '[name].js';
+const filename = '[name]-[hash].js';
 
 
 const _pureDist = '_pureDist';
@@ -89,7 +93,7 @@ const common = {
         fs: "empty"
     },
     entry: {
-        "sv-swarm": ['./web/index.js']
+        "sv-little-gov": ['./web/index.js']
     },
     output: {
         path: path.join(__dirname, _dist),
@@ -113,7 +117,7 @@ const common = {
         ]
     },
     plugins: [
-        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV"]),
+        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR"]),
         CopyWebpackPluginConfig,
         new HTMLWebpackPlugin({
             // using .ejs prevents other loaders causing errors
@@ -123,15 +127,42 @@ const common = {
         })
     ],
     resolve: {
-        extensions: [".js", ".json", ".ts"]
+        extensions: [".js", ".json", ".ts"],
+        modules: ['./node_modules'],
     },
     bail: true
 };
 
 
-if (TARGET_ENV === 'development') {
+const adminUiInjection = (env, config) => {
+    if (env === 'dev-admin-ui' || env === 'prod-admin-ui') {
+        const toRet = merge(config, {
+            devServer: {
+                historyApiFallback: {
+                    index: 'admin.html'
+                }
+            },
+            plugins: [
+                new HTMLWebpackPlugin({
+                    // using .ejs prevents other loaders causing errors
+                    template: 'web/admin.ejs',
+                    // inject details of output file at end of body
+                    inject: 'body'
+                })
+            ]
+        })
+        toRet.entry = {"sv-admin": ['./web/admin.js']};
+        return toRet;
+    } else {
+        return config;
+    }
+};
+
+
+if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui') {
     console.log('Building for dev...');
-    module.exports = merge(common, buildAuditWeb({}), {
+    const toExport = merge(common, buildAuditWeb({}), {
+        mode: "development",
         plugins: [
             // Suggested for hot-loading
             new webpack.NamedModulesPlugin(),
@@ -148,7 +179,7 @@ if (TARGET_ENV === 'development') {
                     ],
                     use: [
                         "elm-hot-loader",
-                        "elm-webpack-loader?verbose=true&warn=false&maxInstances=2&debug=true"
+                        "elm-webpack-loader?verbose=true&warn=false&maxInstances=1&debug=true"
                     ]
                 }
             ]
@@ -168,11 +199,13 @@ if (TARGET_ENV === 'development') {
             }
         }
     });
+    module.exports = adminUiInjection(TARGET_ENV, toExport)
 }
 
-if (TARGET_ENV === 'production') {
+if (TARGET_ENV === 'production' || TARGET_ENV === 'prod-admin-ui') {
     console.log('Building for prod...');
     module.exports = merge(common, buildAuditWeb({outputDir: ".cache/output"}), {
+        mode: "production",
         plugins: [
             // Delete everything from output directory and report to user
             new CleanWebpackPlugin([_dist], {
@@ -181,7 +214,6 @@ if (TARGET_ENV === 'production') {
                 verbose: true,
                 dry: false
             }),
-            new UglifyJSPlugin(),
             CopyWebpackPluginConfig
         ],
         module: {

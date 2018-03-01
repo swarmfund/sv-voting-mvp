@@ -9,13 +9,15 @@ import Material.Snackbar as Snackbar
 import Maybe exposing (andThen)
 import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
+import SecureVote.Ballots.SpecSource exposing (getBallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Utils exposing (keccak256OverString)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (doBallotOptsMatchRSched, voteOptionsRSched)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, defaultDelegate, getDelegateAddress, getUserErc20Addr)
-import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, resetAllBallotFields)
+import SecureVote.SPAs.SwarmMVP.Model exposing (BallotPrelimInfo, LastPageDirection(PageBack, PageForward), Model, resetAllBallotFields)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (defaultRoute)
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidFail, TxidInProgress, TxidSuccess))
@@ -93,12 +95,12 @@ update msg model =
                     List.map .title b.voteOptions
 
                 ( m_, cmds_ ) =
-                    update (ToWeb3 <| ReInit oTitles) <| resetAllBallotFields { model | currentBallot = b } b
+                    update (ToWeb3 <| ReInit oTitles) <| resetAllBallotFields { model | currentBallot = Just b } b
 
                 doAuditIfBallotEnded =
                     if b.endTime < model.now then
                         -- ensure we use the NEW ballot, not prev ballot :/
-                        [ auditCmd { model | currentBallot = b } b ]
+                        [ auditCmd { model | currentBallot = Just b } b ]
                     else
                         []
             in
@@ -107,11 +109,15 @@ update msg model =
         ConstructBallotPlaintext ->
             let
                 plainBytesM =
-                    orderedBallotBits model model.ballotBits
+                    model.currentBallot
                         |> Maybe.andThen
-                            (flip constructBallot <|
-                                getDelegateAddress model
-                                    ? defaultDelegate
+                            (\b ->
+                                orderedBallotBits b model.ballotBits
+                                    |> Maybe.andThen
+                                        (flip constructBallot <|
+                                            getDelegateAddress model
+                                                ? defaultDelegate
+                                        )
                             )
 
                 skM =
@@ -162,7 +168,7 @@ update msg model =
             { model | auditMsgs = msg :: model.auditMsgs } ! []
 
         VoteWMetaMask ->
-            model ! [ castMetaMaskVote model.candidateTx ]
+            model ! [ castMetaMaskTx model.candidateTx ]
 
         -- ToCurve25519 msg ->
         --     updateToCurve25519 msg model
@@ -209,7 +215,10 @@ updateToWeb3 : ToWeb3Msg -> Model -> ( Model, Cmd Msg )
 updateToWeb3 web3msg model =
     case web3msg of
         SetProvider ->
-            model ! [ setWeb3Provider model.ethNode, getEncryptionPublicKey model.currentBallot.contractAddr ]
+            model
+                ! ([ setWeb3Provider model.ethNode ]
+                    ++ defaultOrB model [] (\b -> [ getEncryptionPublicKey b.contractAddr ])
+                  )
 
         GetErc20Balance ->
             let
@@ -217,24 +226,25 @@ updateToWeb3 web3msg model =
                     -- probs okay because it will return 0
                     getUserErc20Addr model ? "0x00"
             in
-            model ! [ getErc20Balance <| GetErc20BalanceReq model.currentBallot.erc20Addr addr ]
+            model ! defaultOrB model [] (\b -> [ getErc20Balance <| GetErc20BalanceReq b.erc20Addr addr ])
 
         CheckTxid txid ->
             { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]
 
         ReInit oTitles ->
-            model ! [ getInit { addr = model.currentBallot.contractAddr, oTitles = oTitles }, getEncryptionPublicKey model.currentBallot.contractAddr ]
+            model ! defaultOrB model [] (\b -> [ getInit { addr = b.contractAddr, oTitles = oTitles }, getEncryptionPublicKey b.contractAddr ])
+
+
+doUpdateErr : String -> Model -> ( Model, Cmd Msg )
+doUpdateErr msg m =
+    update (LogErr msg) m
 
 
 updateFromWeb3 : FromWeb3Msg -> Model -> ( Model, Cmd Msg )
 updateFromWeb3 msg model =
     case msg of
         GotBalance bal ->
-            let
-                cBallot =
-                    model.currentBallot
-            in
-            { model | currentBallot = { cBallot | erc20Balance = Just bal } } ! []
+            { model | currentBallot = Maybe.map (\b -> { b | erc20Balance = Just bal }) model.currentBallot } ! []
 
         GotDataParam data ->
             let
@@ -250,11 +260,11 @@ updateFromWeb3 msg model =
             { model | miniVotingAbi = init.miniAbi } ! []
 
         GetBallotOptsLegacy resp ->
-            case resp of
-                Success opts ->
+            case ( resp, model.currentBallot ) of
+                ( Success opts, Just b ) ->
                     let
                         optCheck =
-                            model.currentBallot.voteOptions == voteOptionsRSched && doBallotOptsMatchRSched opts
+                            b.voteOptions == voteOptionsRSched && doBallotOptsMatchRSched opts
                     in
                     ballotOptSuccess model { isGood = optCheck, hashes = [ "no need for hashes in legacy" ] }
 
@@ -273,25 +283,27 @@ updateFromWeb3 msg model =
                     ballotOptElse model resp
 
         GetBallotPeriod resp ->
-            let
-                cb_ =
-                    model.currentBallot
+            case model.currentBallot of
+                Just cb_ ->
+                    let
+                        { cb, cmds } =
+                            case resp of
+                                Success { startTime, endTime } ->
+                                    -- if the ballot has actually ended, but the UI had the wrong time, AND that wrong time was in the future, ONLY THEN trigger an audit
+                                    if endTime < model.now && model.now <= cb_.endTime then
+                                        { cb = { cb_ | startTime = startTime, endTime = endTime }
+                                        , cmds = [ auditCmd model cb_ ]
+                                        }
+                                    else
+                                        { cb = cb_, cmds = [] }
 
-                { cb, cmds } =
-                    case resp of
-                        Success { startTime, endTime } ->
-                            -- if the ballot has actually ended, but the UI had the wrong time, AND that wrong time was in the future, ONLY THEN trigger an audit
-                            if endTime < model.now && model.now <= cb_.endTime then
-                                { cb = { cb_ | startTime = startTime, endTime = endTime }
-                                , cmds = [ auditCmd model cb_ ]
-                                }
-                            else
-                                { cb = cb_, cmds = [] }
+                                _ ->
+                                    { cb = cb_, cmds = [] }
+                    in
+                    { model | ballotOpen = resp, currentBallot = Just cb } ! cmds
 
-                        _ ->
-                            { cb = cb_, cmds = [] }
-            in
-            { model | ballotOpen = resp, currentBallot = cb } ! cmds
+                Nothing ->
+                    { model | ballotOpen = resp } ! []
 
         GotTxidStatus txidE ->
             case txidE of
@@ -325,6 +337,32 @@ updateFromWeb3 msg model =
         GotMetaMaskTxid txid ->
             { model | metamaskTxid = Just txid } ! []
 
+        GotBallotCount r ->
+            case r of
+                Success { democHash, n } ->
+                    { model | democCounts = Dict.insert democHash n model.democCounts } ! []
+
+                _ ->
+                    doUpdateErr "Unable to read democracy from the blockchain! Please try reloading the page." model
+
+        GotBallotInfo r ->
+            case r of
+                Success { democHash, i, specHash, extraData, votingContract } ->
+                    let
+                        ballotPrelim =
+                            BallotPrelimInfo specHash votingContract extraData
+
+                        updateInnerD maybeD =
+                            Just <| Dict.insert i ballotPrelim (maybeD ? Dict.empty)
+
+                        di =
+                            Dict.update democHash updateInnerD model.democIssues
+                    in
+                    { model | democIssues = di } ! [ getBallotSpec specHash ]
+
+                _ ->
+                    doUpdateErr "Got bad ballot info from blockchain. Please check your connection or reload the page" model
+
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )
 updateFromCurve25519 msg model =
@@ -342,7 +380,7 @@ updateFromCurve25519 msg model =
                     model_ ! [ constructDataParam { encBallot = encBytes, voterPubkey = keypair.hexPk, votingContractAddr = voteCAddr } ]
 
                 _ ->
-                    update (LogErr "Unable to create Ethereum tx data parameter - missing encrypted ballot, keypair, or voting contract address.") model_
+                    doUpdateErr "Unable to create Ethereum tx data parameter - missing encrypted ballot, keypair, or voting contract address." model_
 
 
 
@@ -366,17 +404,16 @@ mFail model errMsg =
 
 ballotOptSuccess : Model -> { isGood : Bool, hashes : List String } -> ( Model, Cmd Msg )
 ballotOptSuccess model { isGood, hashes } =
-    if isGood then
-        let
-            b =
-                model.currentBallot
+    case ( isGood, model.currentBallot ) of
+        ( True, Just b ) ->
+            let
+                optHashToTitle =
+                    fromList <| zip hashes <| List.map .title b.voteOptions
+            in
+            { model | ballotVerificationPassed = Success isGood, optHashToTitle = optHashToTitle } ! []
 
-            optHashToTitle =
-                fromList <| zip hashes <| List.map .title b.voteOptions
-        in
-        { model | ballotVerificationPassed = Success isGood, optHashToTitle = optHashToTitle } ! []
-    else
-        mFail model "Release schedule options in voting interface do not match smart contract!" ! []
+        _ ->
+            mFail model "Release schedule options in voting interface do not match smart contract!" ! []
 
 
 ballotOptElse : Model -> RemoteData String a -> ( Model, Cmd Msg )
@@ -393,3 +430,13 @@ ballotOptElse model resp =
 
         NotAsked ->
             { model | ballotVerificationPassed = NotAsked } ! []
+
+
+defaultOrB : Model -> a -> (BallotParams Msg -> a) -> a
+defaultOrB model default f =
+    case model.currentBallot of
+        Just b ->
+            f b
+
+        Nothing ->
+            default

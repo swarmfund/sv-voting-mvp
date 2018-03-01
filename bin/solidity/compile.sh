@@ -8,21 +8,21 @@ LGREEN='\033[1;32m'
 LBLUE='\033[1;34m'
 LCYAN='\033[1;36m'
 
-# getopts 
-CONTRACT_NAME="SwarmVotingMVP.sol"
-while getopts ":c:" opt; do 
+# getopts
+CONTRACT_NAME="LittleBallotBox.sol"
+while getopts ":c:" opt; do
     case $opt in
         c)
             CONTRACT_NAME="$OPTARG"
-            ;;
+        ;;
         \?)
             echo "invalid option -$OPTARG"
             exit 1
-            ;;
+        ;;
         :)
             echo "Option -$OPTARG requires an argument"
             exit 1
-            ;;
+        ;;
     esac
 done
 
@@ -48,7 +48,7 @@ if [ ! -e "$CONTRACT_PATH" ]; then
     exit 1
 fi
 
-mkdir -p "./$OUTPUT_DIR" 
+mkdir -p "./$OUTPUT_DIR"
 
 function solcCommon {
     solc "$@" -o "./$OUTPUT_DIR/" --overwrite --optimize "$CONTRACT_PATH"

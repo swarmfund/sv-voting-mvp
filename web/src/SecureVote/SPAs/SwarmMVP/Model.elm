@@ -5,14 +5,16 @@ import List exposing (foldl, map)
 import Material
 import Material.Snackbar
 import RemoteData exposing (RemoteData(..))
+import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
+import SecureVote.Eth.Nodes exposing (ethNodes)
 import SecureVote.Eth.Types exposing (AuditDoc)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (allBallots, allDevBallots, initBallot, initDevBallot)
+import SecureVote.SPAs.SwarmMVP.Ballot exposing (allBallots, initBallot)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(ListAllVotesR, NotFoundR, SwmAddressR))
-import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidNotMade))
+import SecureVote.SPAs.SwarmMVP.Types exposing (Flags, TxidCheckStatus(TxidNotMade))
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits)
 
 
@@ -27,7 +29,7 @@ type alias Model =
     , ballotRange : Dict Int Int
     , ballotBits : Dict Int (Result String RangeBallot3Bits)
     , ballotAllDone : Bool
-    , currentBallot : BallotParams Msg
+    , currentBallot : Maybe (BallotParams Msg)
     , allBallots : Dict Int (BallotParams Msg)
     , route : Route
     , history : List Route
@@ -51,17 +53,26 @@ type alias Model =
     , optHashToTitle : Dict String String
     , metamask : Bool
     , metamaskTxid : Maybe String
+    , democHashes : Dict Int String --^ Map (index order => democHash)
+    , democCounts : Dict String Int --^ map (democHashes => number of ballots in it)
+    , democIssues : Dict String (Dict Int BallotPrelimInfo) --^ map (democHash => (ballotId => prelimInfo))
+    , specsToDeets : Dict String (RemoteData String BallotSpec) --^ map (specHash => RemoteData BallotSpec) - can error gracefully
+    , currDemoc : String
     }
 
 
-initModel : Bool -> String -> Model
-initModel dev mainTitle =
+type alias BallotPrelimInfo =
+    { specHash : String, votingContract : String, extraData : String }
+
+
+initModel : Flags -> Model
+initModel { dev, mainTitle, democHash } =
     let
-        ( ballot_, ethNode_, allBallots_ ) =
+        ethNode_ =
             if dev then
-                ( initDevBallot, devEthNode, allDevBallots )
+                ethNodes.kovan
             else
-                ( initBallot, initEthNode, allBallots )
+                ethNodes.mainnet
     in
     { mdl = Material.model
     , snack = Material.Snackbar.model
@@ -73,8 +84,8 @@ initModel dev mainTitle =
     , ballotRange = Dict.empty
     , ballotBits = Dict.empty
     , ballotAllDone = False
-    , currentBallot = ballot_
-    , allBallots = foldl (\b m -> Dict.insert b.id b m) Dict.empty allBallots_
+    , currentBallot = Nothing
+    , allBallots = Dict.empty
     , route = ListAllVotesR
     , history = []
     , lastRoute = Nothing
@@ -97,21 +108,12 @@ initModel dev mainTitle =
     , optHashToTitle = Dict.empty
     , metamask = False
     , metamaskTxid = Nothing
+    , democHashes = Dict.empty
+    , democCounts = Dict.empty
+    , democIssues = Dict.empty
+    , specsToDeets = Dict.empty
+    , currDemoc = democHash
     }
-
-
-initEthNode : String
-initEthNode =
-    "https://eth-aws-nv-node-02.secure.vote:8545/microgov"
-
-
-devEthNode : String
-devEthNode =
-    "https://eth-kovan-aws-nv-node-01.secure.vote:8545/microgovDev"
-
-
-
---    "https://mainnet.infura.io/securevote"
 
 
 type LastPageDirection

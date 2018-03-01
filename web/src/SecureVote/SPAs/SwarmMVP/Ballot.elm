@@ -3,7 +3,6 @@ module SecureVote.SPAs.SwarmMVP.Ballot exposing (..)
 import Debug exposing (log)
 import Maybe.Extra exposing (combine)
 import SecureVote.Eth.Utils exposing (keccak256OverString, toHex)
-import SecureVote.SPAs.SwarmMVP.Ballots.DevBasicBallot exposing (allDevBallots_, devBasicBallot)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (rschedBallot)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotOption, BallotParams)
 
@@ -53,9 +52,10 @@ allBallots =
     ]
 
 
-allDevBallots : List (BallotParams msg)
-allDevBallots =
-    allDevBallots_
+
+--allDevBallots : List (BallotParams msg)
+--allDevBallots =
+--    allDevBallots_
 
 
 initBallot : BallotParams msg
@@ -63,6 +63,7 @@ initBallot =
     rschedBallot
 
 
-initDevBallot : BallotParams msg
-initDevBallot =
-    devBasicBallot
+
+--initDevBallot : BallotParams msg
+--initDevBallot =
+--    devBasicBallot

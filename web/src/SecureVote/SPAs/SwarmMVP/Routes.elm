@@ -28,3 +28,8 @@ type DialogRoute msg
     | VerifyDialog
     | FullAuditDialog
     | NotFoundDialog
+
+
+type SuperRoute
+    = NoBallotSelected
+    | BallotSelected

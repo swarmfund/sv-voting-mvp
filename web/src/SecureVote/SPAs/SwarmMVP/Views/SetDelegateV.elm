@@ -12,6 +12,7 @@ import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.Eth.Utils exposing (isValidEthAddress)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (defaultDelegate, dlgtAddrField, getBoolField, getDelegateAddress, getField, setBoolField)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToCurve25519Msg(..))
@@ -20,14 +21,23 @@ import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 delegateExplanationCopy : Model -> List String
 delegateExplanationCopy model =
-    [ "You may optionally select a delegate, though this isn't required. If you would like to, please enter their " ++ model.currentBallot.erc20Abrv ++ " token address below. "
+    let
+        token =
+            case model.currentBallot of
+                Just b ->
+                    b.erc20Abrv
+
+                _ ->
+                    "ERC20"
+    in
+    [ "You may optionally select a delegate, though this isn't required. If you would like to, please enter their " ++ token ++ " token address below. "
     , "If your delegate casts a vote, your votes will be replaced with the votes that your delegate chooses. "
     , "If your delegate does not cast a vote, your vote will be cast with the options you have selected. "
     ]
 
 
-delegateView : Model -> Html Msg
-delegateView model =
+delegateView : Model -> BallotParams Msg -> Html Msg
+delegateView model currBallot =
     let
         btnDisabled =
             if addrErr then
@@ -39,10 +49,10 @@ delegateView model =
             validAddress (getField dlgtAddressK model)
 
         dlgtSetting =
-            "setting.delegate." ++ toString model.currentBallot.id
+            "setting.delegate." ++ toString currBallot.id
 
         dlgtAddressK =
-            dlgtAddrField model.currentBallot
+            dlgtAddrField currBallot
 
         clickMsgs_ extra =
             MultiMsg <|

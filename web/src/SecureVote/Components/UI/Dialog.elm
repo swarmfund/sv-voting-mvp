@@ -7,6 +7,7 @@ import Material.Icon as MIcon
 import Material.Options as Options exposing (cs, css)
 import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.Typo exposing (headline)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(Mdl))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(..))
@@ -17,30 +18,33 @@ dialog : Model -> Html Msg
 dialog model =
     let
         innerHtml =
-            case model.dialogHtml.route of
-                SettingsDialog ->
+            case ( model.dialogHtml.route, model.currentBallot ) of
+                ( SettingsDialog, _ ) ->
                     settingsDialogV model
 
-                BallotDialog content ->
+                ( BallotDialog content, _ ) ->
                     customDialogV content
 
-                InfoDialog ->
+                ( InfoDialog, _ ) ->
                     infoDialogV model
 
-                GethDialog ->
-                    gethDialogV model
+                ( GethDialog, Just b ) ->
+                    gethDialogV model b
 
-                VerifyDialog ->
-                    verifyDialogV model
+                ( VerifyDialog, Just b ) ->
+                    verifyDialogV model b
 
-                FullAuditDialog ->
-                    fullAuditDialogV model
+                ( FullAuditDialog, Just b ) ->
+                    fullAuditDialogV model b
 
-                NotFoundDialog ->
+                ( MEWDialog, Just b ) ->
+                    mewDialog model b
+
+                ( NotFoundDialog, _ ) ->
                     h1 [ class "red" ] [ text "Not Found" ]
 
-                MEWDialog ->
-                    mewDialog model
+                ( _, Nothing ) ->
+                    h1 [ class "red" ] [ text "Error: No current ballot selected, unable to display dialog" ]
     in
     Dialog.view
         -- Tachyons has no Max-Height :(

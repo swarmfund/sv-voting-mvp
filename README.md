@@ -77,6 +77,7 @@ You'll need to set these environment variables:
 
 * `MAIN_TITLE`: A string corresponding to the main title of the first page, e.g. "SWM Governance".
 * `DEV`: a boolean to indicate if it's a dev environment or not.
+* `DEMOC_HASH`: the Eth encoded hash of the relevant democracy (note: in future this might be handled in-app)
 
 If you're building locally you can put these in a `.env` file in the root of the repo.
 
@@ -158,3 +159,10 @@ additionally, if you run `INSTALL_WEBPACK=true yarn build-web` it run `npm insta
 #### Node Version
 
 in addition to the yarn issue we also had issues with node v8.9.4. If you have trouble try v6.9.1.
+
+#### Webpack 4
+
+Some troubles exist with webpack 4 and the loaders used by elm and purescript.
+
+elm-webpack-loader is pinned to a commit for the mean time to get around this. It should be removed once the loader
+itself is fixed.
