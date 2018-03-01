@@ -39,7 +39,7 @@ listVotesView model =
 
         currBallotV =
             drawIfNotEmpty currentBallots <|
-                [ subhead "Current Ballots"
+                [ subhead "Current Surveys"
                 ]
                     ++ map drawBallotButton currentBallots
 

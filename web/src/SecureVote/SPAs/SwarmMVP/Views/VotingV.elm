@@ -84,9 +84,9 @@ votingView model =
                 [ subhead "Ballot Transaction:"
                 , div [ class "mw7 center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
                 , ballotClosedWarning
+                , voteBtnsOrTxid model
                 , span [ class "" ] [ subhead <| "Full results available " ++ formatTsAsDate endTime ]
                 , maybeEarlyResults
-                , voteBtnsOrTxid model
                 , endBtns model
                 ]
 
