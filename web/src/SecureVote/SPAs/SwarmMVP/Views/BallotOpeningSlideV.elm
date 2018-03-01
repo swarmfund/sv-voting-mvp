@@ -7,7 +7,7 @@ import Material.Typography exposing (body1, display1, display2, display3, displa
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
-import SecureVote.Components.UI.RenderAudit exposing (isAuditSuccessMsg, renderAudit)
+import SecureVote.Components.UI.RenderAudit exposing (isAuditSuccessMsg, renderAudit, resultsParas)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
@@ -55,12 +55,6 @@ openingSlide model =
         introParagraphs =
             div [ class "center" ] <| List.map renderPara introText
 
-        resultsParas =
-            div [ class "mb3" ]
-                [ div [ class "mb3" ] [ renderAudit model ]
-                , btn 893479357 model [ PriBtn, Attr (class "ph2"), Click (SetDialog "Voting Audit Log" FullAuditDialog), OpenDialog ] [ text "Full Voting Audit Log" ]
-                ]
-
         renderPara txt =
             Options.styled span [ body1, cs "black db pa1 mv2" ] txt
 
@@ -92,7 +86,7 @@ openingSlide model =
             [ style [ ( "max-width", "700px" ) ], class "center" ]
           <|
             [ if ballotOver then
-                resultsParas
+                resultsParas model
               else
                 introParagraphs
             , ballotIntegrity model

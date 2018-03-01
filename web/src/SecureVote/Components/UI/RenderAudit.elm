@@ -5,10 +5,32 @@ import Dict
 import Html exposing (Html, div, li, span, table, td, text, th, thead, tr, ul)
 import Html.Attributes exposing (class)
 import Maybe.Extra exposing ((?))
+import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult)
 import SecureVote.Eth.Utils exposing (isLegacyAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(..))
 import Tuple exposing (second)
+
+
+resultsParas : Model -> Html Msg
+resultsParas model =
+    div [ class "mb3" ]
+        [ div [ class "mb3" ] [ renderAudit model ]
+        , btn 893479357 model [ PriBtn, Attr (class "ph2"), Click (SetDialog "Voting Audit Log" FullAuditDialog), OpenDialog ] [ text "Full Voting Audit Log" ]
+        ]
+
+
+resultsEarly : Model -> Html Msg
+resultsEarly model =
+    let
+        btnMsgs =
+            MultiMsg [ SetDialog "Voting Audit Log" FullAuditDialog, DoAudit model.currentBallot ]
+    in
+    div [ class "mb3" ]
+        [ btn 43563456 model [ PriBtn, Attr (class "ph2"), Click btnMsgs, OpenDialog ] [ text "See Early Results" ]
+        ]
 
 
 isAuditSuccessMsg : AuditDoc -> Bool

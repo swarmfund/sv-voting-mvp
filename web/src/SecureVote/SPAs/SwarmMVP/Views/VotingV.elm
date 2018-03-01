@@ -11,6 +11,7 @@ import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Success))
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
+import SecureVote.Components.UI.RenderAudit exposing (resultsEarly)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
@@ -75,12 +76,16 @@ votingView model =
                 , btn 843973394 model [ SecBtn, Attr (class "ma2"), Click PageGoHome ] [ text "Back to Start" ]
                 ]
 
+        maybeEarlyResults =
+            resultsEarly model
+
         ballotDetails =
             div []
                 [ subhead "Ballot Transaction:"
                 , div [ class "mw7 center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
                 , ballotClosedWarning
-                , span [ class "" ] [ subhead <| "Results available " ++ formatTsAsDate endTime ]
+                , span [ class "" ] [ subhead <| "Full results available " ++ formatTsAsDate endTime ]
+                , maybeEarlyResults
                 , voteBtnsOrTxid model
                 , endBtns model
                 ]
