@@ -30,6 +30,7 @@ type Msg
     | ModBallotRange Int (Maybe Int -> Maybe Int)
     | ConstructBallotPlaintext
     | SetBallot (BallotParams Msg)
+    | DoAudit (BallotParams Msg)
     | VoteWMetaMask
       -- ** Eth related msgs
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)

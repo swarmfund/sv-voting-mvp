@@ -93,16 +93,22 @@ update msg model =
                     List.map .title b.voteOptions
 
                 ( m_, cmds_ ) =
-                    update (ToWeb3 <| ReInit oTitles) <| resetAllBallotFields { model | currentBallot = b } b
+                    let
+                        auditMsgM =
+                            if b.endTime < model.now then
+                                [ DoAudit b ]
+                            else
+                                []
 
-                doAuditIfBallotEnded =
-                    if b.endTime < model.now then
-                        -- ensure we use the NEW ballot, not prev ballot :/
-                        [ auditCmd { model | currentBallot = b } b ]
-                    else
-                        []
+                        midMsgs =
+                            MultiMsg <| [ ToWeb3 <| ReInit oTitles ] ++ auditMsgM
+                    in
+                    update midMsgs <| resetAllBallotFields { model | currentBallot = b } b
             in
-            m_ ! ([ cmds_ ] ++ doAuditIfBallotEnded)
+            m_ ! [ cmds_ ]
+
+        DoAudit b ->
+            model ! [ auditCmd model b ]
 
         ConstructBallotPlaintext ->
             let

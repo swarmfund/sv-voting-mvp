@@ -4,6 +4,7 @@ import Debug exposing (log)
 import Maybe.Extra exposing (combine)
 import SecureVote.Eth.Utils exposing (keccak256OverString, toHex)
 import SecureVote.SPAs.SwarmMVP.Ballots.DevBasicBallot exposing (allDevBallots_, devBasicBallot)
+import SecureVote.SPAs.SwarmMVP.Ballots.ProdBallots exposing (marchSurveyIOTypes, marchSurveyROI)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (rschedBallot)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotOption, BallotParams)
 
@@ -50,6 +51,8 @@ doBallotOptsMatch voteOpts titlesFromEth =
 allBallots : List (BallotParams msg)
 allBallots =
     [ rschedBallot
+    , marchSurveyIOTypes
+    , marchSurveyROI
     ]
 
 

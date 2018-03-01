@@ -297,6 +297,10 @@ isLegacy :: String -> Boolean
 isLegacy addr = (String.toLower addr) == legacyVotingAddr
 
 
+isSKPublished :: forall e. SwmVotingContract -> Aff (| e) Boolean
+isSKPublished contract = catchError (swmBallotSk contract *> pure true) (\_ -> pure false)
+
+
 runBallotCount :: forall a e.
     Int ->
     String ->
@@ -308,9 +312,12 @@ runBallotCount :: forall a e.
 runBallotCount startTime votingAddr contract erc20 {silent} updateF =
       do  -- Aff monad
         nowTime <- liftEff' $ currentTimestamp
-        endTime <- swmEndTime contract
+        Tuple endTime canProceed <- sequential $ Tuple <$> parallel (swmEndTime contract) <*> parallel (isSKPublished contract)
         log $ "Ballot end time: " <> (toString endTime) <> "\nCurrent Time:    " <> (toString nowTime)
-        if nowTime < endTime
+        if nowTime < endTime && canProceed
+            then optLog $ "Ballot has not ended but the secret key has been published. Loading live results..."
+            else AffC.log "Note: either ballot has not ended or we can't proceed, checking..."
+        if nowTime < endTime && not canProceed
             then pure $ Left "The ballot has not ended yet!"
             else do
                 startingBlockFibre <- forkAff $ do
