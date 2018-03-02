@@ -87,6 +87,7 @@
     "elm-live-deprecated": "yarn _live",
     "web": "webpack-dev-server --port 3000 --open --progress",
     "web-admin": "webpack-dev-server --port 3000 --open --progress",
+    "web-delegation": "webpack-dev-server --port 3000 --open --progress",
     "web-dev-emulate-prod": "MAIN_TITLE='SWM Governance (Dev/Prod)' DEV=false yarn web",
     "build-web": "./build_prod.sh",
     "build-web-admin": "./build_prod.sh",

@@ -20,6 +20,9 @@ const TARGET_ENV = function () {
         case 'build-web-admin':
             return 'prod-admin-ui';
 
+        case 'web-delegation':
+            return 'dev-delegation-ui';
+
         case 'admin-dev':
             return 'admin-dev';
         case 'admin-prod':
