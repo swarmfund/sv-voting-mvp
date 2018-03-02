@@ -29,8 +29,7 @@ const promiseCb = (resolve, reject, extra = []) => (err, val) => {
     if (err) {
         reject(err);
     } else {
-        resolve([val, ...extra
-        ]);
+        resolve([val, ...extra]);
     }
 };
 
@@ -59,6 +58,17 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
 
     /* START DELEGATION SECTION */
+
+
+    app.ports.setDelegateData.subscribe(wrapIncoming(({delegationABI, contractAddr, delegateAddr, tokenContract}) => {
+        const delegateABIObj = JSON.parse(delegationABI);
+        const delegateContract = web3js.eth.contract(delegateABIObj).at(contractAddr);
+
+        const payload = delegateContract.setTokenDelegation.getData(tokenContract, delegateAddr);
+        console.log(payload);
+
+        app.ports.gotDelegatePayload.send(payload);
+    }));
 
 
     /* END DELEGATION SECTION */

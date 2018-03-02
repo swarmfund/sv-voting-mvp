@@ -24,11 +24,13 @@ type alias Model =
     , errors : List String
     , web3 : Web3Model
     , littleGovIndex : String
+    , delegationABI : String
+    , contractAddr : String
     }
 
 
 initModel : Flags -> Model
-initModel { mainTitle, dev, democHash, indexAddr } =
+initModel { mainTitle, dev, democHash, indexAddr, delegationABI } =
     { strFields = Dict.empty
     , boolFields = Dict.empty
     , select = Nothing
@@ -43,6 +45,8 @@ initModel { mainTitle, dev, democHash, indexAddr } =
     , errors = []
     , web3 = initWeb3Model
     , littleGovIndex = indexAddr
+    , delegationABI = delegationABI
+    , contractAddr = "0xd78D4beAbFD3054390D10aeb4258dC2D867f5e17"
     }
 
 

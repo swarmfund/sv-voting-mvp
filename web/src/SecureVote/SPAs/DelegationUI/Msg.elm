@@ -11,7 +11,7 @@ type Msg
     | SelectBallot (SelectMsg BallotSpecChoice)
     | SelectOptType (SelectMsg OptsChoice)
     | SetBoolField String Bool
-    | UpdateWrkBallot
+    | GetDelegationPayload { delegateAddr : String, tokenAddr : String }
     | SaveJson
     | MMsg (List Msg)
     | Sha3Error String

@@ -331,4 +331,13 @@ handleGotTxInfo msgF =
 
 
 {- START DELEGATION SECTIONS -}
+
+
+port setDelegateData : { delegationABI : String, contractAddr : String, delegateAddr : String, tokenContract : String } -> Cmd msg
+
+
+port gotDelegatePayload : (Value -> msg) -> Sub msg
+
+
+
 {- END DELEGATION SECTIONS -}

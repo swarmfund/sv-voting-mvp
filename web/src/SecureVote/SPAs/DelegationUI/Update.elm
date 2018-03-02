@@ -4,10 +4,10 @@ import Dict
 import Element.Input exposing (dropMenu, menu, select, selected, updateSelection)
 import Maybe.Extra exposing ((?))
 import SecureVote.Ballots.Types exposing (emptyBSpec01)
+import SecureVote.Eth.Web3 exposing (setDelegateData)
 import SecureVote.SPAs.DelegationUI.Components.Input exposing (genDropSelect)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model, Web3Model, initWeb3Model)
 import SecureVote.SPAs.DelegationUI.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
-import SecureVote.SPAs.DelegationUI.Views.DelegationBuilder exposing (bSpecToJson, bSpecValueToString, buildBSpecV01)
 import Task
 import Web3.Types exposing (Error(Error), Sha3(Sha3))
 import Web3.Utils exposing (sha3)
@@ -36,31 +36,25 @@ update msg model =
             let
                 s =
                     model.select ? genDropSelect
-
-                m_ =
-                    { model | select = Just (updateSelection selectMsg s), workingBallot = emptyBSpec01, web3 = initWeb3Model }
             in
-            update UpdateWrkBallot m_
+            { model | select = Just (updateSelection selectMsg s), workingBallot = emptyBSpec01, web3 = initWeb3Model } ! []
 
         SelectOptType sMsg ->
             let
                 s =
                     model.selectOpts ? dropMenu Nothing SelectOptType
-
-                m_ =
-                    { model | selectOpts = Just <| updateSelection sMsg s }
             in
-            update UpdateWrkBallot m_
+            { model | selectOpts = Just <| updateSelection sMsg s } ! []
 
-        UpdateWrkBallot ->
-            let
-                newWorkingBallot =
-                    buildBSpecV01 model
-
-                jsonBallotStr =
-                    bSpecValueToString <| bSpecToJson newWorkingBallot
-            in
-            { model | workingBallot = newWorkingBallot, jsonBallot = jsonBallotStr } ! [ Task.attempt handleSha3Response (sha3 jsonBallotStr) ]
+        GetDelegationPayload { delegateAddr, tokenAddr } ->
+            ( model
+            , setDelegateData
+                { delegationABI = model.delegationABI
+                , contractAddr = model.contractAddr
+                , delegateAddr = delegateAddr
+                , tokenContract = tokenAddr
+                }
+            )
 
         UpdateSha3 s ->
             { model | sha3 = s } ! []
