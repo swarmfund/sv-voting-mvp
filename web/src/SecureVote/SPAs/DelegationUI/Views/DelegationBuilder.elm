@@ -1,4 +1,4 @@
-module SecureVote.SPAs.DelegationUI.Views.BallotBuilder exposing (..)
+module SecureVote.SPAs.DelegationUI.Views.DelegationBuilder exposing (..)
 
 import Array
 import Debug exposing (log)
@@ -24,6 +24,10 @@ import String.Extra exposing (decapitalize, replace)
 
 democHashId =
     "demoHashId"
+
+
+delegateId =
+    "delegateId"
 
 
 selectBallotId : String
@@ -159,30 +163,33 @@ bSpecValueToString v =
     encode 4 v
 
 
-ballotBuilder : Model -> UiElem
-ballotBuilder model =
-    let
-        mShowBallotFields =
-            case model.select of
-                Nothing ->
-                    []
-
-                Just s ->
-                    case I.selected s of
-                        Nothing ->
-                            []
-
-                        Just bChoice ->
-                            case bChoice of
-                                BChoice01 ->
-                                    [ buildBallotV1 model ]
-    in
+delegationBuilder : Model -> UiElem
+delegationBuilder model =
+    --    let
+    --        mShowBallotFields =
+    --            case model.select of
+    --                Nothing ->
+    --                    []
+    --
+    --                Just s ->
+    --                    case I.selected s of
+    --                        Nothing ->
+    --                            []
+    --
+    --                        Just bChoice ->
+    --                            case bChoice of
+    --                                BChoice01 ->
+    --                                    [ buildBallotV1 model ]
+    --    in
     column NoS
         [ spacing 20, height fill ]
     <|
-        [ selectBallotType model
+        [ buildBallotV1 model
         ]
-            ++ mShowBallotFields
+
+
+
+--            ++ mShowBallotFields
 
 
 selectBallotType : Model -> UiElem
@@ -221,34 +228,38 @@ buildBallotV1 model =
     column NoS
         [ spacing 20, width fill ]
     <|
-        [ typicalField democHashId "Democracy ID"
-        , buildOpts model
-        , typicalField bTitleId "BallotTitle"
-        , textArea
-            { onChange = updateWrap <| SetStrField shortDescId
-            , value = getStrField model shortDescId ? ""
-            , label = I.labelAbove <| text "Short Description"
-            , options = []
-            }
-        , textArea
-            { onChange = updateWrap <| SetStrField longDescId
-            , value = getStrField model longDescId ? ""
-            , label = I.labelAbove <| text "Long Description"
-            , options = []
-            }
-        , typicalField startTimeId "Start Time (Optional, Epoch Format)"
-        , typicalField endTimeId "End Time (Epoch Format)"
-        , typicalField erc20Id "ERC20 Token Address"
-        , typicalField encPkId "Encryption Public Key"
-        , typicalField discussId "Discussion Link (Optional)"
-        , checkbox
-            { onChange = updateWrap <| SetBoolField isBindingId
-            , checked = getBoolField model isBindingId ? True
-            , label = el NoS [] (text "Vote is Binding")
-            , options = []
-            }
+        [ typicalField delegateId "Delegate ID"
+
+        --        , buildOpts model
+        --        , typicalField bTitleId "BallotTitle"
+        --        , textArea
+        --            { onChange = updateWrap <| SetStrField shortDescId
+        --            , value = getStrField model shortDescId ? ""
+        --            , label = I.labelAbove <| text "Short Description"
+        --            , options = []
+        --            }
+        --        , textArea
+        --            { onChange = updateWrap <| SetStrField longDescId
+        --            , value = getStrField model longDescId ? ""
+        --            , label = I.labelAbove <| text "Long Description"
+        --            , options = []
+        --            }
+        --        , typicalField startTimeId "Start Time (Optional, Epoch Format)"
+        --        , typicalField endTimeId "End Time (Epoch Format)"
+        --        , typicalField erc20Id "ERC20 Token Address"
+        --        , typicalField encPkId "Encryption Public Key"
+        --        , typicalField discussId "Discussion Link (Optional)"
+        --        , checkbox
+        --            { onChange = updateWrap <| SetBoolField isBindingId
+        --            , checked = getBoolField model isBindingId ? True
+        --            , label = el NoS [] (text "Vote is Binding")
+        --            , options = []
+        --            }
         ]
-            ++ mShowOptFields model
+
+
+
+--            ++ mShowOptFields model
 
 
 buildOpts : Model -> UiElem

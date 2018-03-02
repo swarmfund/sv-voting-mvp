@@ -7,7 +7,7 @@ import SecureVote.Ballots.Types exposing (emptyBSpec01)
 import SecureVote.SPAs.DelegationUI.Components.Input exposing (genDropSelect)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model, Web3Model, initWeb3Model)
 import SecureVote.SPAs.DelegationUI.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
-import SecureVote.SPAs.DelegationUI.Views.BallotBuilder exposing (bSpecToJson, bSpecValueToString, buildBSpecV01)
+import SecureVote.SPAs.DelegationUI.Views.DelegationBuilder exposing (bSpecToJson, bSpecValueToString, buildBSpecV01)
 import Task
 import Web3.Types exposing (Error(Error), Sha3(Sha3))
 import Web3.Utils exposing (sha3)
