@@ -62,7 +62,6 @@
     "watch": "^1.0.2",
     "web3": "0.20.2",
     "webpack": "3.7.1",
-    "webpack-cli": "^2.0.9",
     "webpack-dev-server": "2.11.1",
     "webpack-merge": "^4.1.0",
     "yargs": "^9.0.1"
