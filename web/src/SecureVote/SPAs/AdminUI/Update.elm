@@ -3,7 +3,6 @@ module SecureVote.SPAs.AdminUI.Update exposing (..)
 import Dict
 import Element.Input exposing (dropMenu, menu, select, selected, updateSelection)
 import Maybe.Extra exposing ((?))
-import SecureVote.Ballots.LittleGovIndexes exposing (getIndex)
 import SecureVote.Ballots.Types exposing (emptyBSpec01)
 import SecureVote.SPAs.AdminUI.Components.Input exposing (genDropSelect)
 import SecureVote.SPAs.AdminUI.Model exposing (Model, Web3Model, initWeb3Model)
