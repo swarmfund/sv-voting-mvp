@@ -1,6 +1,8 @@
 module SecureVote.SPAs.AdminUI.Views.BallotBuilder exposing (..)
 
 import Array
+import Date exposing (day, month, year)
+import Date.Extra.Core exposing (fromTime, monthToInt)
 import Debug exposing (log)
 import Dict
 import Element exposing (button, column, downloadAs, el, empty, h3, row, text)
@@ -10,69 +12,17 @@ import Element.Input as I
 import Http exposing (encodeUri)
 import Json.Encode as E exposing (encode, null, object)
 import Maybe exposing (withDefault)
-import Maybe.Extra exposing ((?))
+import Maybe.Extra exposing ((?), isJust)
 import Result exposing (toMaybe)
 import SecureVote.Ballots.Types exposing (BallotSpec(..), BallotSpecChoice(..), OptsChoice(..), OptsOuter(..), SimpleVer(..), bSpecChoiceToStr, getTitle, oChoiceToStr)
 import SecureVote.SPAs.AdminUI.Components.Input exposing (checkbox, genDropSelect, select, textArea, textInput)
+import SecureVote.SPAs.AdminUI.Fields exposing (..)
 import SecureVote.SPAs.AdminUI.Helpers exposing (getBoolField, getStrField)
 import SecureVote.SPAs.AdminUI.Model exposing (Model)
-import SecureVote.SPAs.AdminUI.Msg exposing (Msg(..))
+import SecureVote.SPAs.AdminUI.Msg exposing (Msg(..), ToWeb3Msg(WriteViaMM))
 import SecureVote.SPAs.AdminUI.Views.Styles exposing (AdminStyles(Field, NoS, SubMenu), UiElem)
 import String exposing (toInt)
 import String.Extra exposing (decapitalize, replace)
-
-
-democHashId =
-    "demoHashId"
-
-
-selectBallotId : String
-selectBallotId =
-    "selectBallotElementId"
-
-
-selectOptionId =
-    "selectOptionTypeId"
-
-
-idB1F s =
-    "bBallotV01" ++ s
-
-
-bTitleId =
-    idB1F "Title"
-
-
-shortDescId =
-    idB1F "ShortDesc"
-
-
-longDescId =
-    idB1F "LongDesc"
-
-
-startTimeId =
-    idB1F "StartTime"
-
-
-endTimeId =
-    idB1F "EndTime"
-
-
-erc20Id =
-    idB1F "Erc20"
-
-
-encPkId =
-    idB1F "EncPK"
-
-
-discussId =
-    idB1F "DiscussionLink"
-
-
-isBindingId =
-    idB1F "IsBinding"
 
 
 updateWrap f x =
@@ -223,7 +173,7 @@ buildBallotV1 model =
     <|
         [ typicalField democHashId "Democracy ID"
         , buildOpts model
-        , typicalField bTitleId "BallotTitle"
+        , typicalField bTitleId "Ballot Title"
         , textArea
             { onChange = updateWrap <| SetStrField shortDescId
             , value = getStrField model shortDescId ? ""
@@ -236,10 +186,10 @@ buildBallotV1 model =
             , label = I.labelAbove <| text "Long Description"
             , options = []
             }
-        , typicalField startTimeId "Start Time (Optional, Epoch Format)"
+        , typicalField startTimeId "Start Time (Epoch Format)"
         , typicalField endTimeId "End Time (Epoch Format)"
         , typicalField erc20Id "ERC20 Token Address"
-        , typicalField encPkId "Encryption Public Key"
+        , typicalField encPkId "Encryption Public Key (Optional, omit for unencrypted ballot)"
         , typicalField discussId "Discussion Link (Optional)"
         , checkbox
             { onChange = updateWrap <| SetBoolField isBindingId
@@ -307,13 +257,51 @@ addRangeOpts model =
 
 
 genFilename model =
-    decapitalize <| replace " " "-" <| getTitle model.workingBallot ++ ".json"
+    let
+        currDate =
+            fromTime <| (*) 1000 <| (Maybe.andThen (toMaybe << toInt) <| getStrField model startTimeId) ? 0
+
+        dateStr =
+            String.join "-" <|
+                List.map toString
+                    [ year currDate, monthToInt <| month currDate, day currDate ]
+    in
+    String.join "-" [ dateStr, String.slice 0 18 model.hash, decapitalize <| replace " " "-" <| getTitle model.workingBallot ++ ".json" ]
 
 
 addBinaryOpts model =
+    let
+        { indexABI, indexAddr, jsonBallot, hash } =
+            model
+
+        democHash =
+            getStrField model democHashId ? "Error: No Democracy Hash"
+
+        convTime f =
+            (getStrField model f |> Maybe.andThen (toMaybe << toInt)) ? 0
+
+        {-
+           `deployBallot` signature:
+           function deployBallot(bytes32 democHash, bytes32 specHash, bytes32 extraData,
+                                 uint64 startTime, uint64 endTime, bool useEncryption, bool testing)
+        -}
+        args =
+            E.list
+                [ E.string democHash
+                , E.string hash
+                , E.string "0x00"
+                , E.int <| convTime startTimeId
+                , E.int <| convTime endTimeId
+                , E.bool <| isJust <| getStrField model encPkId
+                , E.bool False
+                ]
+
+        ballotToWrite =
+            { abi = indexABI, addr = indexAddr, method = "deployBallot", args = args }
+    in
     row NoS
-        []
+        [ spacing 10 ]
         [ downloadAs { src = "data:application/octet-stream," ++ encodeUri model.jsonBallot, filename = genFilename model } <|
             button Field [ padding 10 ] (text "Save JSON")
-        , button Field [ padding 10 ] (text "Create New Ballot via MetaMask (Not yet active...)")
+        , button Field [ padding 10, onClick (ToWeb3 <| WriteViaMM ballotToWrite) ] (text "Create New Ballot via MetaMask")
         ]

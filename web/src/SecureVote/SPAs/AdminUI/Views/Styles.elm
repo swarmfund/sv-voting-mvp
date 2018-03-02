@@ -3,7 +3,7 @@ module SecureVote.SPAs.AdminUI.Views.Styles exposing (..)
 import Color exposing (black, darkGray)
 import Element exposing (Element)
 import SecureVote.SPAs.AdminUI.Msg exposing (Msg)
-import Style exposing (style, styleSheet, variation)
+import Style exposing (prop, style, styleSheet, variation)
 import Style.Border exposing (..)
 import Style.Color exposing (border, text)
 import Style.Font exposing (font, monospace, size, typeface)
@@ -22,12 +22,15 @@ type AdminStyles
     | Field
     | SubMenu
     | BallotRender
+    | Code
+    | LogEntry
 
 
 type Variations
     = NoVar
     | RoundedTop
     | RoundedAll
+    | FSmall
 
 
 radius =
@@ -71,5 +74,15 @@ stylesheet =
             , all 1
             , roundBottomRight radius
             , roundBottomLeft radius
+            ]
+        , style Code
+            [ typeface [ monospace ]
+            , variation FSmall
+                [ size 12
+                ]
+            ]
+        , style LogEntry
+            [ bottom 1
+            , border black
             ]
         ]

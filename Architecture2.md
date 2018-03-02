@@ -2,7 +2,7 @@
 
 ### Index Contract
 
-1x SC acting as index. Ballots submitted with `addBallot` - most code kept on votingContract themselves. issuesHash is keccak256 of `BallotSpecOuter` JSON doc w/ ballot spec including issues. Ballot spec forward compatible via version tags.
+1x SC acting as index. Ballots submitted with `addBallot` - most code kept on votingContract themselves. issuesHash is the sha256 of `BallotSpecOuter` JSON doc w/ ballot spec including issues. Ballot spec forward compatible via version tags.
 
 ```
 addBallot(bytes32 democHash, bytes32 ballotSpecHash, bytes32 extraData, address votingContract)

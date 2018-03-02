@@ -1,35 +1,56 @@
 module SecureVote.SPAs.AdminUI.Views.RootV exposing (..)
 
-import Element exposing (column, el, layout, row, text)
-import Element.Attributes exposing (fill, height, padding, px, spacing, width)
+import Element exposing (column, el, empty, h1, h2, layout, paragraph, row, subheading, table, text, textLayout, viewport)
+import Element.Attributes exposing (alignBottom, content, fill, height, maxHeight, maxWidth, minWidth, padding, paddingBottom, paddingXY, percent, px, spacing, vary, width, xScrollbar, yScrollbar)
 import Html exposing (Html)
+import Maybe.Extra exposing ((?))
+import SecureVote.SPAs.AdminUI.Fields exposing (democHashId)
+import SecureVote.SPAs.AdminUI.Helpers exposing (getStrField)
 import SecureVote.SPAs.AdminUI.Model exposing (Model)
 import SecureVote.SPAs.AdminUI.Msg exposing (Msg)
 import SecureVote.SPAs.AdminUI.Views.BallotBuilder exposing (ballotBuilder)
-import SecureVote.SPAs.AdminUI.Views.Render exposing (renderBallotHash, renderBallotSpec)
-import SecureVote.SPAs.AdminUI.Views.Styles exposing (AdminStyles(..), UiElem, stylesheet)
+import SecureVote.SPAs.AdminUI.Views.Render exposing (renderBallotHash, renderBallotSpec, renderEventLog)
+import SecureVote.SPAs.AdminUI.Views.Styles exposing (AdminStyles(..), UiElem, Variations(..), stylesheet)
 
 
 rootV : Model -> Html Msg
 rootV model =
-    layout stylesheet <|
+    let
+        democHash =
+            getStrField model democHashId ? "No DemocHash Specified"
+
+        {- [ row NoS [ height fill ] [], paragraph NoS [ xScrollbar ] [ text txt ] ] -}
+        code txt =
+            column Code
+                [ xScrollbar, alignBottom, vary FSmall True, maxWidth <| percent 100 ]
+                [ row NoS [ height fill ] [], paragraph NoS [ xScrollbar ] [ text txt ] ]
+    in
+    viewport stylesheet <|
         -- An el is the most basic element, like a <div>
-        el NoS [ padding 20, width fill, height fill ]
+        el NoS [ height fill, padding 20 ]
         <|
             row NoS
-                [ spacing 20 ]
+                [ height fill ]
                 [ column NoS
-                    [ spacing 20, width fill, height fill ]
-                    [ el Title [] (text "LittleGov Ballot Builder")
+                    [ padding 10, spacing 20, maxWidth <| percent 57.5, height fill, yScrollbar ]
+                    [ h1 Title [] (text "SecureVote Light Ballot Builder")
+                    , table NoS
+                        [ spacing 5 ]
+                        [ [ text "Democracy Index", text "Democracy ID" ]
+                        , [ code model.indexAddr, code democHash ]
+                        ]
                     , ballotBuilder model
                     ]
                 , column NoS
-                    [ width <| px 30 ]
+                    [ width <| px 40 ]
                     []
                 , column NoS
-                    [ spacing 20, width fill ]
-                    [ el Title [] (text "Ballot Spec Preview")
+                    [ spacing 20, width fill, minWidth <| percent 40 ]
+                    [ h1 Title [] (text "Ballot Spec Preview")
                     , renderBallotSpec model
+                    , subheading NoS [] "Ballot Hash"
                     , renderBallotHash model
+                    , subheading NoS [] "Event Log"
+                    , renderEventLog model
                     ]
                 ]

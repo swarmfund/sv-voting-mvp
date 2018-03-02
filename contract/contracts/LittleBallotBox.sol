@@ -28,11 +28,19 @@ contract LittleBallotBox {
     // test mode - operations like changing start/end times
     bool public testMode = false;
 
+    // struct for ballot
+    struct Ballot {
+        bytes32 ballotData;
+        address sender;
+        // we use a uint32 here because addresses are 20 bytes and this might help
+        // solidity pack the block number well. gives us a little room to expand too if needed.
+        uint32 blockN;
+    }
+
     // Maps to store ballots, along with corresponding log of voters.
     // Should only be modified through `addBallotAndVoter` internal function
-    mapping (uint256 => bytes32) public ballotMap;
+    mapping (uint256 => Ballot) public ballotMap;
     mapping (uint256 => bytes32) public associatedPubkeys;
-    mapping (uint256 => address) public associatedAddresses;
     uint256 public nVotesCast = 0;
 
     // Use a map for voters to look up their ballot
@@ -47,7 +55,7 @@ contract LittleBallotBox {
     bool seckeyRevealed = false;
 
     // Timestamps for start and end of ballot (UTC)
-    uint64 public startTime = 0;
+    uint64 public startTime;
     uint64 public endTime;
 
     // specHash by which to validate the ballots integrity
@@ -97,6 +105,7 @@ contract LittleBallotBox {
     //// ** Functions
 
     // Constructor function - init core params on deploy
+    // timestampts are uint64s to give us plenty of room for millennia
     function LittleBallotBox(bytes32 _specHash, uint64 _startTime, uint64 _endTime, bool _useEncryption, bool enableTesting) public {
         owner = msg.sender;
 
@@ -112,7 +121,7 @@ contract LittleBallotBox {
             TestingEnabled();
         }
 
-        CreatedBallot(msg.sender, _startTime, _endTime, _useEncryption, _specHash);
+        CreatedBallot(msg.sender, startTime, _endTime, _useEncryption, _specHash);
     }
 
     // Ballot submission
@@ -134,8 +143,7 @@ contract LittleBallotBox {
 
     function addBallotAndVoterNoPk(bytes32 encryptedBallot) internal returns (uint256) {
         uint256 ballotNumber = nVotesCast;
-        ballotMap[ballotNumber] = encryptedBallot;
-        associatedAddresses[ballotNumber] = msg.sender;
+        ballotMap[ballotNumber] = Ballot(encryptedBallot, msg.sender, uint32(block.number));
         voterToBallotID[msg.sender] = ballotNumber;
         nVotesCast += 1;
         return ballotNumber;

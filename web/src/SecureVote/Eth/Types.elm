@@ -1,6 +1,7 @@
 module SecureVote.Eth.Types exposing (..)
 
 import Decimal exposing (Decimal)
+import Json.Encode exposing (Value)
 
 
 type alias EthAddress =
@@ -24,3 +25,7 @@ type alias BallotResult =
 
 type alias BallotInfo =
     { democHash : String, i : Int, specHash : String, extraData : String, votingContract : String }
+
+
+type alias WriteViaMMDoc =
+    { abi : String, addr : String, method : String, args : Value }

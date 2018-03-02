@@ -5,6 +5,8 @@ import Element.Input exposing (SelectWith)
 import Json.Decode exposing (Value)
 import Json.Encode exposing (object)
 import SecureVote.Ballots.Types exposing (BallotSpec, BallotSpecChoice, OptsChoice, emptyBSpec01)
+import SecureVote.Crypto.Hashing exposing (HashModel)
+import SecureVote.SPAs.AdminUI.Fields exposing (democHashId)
 import SecureVote.SPAs.AdminUI.Msg exposing (Msg)
 import SecureVote.SPAs.AdminUI.Types exposing (Flags)
 
@@ -17,32 +19,34 @@ type alias Model =
     , workingBallot : BallotSpec
     , savedBallots : Dict String BallotSpec
     , jsonBallot : String
-    , sha3 : String
+    , hash : HashModel
     , mainTitle : String
     , dev : Bool
-    , democHash : String
     , errors : List String
     , web3 : Web3Model
-    , littleGovIndex : String
+    , indexAddr : String
+    , indexABI : String
+    , log : List String
     }
 
 
 initModel : Flags -> Model
-initModel { mainTitle, dev, democHash, indexAddr } =
-    { strFields = Dict.empty
+initModel { mainTitle, dev, democHash, indexAddr, indexABI } =
+    { strFields = Dict.fromList [ ( democHashId, democHash ) ]
     , boolFields = Dict.empty
     , select = Nothing
     , selectOpts = Nothing
     , workingBallot = emptyBSpec01
     , savedBallots = Dict.empty
-    , jsonBallot = "{}"
-    , sha3 = "0x"
+    , jsonBallot = "Choose a ballot type"
+    , hash = "0x"
     , mainTitle = mainTitle
     , dev = dev
-    , democHash = democHash
     , errors = []
     , web3 = initWeb3Model
-    , littleGovIndex = indexAddr
+    , indexAddr = indexAddr
+    , indexABI = indexABI
+    , log = []
     }
 
 

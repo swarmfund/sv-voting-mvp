@@ -9,13 +9,13 @@ errHelper descMsg errMsg =
         errStr =
             toString errMsg
     in
-    LogErr (Debug.log errStr <| descMsg ++ errStr)
+    MMsg [ LogErr (Debug.log errStr <| descMsg ++ errStr) ]
 
 
 handleMetaMaskTxid r =
     case r of
         Ok txid ->
-            FromWeb3 <| GotTxid txid
+            MMsg [ FromWeb3 <| GotTxid txid, LogErr <| "TXID from MetaMask: " ++ txid ]
 
         Err err ->
             errHelper "MetaMask error: " err

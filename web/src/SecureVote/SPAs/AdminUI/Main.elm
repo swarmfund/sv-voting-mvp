@@ -1,9 +1,10 @@
 module SecureVote.SPAs.AdminUI.Main exposing (..)
 
 import Html
+import SecureVote.Crypto.Hashing exposing (hashSubs)
 import SecureVote.Eth.Web3 exposing (metamaskTxidGen)
 import SecureVote.SPAs.AdminUI.Model exposing (Model, initModel)
-import SecureVote.SPAs.AdminUI.Msg exposing (Msg)
+import SecureVote.SPAs.AdminUI.Msg exposing (Msg(..))
 import SecureVote.SPAs.AdminUI.MsgHandlers exposing (handleMetaMaskTxid)
 import SecureVote.SPAs.AdminUI.Types exposing (Flags)
 import SecureVote.SPAs.AdminUI.Update exposing (update)
@@ -17,7 +18,9 @@ initF f =
 
 subscriptions model =
     Sub.batch
-        [ metamaskTxidGen handleMetaMaskTxid ]
+        [ metamaskTxidGen handleMetaMaskTxid
+        , hashSubs UpdateHash
+        ]
 
 
 main : Program Flags Model Msg

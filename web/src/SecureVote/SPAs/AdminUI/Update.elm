@@ -4,6 +4,8 @@ import Dict
 import Element.Input exposing (dropMenu, menu, select, selected, updateSelection)
 import Maybe.Extra exposing ((?))
 import SecureVote.Ballots.Types exposing (emptyBSpec01)
+import SecureVote.Crypto.Hashing as H exposing (HashAlg(Sha256), HashFmt(EthHex), hash, hashUpdate)
+import SecureVote.Eth.Web3 exposing (performContractWriteMM)
 import SecureVote.SPAs.AdminUI.Components.Input exposing (genDropSelect)
 import SecureVote.SPAs.AdminUI.Model exposing (Model, Web3Model, initWeb3Model)
 import SecureVote.SPAs.AdminUI.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
@@ -60,19 +62,25 @@ update msg model =
                 jsonBallotStr =
                     bSpecValueToString <| bSpecToJson newWorkingBallot
             in
-            { model | workingBallot = newWorkingBallot, jsonBallot = jsonBallotStr } ! [ Task.attempt handleSha3Response (sha3 jsonBallotStr) ]
+            { model | workingBallot = newWorkingBallot, jsonBallot = jsonBallotStr } ! [ hash { input = H.String, output = EthHex, alg = Sha256 } jsonBallotStr ]
 
-        UpdateSha3 s ->
-            { model | sha3 = s } ! []
+        --, , Task.attempt handleSha3Response (sha3 jsonBallotStr) ]
+        UpdateHash m ->
+            let
+                -- (\s -> update (HashError s) model)
+                ( h, cmds ) =
+                    hashUpdate m model.hash
+            in
+            ( { model | hash = h }, Cmd.none )
 
-        Sha3Error s ->
-            { model | sha3 = "Warning! Error from Keccak256 hash of Ballot: " ++ s } ! []
+        HashError s ->
+            { model | hash = "Warning! Error from hash alg: " ++ s } ! []
 
         SaveJson ->
             model ! []
 
         LogErr err ->
-            { model | errors = err :: model.errors } ! []
+            { model | errors = err :: model.errors, log = err :: model.log } ! []
 
         MMsg msgs ->
             case msgs of
@@ -108,10 +116,10 @@ handleSha3Response : Result Error Sha3 -> Msg
 handleSha3Response r =
     case r of
         Ok (Sha3 s) ->
-            UpdateSha3 s
+            UpdateHash (H.GotHash <| H.FromHashCmd EthHex s H.Keccak256)
 
         Err (Error s) ->
-            Sha3Error s
+            HashError s
 
 
 w3Update : FromWeb3Msg -> Web3Model -> ( Web3Model, Cmd Msg )
@@ -126,3 +134,6 @@ toW3Update msg model =
     case msg of
         SendTxToMM tx ->
             model ! []
+
+        WriteViaMM doc ->
+            model ! [ performContractWriteMM doc ]
