@@ -1,7 +1,7 @@
 module SecureVote.SPAs.AdminUI.Views.Render exposing (..)
 
 import Element exposing (Element, column, el, paragraph, row, text)
-import Element.Attributes exposing (fill, height, maxWidth, minWidth, padding, paddingBottom, px, spacing, vary, width, xScrollbar)
+import Element.Attributes exposing (fill, height, maxWidth, minWidth, padding, paddingBottom, paddingRight, px, spacing, vary, width, xScrollbar)
 import Json.Encode exposing (encode)
 import SecureVote.SPAs.AdminUI.Model exposing (Model)
 import SecureVote.SPAs.AdminUI.Msg exposing (Msg)
@@ -19,7 +19,7 @@ renderBallotHash : Model -> UiElem
 renderBallotHash model =
     row BallotHash
         []
-        [ paragraph NoS [ width fill, padding 20, height <| px 60, xScrollbar ] [ text model.hash ]
+        [ paragraph NoS [ width fill, padding 20, paddingRight 20, height <| px 60, xScrollbar ] [ text model.hash ]
         ]
 
 
@@ -27,7 +27,7 @@ renderEventLog : Model -> UiElem
 renderEventLog model =
     let
         drawRow str =
-            paragraph LogEntry [ paddingBottom 3 ] [ text str ]
+            paragraph LogEntry [ paddingBottom 3, xScrollbar ] [ text str ]
 
         logToDraw =
             if List.isEmpty model.log then

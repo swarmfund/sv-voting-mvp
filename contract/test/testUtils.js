@@ -34,4 +34,14 @@ module.exports = function() {
   this.getBlockNumber = toAsync(web3.eth.getBlockNumber);
 
   this.log = (...args) => console.log(...args);
+
+
+  this.mkPromise = f => (...args) => {
+        return new Promise((resolve, reject) => {
+            f(...args, (err, resp) => {
+                err ? reject(err) : resolve(resp);
+            })
+        })
+    };
+
 };

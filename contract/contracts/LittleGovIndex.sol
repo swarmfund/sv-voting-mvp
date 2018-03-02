@@ -20,7 +20,7 @@ contract LittleGovIndex {
         Ballot[] ballots;
     }
 
-    mapping (bytes32 => Democ) democs;
+    mapping (bytes32 => Democ) public democs;
     bytes32[] public democList;
 
     // addresses that do not have to pay for democs
@@ -39,7 +39,7 @@ contract LittleGovIndex {
     event PaymentMade(uint256 value, uint256 remainder, address sender, address paidTo);
     event NoPayment(address sender);
     event DemocInit(string name, bytes32 democHash, address admin);
-    event BallotInit(bytes32 specHash, uint64[2] openPeriod, bool useEncryption, bool testing);
+    event BallotInit(bytes32 specHash, uint64[2] openPeriod, bool[2] flags);
     event BallotAdded(bytes32 democHash, bytes32 specHash, bytes32 extraData, address votingContract);
 
     //* MODIFIERS /
@@ -154,15 +154,16 @@ contract LittleGovIndex {
     }
 
     function deployBallot(bytes32 democHash, bytes32 specHash, bytes32 extraData,
-                          uint64 startTime, uint64 endTime, bool useEncryption, bool testing)
+                          uint64[2] openPeriod, bool[2] flags)
                           onlyBy(democs[democHash].admin)
                           payReq(issueWhitelist, requiredEthForIssue)
                           public payable {
         // the start time is max(startTime, block.timestamp) to avoid a DoS whereby a malicious electioneer could disenfranchise
         // token holders who have recently acquired tokens.
-        LittleBallotBox votingContract = new LittleBallotBox(specHash, [max(startTime, uint64(block.timestamp)), endTime], useEncryption, testing);
+        LittleBallotBox votingContract = new LittleBallotBox(specHash, [max(openPeriod[0], uint64(block.timestamp)), openPeriod[1]], flags);
+        votingContract.setOwner(msg.sender);
         _commitBallot(democHash, specHash, extraData, address(votingContract));
-        BallotInit(specHash, [max(startTime, uint64(block.timestamp)), endTime], useEncryption, testing);
+        BallotInit(specHash, [max(openPeriod[0], uint64(block.timestamp)), openPeriod[1]], flags);
     }
 
     // utils

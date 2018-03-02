@@ -16,14 +16,34 @@ var hexSk = "0xcd9d715f05a4fce8acf3339fd5ee8549c1899c52e4b32da07cffcd91a29ad976"
 var hexPk = "0xba781ed1006bd7694282a210485265f1c503f4e6721858b4269ae6d745f7bb4b";
 var specHash = "0x418781fb172c2a30c072d58628f5df3f12052a0b785450fb0105f1b98b504561";
 
+const mkStartTime = () => Math.round(Date.now() / 1000)
+const mkFlags = ({useEnc, testing}) => [useEnc === true, testing === true];
+
 async function testEarlyBallot(accounts) {
-    var startTime = Math.round(Date.now() / 1000) + 2;
+    var startTime = mkStartTime() + 2;
     var endTime = startTime + 600;
     var shortEndTime = 0;
 
-    const vc = await LittleBallotBox.new(specHash, startTime, endTime, true, true);
+    const vc = await LittleBallotBox.new(specHash, [startTime, endTime], mkFlags({useEnc: true, testing: true}));
     await asyncAssertThrow(() => vc.submitBallotWithPk(hexPk, hexPk, { from: accounts[5] }), "should throw on early ballot");
 }
+
+
+async function testSetOwner(acc) {
+    const start = mkStartTime() - 1;
+    const vc = await LittleBallotBox.new(specHash, [start, start + 60], mkFlags({useEnc: false, testing: false}));
+    const owner1 = await vc.owner();
+    assert.equal(acc[0], owner1, "owner should be acc[0]");
+
+    // fraud set owner
+    await asyncAssertThrow(() => vc.setOwner(acc[2], {from: acc[1]}), "should throw if setOwner called by non-owner");
+
+    // good set owner
+    await vc.setOwner(acc[1]);
+    const owner2 = await vc.owner();
+    assert.equal(acc[1], owner2, "owner should change when legit req");
+}
+
 
 async function testEncryptionBranching(accounts) {
     var startTime = Math.round(Date.now() / 1000) - 2;
@@ -33,34 +53,42 @@ async function testEncryptionBranching(accounts) {
     /* ENCRYPTION */
 
     // best BB with enc
-    const vcEnc = await LittleBallotBox.new(specHash, startTime, endTime, true, true);
+    const vcEnc = await LittleBallotBox.new(specHash, [startTime, endTime], [true, true]);
 
     // check we're using enc
     assert.isTrue(await vcEnc.useEncryption(), "encryption should be enabled");
 
     // check submissions with enc
-    asyncAssertThrow(() => vcEnc.submitBallotNoPk(hexPk), "throw when not using encryption");
+    const bData = hexPk;
+    asyncAssertThrow(() => vcEnc.submitBallotNoPk(bData), "throw when not using encryption");
     assert.equal(await vcEnc.nVotesCast(), 0, "no votes yet");
-    const _wEnc = await vcEnc.submitBallotWithPk(hexPk, specHash);
+
+    const tempPk = specHash;
+    const _wEnc = await vcEnc.submitBallotWithPk(bData, tempPk);
     assert.equal(await vcEnc.nVotesCast(), 1, "1 vote");
     assertOnlyEvent("SuccessfulPkVote", _wEnc);
-    assert.equal(await vcEnc.ballotMap(0), hexPk);
-    assert.equal(await vcEnc.associatedPubkeys(0), specHash);
-    assert.equal(await vcEnc.associatedAddresses(0), accounts[0]);
+    const ballot = await vcEnc.ballotMap(0);
+    const blockN = await (mkPromise(web3.eth.getBlockNumber)());
+    assert.equal(ballot[0], bData, "ballot data stored");
+    assert.equal(ballot[1], accounts[0], "voter stored correctly");
+    assert.equal(ballot[2].toNumber(), blockN, "blockN matches expected");
+    assert.equal(await vcEnc.associatedPubkeys(0), tempPk, "pk stored matches");
 
     /* NO ENCRYPTION */
 
     // create ballot box with no enc
-    const vcNoEnc = await LittleBallotBox.new(specHash, startTime, endTime, false, true);
+    const vcNoEnc = await LittleBallotBox.new(specHash, [startTime, endTime], [false, true]);
 
     // assert useEnc is false with no enc
     assert.isFalse(await vcNoEnc.useEncryption(), "encryption should be disabled");
     // test ballot submissions w no enc
-    const _noEnc = await vcNoEnc.submitBallotNoPK(hexSk);
+    const _bData = hexSk;
+    const _noEnc = await vcNoEnc.submitBallotNoPK(_bData);
     assertOnlyEvent("SuccessfulVote", _noEnc);
-    assert.equal(await vcNoEnc.ballotMap(0), hexSk);
-    assert.equal(await vcNoEnc.associatedPubkeys(0), bytes32zero);
-    assert.equal(await vcNoEnc.associatedAddresses(0), accounts[0]);
+    const _bReturned = await vcNoEnc.ballotMap(0);
+    assert.equal(_bReturned[0], _bData, "ballot data matches");
+    assert.equal(_bReturned[1], accounts[0], "voter acc matches")
+    assert.equal(await vcNoEnc.associatedPubkeys(0), bytes32zero, "pubkey is zero");
 
     assert.equal(await vcEnc.nVotesCast(), 1, "1 vote");
     await asyncAssertThrow(() => vcNoEnc.submitBallotWithPk(hexSk, hexSk), "should throw with enc disabled");
@@ -68,11 +96,11 @@ async function testEncryptionBranching(accounts) {
 }
 
 async function testInstantiation(accounts) {
-    var startTime = Math.round(Date.now() / 1000) - 2;
+    var startTime = Math.round(Date.now() / 1000);
     var endTime = startTime + 600;
     var shortEndTime = 0;
 
-    const vc = await LittleBallotBox.new(specHash, startTime, endTime, true, true);
+    const vc = await LittleBallotBox.new(specHash, [startTime, endTime], [true, true]);
 
     log(accounts[0]);
     assert.equal(await vc.owner(), accounts[0], "Owner must be set on launch.");
@@ -80,16 +108,16 @@ async function testInstantiation(accounts) {
     assert.equal(await vc.specHash(), specHash, "specHash should be equal");
 
     const _startTime = await vc.startTime();
-    assert.equal(startTime, _startTime, "startTime matches");
+    assert.equal(startTime, _startTime.toNumber(), "startTime matches");
 
     const _endTime = await vc.endTime();
-    assert.equal(endTime, _endTime, "endTime matches");
+    assert.equal(endTime, _endTime.toNumber(), "endTime matches");
 
     const _testMode = await vc.testMode();
     assert.equal(_testMode, true, "We should be in test mode");
 
     const _nVotes = await vc.nVotesCast();
-    assert.equal(_nVotes, 0, "Should have no votes at start");
+    assert.equal(_nVotes.toNumber(), 0, "Should have no votes at start");
 
     const _sk = await vc.ballotEncryptionSeckey();
     assert.equal(_sk, bytes32zero, "ballot enc key should be zeros before reveal");
@@ -133,7 +161,7 @@ async function testInstantiation(accounts) {
 }
 
 async function testTestMode(accounts) {
-    var vc = await LittleBallotBox.new(specHash, 0, 1, false, false);
+    var vc = await LittleBallotBox.new(specHash, [0, 1], [false, false]);
     await asyncAssertThrow(() => vc.setEndTime(0), "throws on set end time when not in testing");
 }
 
@@ -155,9 +183,8 @@ const testABallot = accounts => async (_vc = S.Nothing, account = S.Nothing) => 
 
     // const _nVotesRet = await vc.nVotesCast();
     const _ballotId = await vc.voterToBallotID(myAddr);
-    const _addr = await vc.associatedAddresses(_ballotId);
     const _pkRet = await vc.associatedPubkeys(_ballotId);
-    const _ballotRet = await vc.ballotMap(_ballotId);
+    const [_ballotRet, _addr, _blockN] = await vc.ballotMap(_ballotId);
 
     // note: these two tests do not work in parallel - disabled
     // assert.equal(_nVotesRet.toNumber(), expectedVotes, "should have " + expectedVotes.toString() + " vote");
@@ -211,6 +238,7 @@ async function testrpcRevert(snapshot) {
 
 contract("LittleBallotBox", function(_accounts) {
     it("should instantiate correctly", wrapTest(_accounts, testInstantiation));
+    it("should allow setting owner", wrapTest(_accounts, testSetOwner));
     it("should enforce encryption based on PK submitted", wrapTest(_accounts, testEncryptionBranching));
     it("should not allow testing functions if testing mode is false", wrapTest(_accounts, testTestMode));
     it("should throw on early ballot", wrapTest(_accounts, testEarlyBallot));

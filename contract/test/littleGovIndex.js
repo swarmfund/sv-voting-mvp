@@ -93,7 +93,7 @@ async function testOwner(accounts) {
     );
     log("bad ballots over, confirming we can still make them...")
 
-    const lbb = await LBB.new(democId, 0, 0, true, false);
+    const lbb = await LBB.new(democId, [0, 0], [true, false]);
     log("created LBB to work with... adding a ballot");
 
     // make sure we can still pay for a ballot though
@@ -163,7 +163,7 @@ async function testOwner(accounts) {
     await asyncAssertThrow(() => lg.getNthBallot(democId, nBallotsPre), "nonexistant democ will throw");
 
     log("confirmed there is not ballot there yet - deploying now")
-    await lg.deployBallot(democId, democId, bytes32zero, 0, 20000000000, false, false, {from: accounts[1]});
+    await lg.deployBallot(democId, democId, bytes32zero, [0, 20000000000], [false, false], {from: accounts[1]});
     log("deployed...")
     const newBallot = await lg.getNthBallot(democId, nBallotsPre);
     log("got new ballot!", newBallot);
@@ -178,5 +178,5 @@ async function testOwner(accounts) {
 }
 
 contract("LittleGovIndex", function (_accounts) {
-    it("should pass owner tests", wrapTest(_accounts, testOwner));
+    it("whole test suite", wrapTest(_accounts, testOwner));
 });
