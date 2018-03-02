@@ -4,9 +4,9 @@ import Dict exposing (Dict)
 import Element.Input exposing (SelectWith)
 import Json.Decode exposing (Value)
 import Json.Encode exposing (object)
-import SecureVote.Ballots.LittleGovIndexes exposing (getIndex, littleGovIndexs)
 import SecureVote.Ballots.Types exposing (BallotSpec, BallotSpecChoice, OptsChoice, emptyBSpec01)
 import SecureVote.SPAs.AdminUI.Msg exposing (Msg)
+import SecureVote.SPAs.AdminUI.Types exposing (Flags)
 
 
 type alias Model =
@@ -27,8 +27,8 @@ type alias Model =
     }
 
 
-initModel : String -> Bool -> String -> Model
-initModel mainTitle dev democHash =
+initModel : Flags -> Model
+initModel { mainTitle, dev, democHash, indexAddr } =
     { strFields = Dict.empty
     , boolFields = Dict.empty
     , select = Nothing
@@ -42,7 +42,7 @@ initModel mainTitle dev democHash =
     , democHash = democHash
     , errors = []
     , web3 = initWeb3Model
-    , littleGovIndex = getIndex dev
+    , littleGovIndex = indexAddr
     }
 
 
