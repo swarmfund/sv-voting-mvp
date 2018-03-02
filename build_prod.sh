@@ -13,12 +13,13 @@ function check_error {
 
 function do_webpack {
   # sysconfcpus workaround: https://github.com/elm-lang/elm-compiler/issues/1473
-  if $HOME/bin/sysconfcpus -n 1 webpack "$@" --progress 2>&1 ; then
+  if [ -e $HOME/bin/sysconfcpus ]; then
+    $HOME/bin/sysconfcpus -n 1 webpack "$@" 2>&1
     check_error $?
     echo "sysconfcpus -n 1 build succeeeded"
   else
     echo "sysconfcpus failed, falling back to regular build"
-    webpack "$@" --progress 2>&1
+    webpack "$@" 2>&1
     check_error $?
   fi
 }
@@ -47,26 +48,28 @@ if [ $REPOSITORY_URL ]; then
     ls -al .cache
     echo ""
 
-    echo "Trying to get a version of sysconfcpus..."
-    git clone https://github.com/obmarg/libsysconfcpus.git
-    cd libsysconfcpus
-    ./configure --prefix=$HOME
-    echo "prefix used: $HOME"
-    make install
-    cd ..
-    echo "ls $HOME\n"
-    ls $HOME
-    echo "ls $HOME/bin\n"
-    ls $HOME/bin
-    echo "done ls $HOME\n"
-    echo "\"Installed\" sysconfcpus"
+    if [ ! -e $HOME/bin/sysconfcpus ]; then
+        echo "Trying to get a version of sysconfcpus..."
+        git clone https://github.com/obmarg/libsysconfcpus.git
+        cd libsysconfcpus
+        ./configure --prefix=$HOME
+        echo "prefix used: $HOME"
+        make install
+        cd ..
+        echo "ls $HOME\n"
+        ls $HOME
+        echo "ls $HOME/bin\n"
+        ls $HOME/bin
+        echo "done ls $HOME\n"
+        echo "\"Installed\" sysconfcpus"
+    fi
 
 
-    # prepping build by precompiling purs and elm
-    echo "Compiling purescirpt"
-    # using yarn run bc we got a weird error from netlify about not finding `purs` once
-    $HOME/bin/sysconfcpus -n 1 yarn run pulp build -j 1 # build all deps we've downloaded
-    check_error $?
+#    # prepping build by precompiling purs and elm
+#    echo "Compiling purescirpt"
+#    # using yarn run bc we got a weird error from netlify about not finding `purs` once
+#    $HOME/bin/sysconfcpus -n 1 yarn run pulp build -j 1 # build all deps we've downloaded
+#    check_error $?
 
     # echo "Compiling elm"
     # yarn run elm-make web/src/SecureVote/SPAs/SwarmMVP/Main.elm  --output temp-32489734985.html 2>&1 # compile elm
@@ -76,14 +79,14 @@ if [ $REPOSITORY_URL ]; then
 #    npm install elm
 #    echo "Elm installed"
 
-    ls node_modules/elm/
-    ls node_modules/elm/Elm-Platform/
-    ls node_modules/elm/Elm-Platform/0.18.0/
-    ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/
-    ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/
+#    ls node_modules/elm/
+#    ls node_modules/elm/Elm-Platform/
+#    ls node_modules/elm/Elm-Platform/0.18.0/
+#    ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/
+#    ls node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/
 
     # bit drastic - try to avoid netlify's CI thinking we can't compile due to elm-web3
-    rm node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/elm-package
+#    rm node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/elm-package
 
     # $HOME/bin/sysconfcpus -n 1 yarn run elm-install install
     $HOME/bin/sysconfcpus -n 1 yarn run elm-install

@@ -7,48 +7,30 @@ const HTMLWebpackPlugin = require('html-webpack-plugin');
 require('dotenv').config({systemvars: true});
 
 
-const TARGET_ENV = function () {
-    console.log('Generating TARGET_ENV');
-    switch (process.env.npm_lifecycle_event) {
-        case 'build-web':
-            return 'prod-ui';
-        case 'web':
-            return 'development';
+const NPM_CMD = process.env.npm_lifecycle_event;
 
-        case 'web-admin':
-            return 'dev-admin-ui';
-        // no translation for prod-admin-ui
 
-        case 'web-delegation':
-            return 'dev-delegation-ui';
-        // no translation for prod-delegation-ui
+const TARGET = {
+    'build-web': 'prod-ui',
+    'web': 'development',
+    'web-admin': 'dev-admin-ui',
+    'web-delegation': 'dev-delegation-ui'
+}[NPM_CMD] || NPM_CMD;
 
-        case 'admin-dev':
-            return 'admin-dev';
-        case 'prod-admin-ui':
-            return 'prod-admin-ui';
+console.log("TARGET =", TARGET);
 
-        case 'audit-dev':
-            return 'audit-dev';
-        case 'audit-prod':
-            return 'audit-prod';
 
-        default:
-            console.warn("WARNING - Setting uncaught TARGET_ENV: ", process.env.npm_lifecycle_event);
-            return process.env.npm_lifecycle_event;
-    }
-}();
 const defaultFilename = '[name]-[hash].js';
 
 
 const _pureDist = '_pureDist';
 const _dist = '_dist';
-const swarmOutputPath = path.join(__dirname, _dist);
+const outputPath = path.join(__dirname, _dist);
 const CopyWebpackPluginConfig = new CopyWebpackPlugin([
-    {from: './web/css', to: swarmOutputPath + '/css'},
-    {from: './web/js', to: swarmOutputPath + '/js'},
-    {from: './web/img', to: swarmOutputPath + '/img'},
-    {from: './web/_redirects', to: swarmOutputPath + '/'}
+    {from: './web/css', to: outputPath + '/css'},
+    {from: './web/js', to: outputPath + '/js'},
+    {from: './web/img', to: outputPath + '/img'},
+    {from: './web/_redirects', to: outputPath + '/'}
 ]);
 
 
@@ -166,116 +148,121 @@ const uiInjection = (env, config) => {
 };
 
 
-if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui' || TARGET_ENV === 'dev-delegation-ui') {
-    console.log('Building for dev...');
-    const toExport = merge(common, {
-        // mode: "development",  // webpack v4
-        plugins: [
-            // Suggested for hot-loading
-            new webpack.NamedModulesPlugin(),
-            // Prevents compilation errors causing the hot loader to lose state
-            new webpack.NoEmitOnErrorsPlugin(),
-            new webpack.HotModuleReplacementPlugin()
-        ],
-        module: {
-            rules: [
-                {
-                    test: /\.elm$/,
-                    exclude: [
-                        /elm-stuff/, /node_modules/
-                    ],
-                    use: [
-                        "elm-hot-loader",
-                        "elm-webpack-loader?verbose=true&warn=false&maxInstances=1" //&debug=true
-                    ]
+const genConfig = () => {
+    if (TARGET === 'development' || TARGET === 'dev-admin-ui' || TARGET === 'dev-delegation-ui') {
+        console.log('Building for dev...');
+        const toExport = merge(common, {
+            // mode: "development",  // webpack v4
+            plugins: [
+                // Suggested for hot-loading
+                new webpack.NamedModulesPlugin(),
+                // Prevents compilation errors causing the hot loader to lose state
+                new webpack.NoEmitOnErrorsPlugin(),
+                new webpack.HotModuleReplacementPlugin()
+            ],
+            module: {
+                rules: [
+                    {
+                        test: /\.elm$/,
+                        exclude: [
+                            /elm-stuff/, /node_modules/
+                        ],
+                        use: [
+                            "elm-hot-loader",
+                            "elm-webpack-loader?verbose=true&warn=false&maxInstances=1" //&debug=true
+                        ]
+                    }
+                ]
+            },
+            resolve: {
+                extensions: [".purs", ".js", ".json", ".ts"]
+            },
+            devServer: {
+                inline: true,
+                stats: 'errors-only',
+                contentBase: [path.join(__dirname)],
+                hot: true,
+                // For SPAs: serve index.html in place of 404 responses
+                historyApiFallback: true,
+                watchOptions: {
+                    ignored: [/node_modules/, /bower_components/]
                 }
-            ]
-        },
-        resolve: {
-            extensions: [".purs", ".js", ".json", ".ts"]
-        },
-        devServer: {
-            inline: true,
-            stats: 'errors-only',
-            contentBase: [path.join(__dirname)],
-            hot: true,
-            // For SPAs: serve index.html in place of 404 responses
-            historyApiFallback: true,
-            watchOptions: {
-                ignored: [/node_modules/, /bower_components/]
             }
-        }
-    });
-    module.exports = uiInjection(TARGET_ENV, toExport)
-}
+        });
+        return uiInjection(TARGET, toExport)
+    }
 
-if (TARGET_ENV === 'prod-ui' || TARGET_ENV === 'prod-admin-ui' || TARGET_ENV === 'prod-delegation-ui') {
-    console.log('Building for prod...');
-    const config = merge(common, buildAuditWeb({outputDir: ".cache/output"}), {
-        // mode: "production",  // webpack v4
-        plugins: [
-            // Delete everything from output directory and report to user
-            new CleanWebpackPlugin([_dist], {
-                root: __dirname,
-                exclude: [],
-                verbose: true,
-                dry: false
-            }),
-            CopyWebpackPluginConfig
-        ],
-        module: {
-            rules: [
-                {
-                    test: /\.elm$/,
-                    exclude: [
-                        /elm-stuff/, /node_modules/
-                    ],
-                    use: [
-                        {
-                            loader: "elm-webpack-loader",
-                            query: {
-                                maxInstances: 1,
-                                verbose: true
+    if (TARGET === 'prod-ui' || TARGET === 'prod-admin-ui' || TARGET === 'prod-delegation-ui') {
+        console.log('Building for prod...');
+        const config = merge(common, buildAuditWeb({outputDir: ".cache/output"}), {
+            // mode: "production",  // webpack v4
+            plugins: [
+                // Delete everything from output directory and report to user
+                new CleanWebpackPlugin([_dist], {
+                    root: __dirname,
+                    exclude: [],
+                    verbose: true,
+                    dry: false
+                }),
+                CopyWebpackPluginConfig
+            ],
+            module: {
+                rules: [
+                    {
+                        test: /\.elm$/,
+                        exclude: [
+                            /elm-stuff/, /node_modules/
+                        ],
+                        use: [
+                            {
+                                loader: "elm-webpack-loader",
+                                query: {
+                                    maxInstances: 1,
+                                    verbose: true
+                                }
                             }
-                        }
-                    ]
-                }
-            ]
-        },
-        resolve: {
-            extensions: [".purs", ".js", ".json", ".ts"]
-        },
-        bail: true
-    });
-    return uiInjection(TARGET_ENV, config);
-}
+                        ]
+                    }
+                ]
+            },
+            resolve: {
+                extensions: [".purs", ".js", ".json", ".ts"]
+            },
+            bail: true
+        });
+        return uiInjection(TARGET, config);
+    }
 
-if (TARGET_ENV === 'admin-dev') {
-    console.log("Building Admin Dev");
-    const toExport = merge(pursCommonF(), {
-        entry: {
-            "swarm-voting-admin": ['./pureSrc/SecureVote/Democs/SwarmMVP/Admin.purs']
-        },
-        resolve: {
-            extensions: [".purs", ".js", ".json", ".ts"]
-        }
-    });
+    if (TARGET === 'admin-dev') {
+        console.log("Building Admin Dev");
+        const toExport = merge(pursCommonF(), {
+            entry: {
+                "swarm-voting-admin": ['./pureSrc/SecureVote/Democs/SwarmMVP/Admin.purs']
+            },
+            resolve: {
+                extensions: [".purs", ".js", ".json", ".ts"]
+            }
+        });
 
-    toExport.module.rules[0].query.watch = true;
+        toExport.module.rules[0].query.watch = true;
 
-    module.exports = toExport;
-}
+        return toExport;
+    }
 
 
-if (TARGET_ENV === 'audit-web') {
-    console.log("building audit web (test)");
-    module.exports = merge(buildAuditWeb, {
-        entry: {
-            "swm-vote-audit": ['./pureSrc/SecureVote/Democs/SwarmMVP/AuditWeb.purs']
-        },
-        output: {
-            path: path.join(__dirname, _dist, "js"),
-            filename: defaultFilename
-        }
-    });
-}
+    if (TARGET === 'audit-web') {
+        console.log("building audit web (test)");
+        return merge(buildAuditWeb, {
+            entry: {
+                "swm-vote-audit": ['./pureSrc/SecureVote/Democs/SwarmMVP/AuditWeb.purs']
+            },
+            output: {
+                path: path.join(__dirname, _dist, "js"),
+                filename: defaultFilename
+            }
+        });
+    }
+};
+
+
+module.exports = genConfig();
