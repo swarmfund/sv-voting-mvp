@@ -24,6 +24,7 @@ type AdminStyles
     | BallotRender
     | Code
     | LogEntry
+    | EventLogBox
 
 
 type Variations
@@ -82,7 +83,13 @@ stylesheet =
                 ]
             ]
         , style LogEntry
-            [ bottom 1
+            [ bottom 0.5
+            , border darkGray
+            , dashed
+            ]
+        , style EventLogBox
+            [ all 1
+            , rounded radius
             , border black
             ]
         ]

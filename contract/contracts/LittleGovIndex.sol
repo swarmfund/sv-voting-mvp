@@ -39,6 +39,8 @@ contract LittleGovIndex {
     event PaymentMade(uint256 value, uint256 remainder, address sender, address paidTo);
     event NoPayment(address sender);
     event DemocInit(string name, bytes32 democHash, address admin);
+    event BallotInit(bytes32 specHash, uint64[2] openPeriod, bool useEncryption, bool testing);
+    event BallotAdded(bytes32 democHash, bytes32 specHash, bytes32 extraData, address votingContract);
 
     //* MODIFIERS /
 
@@ -137,6 +139,7 @@ contract LittleGovIndex {
 
     function _commitBallot(bytes32 democHash, bytes32 specHash, bytes32 extraData, address votingContract) internal {
         democs[democHash].ballots.push(Ballot(specHash, extraData, votingContract));
+        BallotAdded(democHash, specHash, extraData, votingContract);
     }
 
     function addBallot(bytes32 democHash, bytes32 extraData, address votingContract)
@@ -157,8 +160,9 @@ contract LittleGovIndex {
                           public payable {
         // the start time is max(startTime, block.timestamp) to avoid a DoS whereby a malicious electioneer could disenfranchise
         // token holders who have recently acquired tokens.
-        LittleBallotBox votingContract = new LittleBallotBox(specHash, max(startTime, uint64(block.timestamp)), endTime, useEncryption, testing);
+        LittleBallotBox votingContract = new LittleBallotBox(specHash, [max(startTime, uint64(block.timestamp)), endTime], useEncryption, testing);
         _commitBallot(democHash, specHash, extraData, address(votingContract));
+        BallotInit(specHash, [max(startTime, uint64(block.timestamp)), endTime], useEncryption, testing);
     }
 
     // utils
