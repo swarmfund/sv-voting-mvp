@@ -38,7 +38,7 @@ const TARGET_ENV = function () {
             return process.env.npm_lifecycle_event;
     }
 }();
-const filename = '[name]-[hash].js';
+const defaultFilename = '[name]-[hash].js';
 
 
 const _pureDist = '_pureDist';
@@ -100,7 +100,7 @@ const common = {
     },
     output: {
         path: path.join(__dirname, _dist),
-        filename: filename,
+        filename: defaultFilename,
     },
     module: {
         rules: [
@@ -146,6 +146,7 @@ const uiInjection = (env, config) => {
         'prod-ui': ['index', buildAuditWeb({})],
         'prod-delegation-ui': ['delegation', {}]
     }[env];
+    const filename = env.slice(0,3) === 'dev' ? '[name].js' : '[name]-[hash].js';
     const toRet = merge(config, extras, {
         plugins: [
             new HTMLWebpackPlugin({
@@ -154,7 +155,11 @@ const uiInjection = (env, config) => {
                 // inject details of output file at end of body
                 inject: 'body'
             })
-        ]
+        ],
+        output: {
+            path: path.join(__dirname, _dist),
+            filename: filename,
+        }
     });
     toRet.entry = {[entryFileName]: [`./web/${entryFileName}.js`]};
     return toRet;
@@ -270,7 +275,7 @@ if (TARGET_ENV === 'audit-web') {
         },
         output: {
             path: path.join(__dirname, _dist, "js"),
-            filename: filename
+            filename: defaultFilename
         }
     });
 }
