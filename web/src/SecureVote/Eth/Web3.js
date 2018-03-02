@@ -50,6 +50,13 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
     }
 
 
+    /* START DELEGATION SECTION */
+
+
+    /* END DELEGATION SECTION */
+
+
+
     // "Global" constants
     const Erc20Contract = web3js.eth.contract(ERC20ABI);
     let SwmVotingContract = web3js.eth.contract(SwmVotingMVPABIs.fullAbi);

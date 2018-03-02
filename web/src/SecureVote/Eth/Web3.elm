@@ -318,3 +318,8 @@ port democNBallots : (Value -> msg) -> Sub msg
 
 
 port gotBallotInfo : (Value -> msg) -> Sub msg
+
+
+
+{- START DELEGATION SECTIONS -}
+{- END DELEGATION SECTIONS -}
