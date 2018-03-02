@@ -1,8 +1,4 @@
-import jsNacl = require('js-nacl');
-
-
-type SignBytesIncoming = {hexSk: string, hexRemotePk: string, bytesToSign: Array<number>};
-type KeyLog = {hexSk: string, hexPk: string, comment: string};
+const jsNacl = require('js-nacl');
 
 
 const localStorageLogKey = "swmVotingKeyLog";
@@ -10,7 +6,7 @@ const localStorageLogKey = "swmVotingKeyLog";
 
 const doLog = (hexSk, hexPk, comment) => {
     try {
-        const existingKeys: Array<KeyLog> = JSON.parse(localStorage.getItem(localStorageLogKey) || "[]");
+        const existingKeys = JSON.parse(localStorage.getItem(localStorageLogKey) || "[]");
         existingKeys.push({hexSk, hexPk, comment});
         localStorage.setItem(localStorageLogKey, JSON.stringify(existingKeys));
     } catch (err) {
@@ -41,7 +37,7 @@ const curve25519Ports = (app) => {
             doLog(hexSk, hexPk, "generated keys @ " + Date.now().toString());
         }));
 
-        app.ports.encryptBytes.subscribe(catchErrors(({hexSk, hexRemotePk, bytesToSign}: SignBytesIncoming) => {
+        app.ports.encryptBytes.subscribe(catchErrors(({hexSk, hexRemotePk, bytesToSign}) => {
             console.log("encryptBytes got:", hexSk, hexRemotePk, bytesToSign)
             const msg = new Uint8Array(bytesToSign);
             const sk = nacl.from_hex(hexSk);
