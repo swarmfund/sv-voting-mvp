@@ -72,9 +72,9 @@ if [ $REPOSITORY_URL ]; then
     # yarn run elm-make web/src/SecureVote/SPAs/SwarmMVP/Main.elm  --output temp-32489734985.html 2>&1 # compile elm
     # check_error $?
 
-    echo "Manually installing elm - yarn seems to miss it..."
-    npm install elm
-    echo "Elm installed"
+#    echo "Manually installing elm - yarn seems to miss it..."
+#    npm install elm
+#    echo "Elm installed"
 
     ls node_modules/elm/
     ls node_modules/elm/Elm-Platform/
@@ -85,7 +85,8 @@ if [ $REPOSITORY_URL ]; then
     # bit drastic - try to avoid netlify's CI thinking we can't compile due to elm-web3
     rm node_modules/elm/Elm-Platform/0.18.0/.cabal-sandbox/bin/elm-package
 
-    $HOME/bin/sysconfcpus -n 1 yarn run elm-install install
+    # $HOME/bin/sysconfcpus -n 1 yarn run elm-install install
+    $HOME/bin/sysconfcpus -n 1 yarn run elm-install
     check_error $?
 
     # do build
