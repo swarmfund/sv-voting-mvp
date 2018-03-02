@@ -134,35 +134,31 @@ const common = {
 };
 
 
-const adminUiInjection = (env, config) => {
-    if (env === 'dev-admin-ui' || env === 'prod-admin-ui') {
-        const toRet = merge(config, {
-            devServer: {
-                historyApiFallback: {
-                    index: 'admin.html'
-                }
-            },
-            plugins: [
-                new HTMLWebpackPlugin({
-                    // using .ejs prevents other loaders causing errors
-                    template: 'web/admin.ejs',
-                    // inject details of output file at end of body
-                    inject: 'body'
-                })
-            ]
-        })
-        toRet.entry = {"sv-admin": ['./web/admin.js']};
-        return toRet;
-    } else {
-        return config;
-    }
+const uiInjection = (env, config) => {
+    const [entryFileName, extras] = {
+        'dev-admin-ui': ['admin', {}],
+        'development': ['index', buildAuditWeb({})],
+        'dev-delegation-ui': ['delegation', {}]
+    }[env];
+    const toRet = merge(config, extras, {
+        plugins: [
+            new HTMLWebpackPlugin({
+                // using .ejs prevents other loaders causing errors
+                template: `web/${entryFileName}.ejs`,
+                // inject details of output file at end of body
+                inject: 'body'
+            })
+        ]
+    });
+    toRet.entry = {[entryFileName]: [`./web/${entryFileName}.js`]};
+    return toRet;
 };
 
 
-if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui') {
+if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui' || TARGET_ENV === 'dev-delegation-ui') {
     console.log('Building for dev...');
-    const toExport = merge(common, buildAuditWeb({}), {
-        mode: "development",
+    const toExport = merge(common, {
+        // mode: "development",  // webpack v4
         plugins: [
             // Suggested for hot-loading
             new webpack.NamedModulesPlugin(),
@@ -199,13 +195,13 @@ if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui') {
             }
         }
     });
-    module.exports = adminUiInjection(TARGET_ENV, toExport)
+    module.exports = uiInjection(TARGET_ENV, toExport)
 }
 
 if (TARGET_ENV === 'production' || TARGET_ENV === 'prod-admin-ui') {
     console.log('Building for prod...');
     module.exports = merge(common, buildAuditWeb({outputDir: ".cache/output"}), {
-        mode: "production",
+        // mode: "production",  // webpack v4
         plugins: [
             // Delete everything from output directory and report to user
             new CleanWebpackPlugin([_dist], {
