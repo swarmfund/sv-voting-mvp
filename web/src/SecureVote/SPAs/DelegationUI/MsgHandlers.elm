@@ -1,6 +1,6 @@
 module SecureVote.SPAs.DelegationUI.MsgHandlers exposing (..)
 
-import SecureVote.SPAs.DelegationUI.Msg exposing (FromWeb3Msg(GotTxid), Msg(..))
+import SecureVote.SPAs.DelegationUI.Msg exposing (..)
 
 
 errHelper : String -> a -> Msg
@@ -19,3 +19,12 @@ handleMetaMaskTxid r =
 
         Err err ->
             errHelper "MetaMask error: " err
+
+
+handleDelegationPayload r =
+    case r of
+        Ok payload ->
+            GotDelegationPayload payload
+
+        Err err ->
+            errHelper "Delegation Payload error: " err

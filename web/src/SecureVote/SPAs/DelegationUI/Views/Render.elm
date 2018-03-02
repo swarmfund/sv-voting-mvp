@@ -12,7 +12,7 @@ renderBallotSpec : Model -> UiElem
 renderBallotSpec model =
     column BallotPreview
         [ padding 20 ]
-        [ el BallotRender [] (text model.jsonBallot) ]
+        [ el BallotRender [] (text model.jsonTx) ]
 
 
 renderBallotHash : Model -> UiElem

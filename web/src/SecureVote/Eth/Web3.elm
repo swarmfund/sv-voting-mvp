@@ -336,7 +336,12 @@ handleGotTxInfo msgF =
 port setDelegateData : { delegationABI : String, contractAddr : String, delegateAddr : String, tokenContract : String } -> Cmd msg
 
 
-port gotDelegatePayload : (Value -> msg) -> Sub msg
+port gotDelegatePayloadImpl : (Value -> msg) -> Sub msg
+
+
+gotDelegatePayloadGen msg =
+    gotDelegatePayloadImpl <|
+        \val -> msg <| decodeValue string val
 
 
 

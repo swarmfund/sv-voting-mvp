@@ -67,7 +67,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         const payload = delegateContract.setTokenDelegation.getData(tokenContract, delegateAddr);
         console.log(payload);
 
-        app.ports.gotDelegatePayload.send(payload);
+        app.ports.gotDelegatePayloadImpl.send(payload);
     }));
 
 

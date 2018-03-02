@@ -2,6 +2,7 @@ module SecureVote.SPAs.DelegationUI.Update exposing (..)
 
 import Dict
 import Element.Input exposing (dropMenu, menu, select, selected, updateSelection)
+import Json.Encode exposing (encode)
 import Maybe.Extra exposing ((?))
 import SecureVote.Ballots.Types exposing (emptyBSpec01)
 import SecureVote.Eth.Web3 exposing (setDelegateData)
@@ -37,8 +38,9 @@ update msg model =
                 s =
                     model.select ? genDropSelect
             in
-            { model | select = Just (updateSelection selectMsg s), workingBallot = emptyBSpec01, web3 = initWeb3Model } ! []
+            { model | select = Just (updateSelection selectMsg s), web3 = initWeb3Model } ! []
 
+        --            { model | select = Just (updateSelection selectMsg s), workingBallot = emptyBSpec01, web3 = initWeb3Model } ! []
         SelectOptType sMsg ->
             let
                 s =
@@ -46,6 +48,16 @@ update msg model =
             in
             { model | selectOpts = Just <| updateSelection sMsg s } ! []
 
+        --        UpdateDelegationTx ->
+        --            let
+        --                jsonBallotStr =
+        --                    encode 4 <|
+        --                        E.object
+        --                            [ ( "to", model.delegationTx.to )
+        --                            , ( "from", asd )
+        --                            ]
+        --            in
+        --            { model | jsonTx = jsonBallotStr } ! [ Task.attempt handleSha3Response (sha3 jsonBallotStr) ]
         GetDelegationPayload { delegateAddr, tokenAddr } ->
             ( model
             , setDelegateData
@@ -55,6 +67,16 @@ update msg model =
                 , tokenContract = tokenAddr
                 }
             )
+
+        GotDelegationPayload payload ->
+            let
+                modelDelTx =
+                    model.delegationTx
+
+                newDelegationTx =
+                    { modelDelTx | data = payload }
+            in
+            { model | delegationTx = newDelegationTx } ! []
 
         UpdateSha3 s ->
             { model | sha3 = s } ! []

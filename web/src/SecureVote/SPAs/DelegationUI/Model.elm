@@ -6,7 +6,7 @@ import Json.Decode exposing (Value)
 import Json.Encode exposing (object)
 import SecureVote.Ballots.Types exposing (BallotSpec, BallotSpecChoice, OptsChoice, emptyBSpec01)
 import SecureVote.SPAs.DelegationUI.Msg exposing (Msg)
-import SecureVote.SPAs.DelegationUI.Types exposing (Flags)
+import SecureVote.SPAs.DelegationUI.Types exposing (DelegationTx, Flags)
 
 
 type alias Model =
@@ -14,9 +14,9 @@ type alias Model =
     , boolFields : Dict String Bool
     , select : Maybe (SelectWith BallotSpecChoice Msg)
     , selectOpts : Maybe (SelectWith OptsChoice Msg)
-    , workingBallot : BallotSpec
+    , delegationTx : DelegationTx
     , savedBallots : Dict String BallotSpec
-    , jsonBallot : String
+    , jsonTx : String
     , sha3 : String
     , mainTitle : String
     , dev : Bool
@@ -35,9 +35,9 @@ initModel { mainTitle, dev, democHash, indexAddr, delegationABI } =
     , boolFields = Dict.empty
     , select = Nothing
     , selectOpts = Nothing
-    , workingBallot = emptyBSpec01
+    , delegationTx = DelegationTx "" "" 0 0 ""
     , savedBallots = Dict.empty
-    , jsonBallot = "{}"
+    , jsonTx = "{}"
     , sha3 = "0x"
     , mainTitle = mainTitle
     , dev = dev
