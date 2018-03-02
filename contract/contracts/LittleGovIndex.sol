@@ -57,8 +57,6 @@ contract LittleGovIndex {
             payTo.transfer(v); // .transfer so it throws on failure
             msg.sender.transfer(remainder);
             PaymentMade(v, remainder, msg.sender, payTo);
-        } else {
-            NoPayment(msg.sender);
         }
 
         // do main

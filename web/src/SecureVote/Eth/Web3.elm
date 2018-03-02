@@ -7,7 +7,7 @@ import Json.Decode.Pipeline exposing (decode, required)
 import Maybe exposing (withDefault)
 import Maybe.Extra exposing (combine)
 import SecureVote.Eth.Models exposing (CandidateEthTx, MinEthTx)
-import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult, InitRecord)
+import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult, InitRecord, WriteViaMMDoc)
 import SecureVote.Eth.Utils exposing (dropEthPrefix)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
@@ -157,6 +157,12 @@ port constructDataParam : ConsDataParamReq -> Cmd msg
 port castMetaMaskVoteImpl : MinEthTx -> Cmd msg
 
 
+port performContractWriteMM : WriteViaMMDoc -> Cmd msg
+
+
+port metamaskTxidImpl : (Value -> msg) -> Sub msg
+
+
 castMetaMaskTx : CandidateEthTx -> Cmd msg
 castMetaMaskTx { from, to, value, data, gas } =
     castMetaMaskVoteImpl
@@ -166,9 +172,6 @@ castMetaMaskTx { from, to, value, data, gas } =
         , data = withDefault "ERROR - THIS SHOULD BE FILLED AND YOU SHOULD NEVER SEE THIS" data
         , gas = gas
         }
-
-
-port metamaskTxidImpl : (Value -> msg) -> Sub msg
 
 
 metamaskTxid : Sub Msg

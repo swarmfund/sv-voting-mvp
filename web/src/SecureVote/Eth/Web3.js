@@ -3,15 +3,24 @@ import ERC20ABI from "./ERC20ABI";
 import SwmVotingMVPABIs from "./SwmVotingMVP.abi";
 import abiDecoder from "abi-decoder";
 
-import AuditWeb from "../../../../pureSrc/SecureVote/Democs/SwarmMVP/AuditWeb.purs";
+const {implNotifyErrF, wrapIncomingF} = require('../../../js/portHelpers');
 
 import {create, env} from 'sanctuary';
 const S = create({checkTypes: true, env});
+const toPairs = require('ramda/src/toPairs');
 
 
 // legacy contract w different getBallotOpts format
 const legacyContractAddr = "0x2bb10945e9f0c9483022dc473ab4951bc2a77d0f";
 
+
+const mkPromise = f => (...args) => {
+    return new Promise((resolve, reject) => {
+        f(...args, (err, resp) => {
+            err ? reject(err) : resolve(resp);
+        })
+    })
+};
 
 
 const promiseCb = (resolve, reject, extra = []) => (err, val) => {
@@ -19,35 +28,21 @@ const promiseCb = (resolve, reject, extra = []) => (err, val) => {
     if (err) {
         reject(err);
     } else {
-        resolve([val, ...extra]);
+        resolve([val, ...extra
+        ]);
     }
 }
 
 
 
-const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
+const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     if (mmDetected) {
         app.ports.gotMetamaskImpl.send(true);
     }
 
-    const wrapIncoming = (f) => {
-        return (...args) => {
-            try {
-                f(...args);
-            } catch (err) {
-                console.log("Got error in function:", f);
-                console.log(err.toString());
-                implNotifyErr(err.toString());
-            }
-        }
-    };
+    const wrapIncoming = wrapIncomingF(app);
 
-
-    const genCB = (f) => (err, thing) => {
-        if (err) {
-
-        }
-    }
+    const implNotifyErr = implNotifyErrF(app);
 
 
     /* START DELEGATION SECTION */
@@ -220,17 +215,12 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
 
     });
 
-    const implNotifyErr = (err) => {
-        console.log("Got Error:", err);
-        app.ports.gotWeb3Error.send(err)
-    };
-
 
     // Help with error handling boilerplate
     const handleErrOr = (f) => (err, resp) => {
         if (err) {
             console.log('handleErrOr got err:', err);
-            implNotifyErr(err)
+            implNotifyErr(err);
         } else {
             f(resp);
         }
@@ -273,7 +263,22 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
         } catch (err) {
             app.ports.contractReadResponse.send(failF(err.toString()));
         }
-    }))
+    }));
+
+    // // this function takes an object and returns a list of values sorted by the keys.
+    // const convertArgs = (args) => {
+    //     const pairs = toPairs(args);
+    //     const ordParis = sortBy(([k, v]) => parseInt(k), pairs);
+    //     return map(([k, v]) => v, ordParis);
+    // };
+
+    app.ports.performContractWriteMM.subscribe(wrapIncoming(({abi, addr, method, args}) => {
+        console.log("mm contract write:", {abi, addr, method, args});
+        const c = mmWeb3.eth.contract(JSON.parse(abi)).at(addr);
+        const data = c[method].getData(...args);
+        const tx = {to: addr, value: 0, data};
+        sendMMTx(tx);
+    }));
 
     app.ports.checkTxid.subscribe(wrapIncoming((txid) => {
         const p = new Promise((resolve, reject) => {
@@ -332,24 +337,47 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
 
     const sendMMTx = (tx) => {
         console.log("Sending tx to MetaMask:", tx);
-        mmWeb3.eth.sendTransaction(tx, (err, ret) => {
-            if (err) {
-                console.error("MetaMask error: ", err);
-                // if we have a bad from address strip it out and try again.
-                if (tx.from !== "") {
-                    tx.from = "";
-                    sendMMTx(tx);
-                } else {
-                    implNotifyErr("Metamask Error! " + err.toString())
+        if (!mmDetected) {
+            return implNotifyErr("Cannot send transaction: MetaMask was not detected.");
+        }
+        mkPromise(mmWeb3.eth.getAccounts)()
+            .then(acc => {
+                if (acc === []) {
+                    throw Error("MetaMask is locked!");
                 }
-            } else {
-                console.log("MetaMask returned: ", err, ret);
-                app.ports.metamaskTxidImpl.send(ret);
-            }
-        });
-    }
 
-    app.ports.castMetaMaskVoteImpl.subscribe(wrapIncoming(sendMMTx))
+                console.log("MetaMask returned accounts: ", acc);
+
+                if (!tx.gas) {
+                    return mkPromise(mmWeb3.eth.estimateGas)(tx)
+                        .then(gasEst => {
+                            console.log("Gas estimated at ", gasEst);
+                            tx.gas = gasEst;
+                        })
+                }
+            }).then(() => {
+                mmWeb3.eth.sendTransaction(tx, (err, ret) => {
+                    if (err) {
+                        console.error("MetaMask error: ", err);
+                        // if we have a bad from address strip it out and try again.
+                        if (tx.from !== "") {
+                            tx.from = "";
+                            sendMMTx(tx);
+                        } else {
+                            implNotifyErr("Metamask Error! " + err.toString());
+                        }
+                    } else {
+                        console.log("MetaMask returned: ", err, ret);
+                        app.ports.metamaskTxidImpl.send(ret);
+                    }
+                });
+            })
+            .catch(err => {
+                return implNotifyErr("MetaMask error: " + err.toString());
+            });
+    };
+
+    app.ports.castMetaMaskVoteImpl.subscribe(wrapIncoming(sendMMTx));
 };
 
 export default web3Ports;

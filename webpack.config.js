@@ -178,7 +178,7 @@ if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui' || TARGET_ENV 
                     ],
                     use: [
                         "elm-hot-loader",
-                        "elm-webpack-loader?verbose=true&warn=false&maxInstances=1&debug=true"
+                        "elm-webpack-loader?verbose=true&warn=false&maxInstances=1" //&debug=true
                     ]
                 }
             ]
