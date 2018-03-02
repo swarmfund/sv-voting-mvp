@@ -57,6 +57,8 @@ contract LittleBallotBox {
     // Timestamps for start and end of ballot (UTC)
     uint64 public startTime;
     uint64 public endTime;
+    uint64 public creationBlock;
+    uint64 public startingBlockAround;
 
     // specHash by which to validate the ballots integrity
     bytes32 public specHash;
@@ -66,13 +68,14 @@ contract LittleBallotBox {
     bool public deprecated = false;
 
     //// ** Events
-    event CreatedBallot(address creator, uint256 start, uint256 end, bool encrypted, bytes32 specHash);
+    event CreatedBallot(address creator, uint64[2] openPeriod, bool useEncryption, bytes32 specHash);
     event SuccessfulPkVote(address voter, bytes32 ballot, bytes32 pubkey);
     event SuccessfulVote(address voter, bytes32 ballot);
     event SeckeyRevealed(bytes32 secretKey);
     event TestingEnabled();
     event Error(string error);
     event DeprecatedContract();
+    event SetOwner(address owner);
 
 
     //// ** Modifiers
@@ -104,24 +107,30 @@ contract LittleBallotBox {
 
     //// ** Functions
 
+    uint16 constant F_USE_ENC = 0;
+    uint16 constant F_TESTING = 1;
     // Constructor function - init core params on deploy
     // timestampts are uint64s to give us plenty of room for millennia
-    function LittleBallotBox(bytes32 _specHash, uint64[2] openPeriod, bool _useEncryption, bool enableTesting) public {
+    // flags are [_useEncryption, enableTesting]
+    function LittleBallotBox(bytes32 _specHash, uint64[2] openPeriod, bool[2] flags) public {
         owner = msg.sender;
 
         // take the max of the start time provided and the blocks timestamp to avoid a DoS against recent token holders
         // (which someone might be able to do if they could set the timestamp in the past)
         startTime = max(openPeriod[0], uint64(block.timestamp));
         endTime = openPeriod[1];
-        useEncryption = _useEncryption;
+        useEncryption = flags[F_USE_ENC];
         specHash = _specHash;
+        creationBlock = uint64(block.number);
+        // add a rough prediction of what block is the starting block
+        startingBlockAround = uint64((startTime - block.timestamp) / 15 + block.number);
 
-        if (enableTesting) {
+        if (flags[F_TESTING]) {
             testMode = true;
             TestingEnabled();
         }
 
-        CreatedBallot(msg.sender, startTime, endTime, useEncryption, specHash);
+        CreatedBallot(msg.sender, [startTime, endTime], useEncryption, specHash);
     }
 
     // Ballot submission
@@ -170,6 +179,11 @@ contract LittleBallotBox {
     function setDeprecated() onlyOwner public {
         deprecated = true;
         DeprecatedContract();
+    }
+
+    function setOwner(address newOwner) onlyOwner public {
+        owner = newOwner;
+        SetOwner(newOwner);
     }
 
     // utils
