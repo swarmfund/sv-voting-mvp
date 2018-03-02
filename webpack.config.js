@@ -11,22 +11,22 @@ const TARGET_ENV = function () {
     console.log('Generating TARGET_ENV');
     switch (process.env.npm_lifecycle_event) {
         case 'build-web':
-            return 'production';
+            return 'prod-ui';
         case 'web':
             return 'development';
 
         case 'web-admin':
             return 'dev-admin-ui';
-        case 'build-web-admin':
-            return 'prod-admin-ui';
+        // no translation for prod-admin-ui
 
         case 'web-delegation':
             return 'dev-delegation-ui';
+        // no translation for prod-delegation-ui
 
         case 'admin-dev':
             return 'admin-dev';
-        case 'admin-prod':
-            return 'admin-prod';
+        case 'prod-admin-ui':
+            return 'prod-admin-ui';
 
         case 'audit-dev':
             return 'audit-dev';
@@ -141,7 +141,10 @@ const uiInjection = (env, config) => {
     const [entryFileName, extras] = {
         'dev-admin-ui': ['admin', {}],
         'development': ['index', buildAuditWeb({})],
-        'dev-delegation-ui': ['delegation', {}]
+        'dev-delegation-ui': ['delegation', {}],
+        'prod-admin-ui': ['admin', {}],
+        'prod-ui': ['index', buildAuditWeb({})],
+        'prod-delegation-ui': ['delegation', {}]
     }[env];
     const toRet = merge(config, extras, {
         plugins: [
@@ -201,9 +204,9 @@ if (TARGET_ENV === 'development' || TARGET_ENV === 'dev-admin-ui' || TARGET_ENV 
     module.exports = uiInjection(TARGET_ENV, toExport)
 }
 
-if (TARGET_ENV === 'production' || TARGET_ENV === 'prod-admin-ui') {
+if (TARGET_ENV === 'prod-ui' || TARGET_ENV === 'prod-admin-ui' || TARGET_ENV === 'prod-delegation-ui') {
     console.log('Building for prod...');
-    module.exports = merge(common, buildAuditWeb({outputDir: ".cache/output"}), {
+    const config = merge(common, buildAuditWeb({outputDir: ".cache/output"}), {
         // mode: "production",  // webpack v4
         plugins: [
             // Delete everything from output directory and report to user
@@ -239,8 +242,7 @@ if (TARGET_ENV === 'production' || TARGET_ENV === 'prod-admin-ui') {
         },
         bail: true
     });
-
-
+    return uiInjection(TARGET_ENV, config);
 }
 
 if (TARGET_ENV === 'admin-dev') {
