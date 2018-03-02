@@ -106,13 +106,13 @@ contract LittleBallotBox {
 
     // Constructor function - init core params on deploy
     // timestampts are uint64s to give us plenty of room for millennia
-    function LittleBallotBox(bytes32 _specHash, uint64 _startTime, uint64 _endTime, bool _useEncryption, bool enableTesting) public {
+    function LittleBallotBox(bytes32 _specHash, uint64[2] openPeriod, bool _useEncryption, bool enableTesting) public {
         owner = msg.sender;
 
         // take the max of the start time provided and the blocks timestamp to avoid a DoS against recent token holders
         // (which someone might be able to do if they could set the timestamp in the past)
-        startTime = max(_startTime, uint64(block.timestamp));
-        endTime = _endTime;
+        startTime = max(openPeriod[0], uint64(block.timestamp));
+        endTime = openPeriod[1];
         useEncryption = _useEncryption;
         specHash = _specHash;
 
@@ -121,7 +121,7 @@ contract LittleBallotBox {
             TestingEnabled();
         }
 
-        CreatedBallot(msg.sender, startTime, _endTime, _useEncryption, _specHash);
+        CreatedBallot(msg.sender, startTime, endTime, useEncryption, specHash);
     }
 
     // Ballot submission

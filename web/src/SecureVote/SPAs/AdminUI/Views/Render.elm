@@ -27,7 +27,7 @@ renderEventLog : Model -> UiElem
 renderEventLog model =
     let
         drawRow str =
-            paragraph LogEntry [] [ text str ]
+            paragraph LogEntry [ paddingBottom 3 ] [ text str ]
 
         logToDraw =
             if List.isEmpty model.log then
@@ -35,8 +35,8 @@ renderEventLog model =
             else
                 model.log
     in
-    column NoS
-        [ spacing 10 ]
+    column EventLogBox
+        [ spacing 10, padding 20 ]
     <|
         List.map
             drawRow
