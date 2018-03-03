@@ -68,14 +68,14 @@ contract LittleBallotBox {
     bool public deprecated = false;
 
     //// ** Events
-    event CreatedBallot(address creator, uint64[2] openPeriod, bool useEncryption, bytes32 specHash);
+    event CreatedBallot(address _creator, uint64[2] _openPeriod, bool _useEncryption, bytes32 _specHash);
     event SuccessfulPkVote(address voter, bytes32 ballot, bytes32 pubkey);
     event SuccessfulVote(address voter, bytes32 ballot);
     event SeckeyRevealed(bytes32 secretKey);
     event TestingEnabled();
     event Error(string error);
     event DeprecatedContract();
-    event SetOwner(address owner);
+    event SetOwner(address _owner);
 
 
     //// ** Modifiers

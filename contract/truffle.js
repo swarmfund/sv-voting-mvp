@@ -5,7 +5,7 @@ const S = create({ checkTypes: true, env });
 
 var provider = TestRPC.provider({
   port: 34839,
-  accounts: S.map(_ => ({ balance: "0xfffffffffffffffff" }), S.range(0, 20))
+  accounts: S.map(_ => ({ balance: "0xffffffffffffffffffffff" }), S.range(0, 20))
 });
 
 module.exports = {
