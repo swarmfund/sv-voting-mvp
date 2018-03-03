@@ -9,6 +9,7 @@ import Maybe.Extra exposing (combine)
 import SecureVote.Eth.Models exposing (CandidateEthTx, MinEthTx)
 import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult, InitRecord)
 import SecureVote.Eth.Utils exposing (dropEthPrefix)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (ChainIndex)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
 
@@ -103,7 +104,7 @@ onContractReadResponse msgGen errMsg val =
 
 
 type alias GetErc20BalanceReq =
-    { contractAddress : String, userAddress : String }
+    { contractAddress : String, userAddress : String, chainIndex : Int }
 
 
 port getErc20Balance : GetErc20BalanceReq -> Cmd msg

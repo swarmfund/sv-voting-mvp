@@ -206,10 +206,11 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app) => {
         console.log("Web3 provider set to:", web3js.currentProvider);
     }));
 
-    app.ports.getErc20Balance.subscribe(wrapper(({contractAddress, userAddress}) => {
-        console.log("getErc20Balance got params", {contractAddress, userAddress});
+    app.ports.getErc20Balance.subscribe(wrapper(({contractAddress, userAddress, chainIndex}) => {
+        console.log("getErc20Balance got params", {contractAddress, userAddress, chainIndex});
+        const _ci = chainIndex < 0 ? 'latest' : chainIndex;
         const tokenContract = Erc20Contract.at(contractAddress);
-        tokenContract.balanceOf.call(userAddress, handleErrOr(implSendErc20Balance))
+        tokenContract.balanceOf.call(userAddress, _ci, handleErrOr(implSendErc20Balance))
     }))
 
 

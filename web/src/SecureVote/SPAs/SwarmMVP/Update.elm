@@ -13,6 +13,7 @@ import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Utils exposing (keccak256OverString)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
+import SecureVote.SPAs.SwarmMVP.Ballots.ProdBallots exposing (getChainIndexFor)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (doBallotOptsMatchRSched, voteOptionsRSched)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, defaultDelegate, getDelegateAddress, getUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageBack, PageForward), Model, resetAllBallotFields)
@@ -223,7 +224,7 @@ updateToWeb3 web3msg model =
                     -- probs okay because it will return 0
                     getUserErc20Addr model ? "0x00"
             in
-            model ! [ getErc20Balance <| GetErc20BalanceReq model.currentBallot.erc20Addr addr ]
+            model ! [ getErc20Balance <| GetErc20BalanceReq model.currentBallot.erc20Addr addr (getChainIndexFor model.currentBallot.id) ]
 
         CheckTxid txid ->
             { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]

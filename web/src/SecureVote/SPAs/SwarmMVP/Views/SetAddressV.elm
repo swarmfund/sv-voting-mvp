@@ -1,14 +1,15 @@
 module SecureVote.SPAs.SwarmMVP.Views.SetAddressV exposing (..)
 
-import Html exposing (Html, div, p, span, strong, text)
+import Html exposing (Html, div, h4, p, span, strong, text)
 import Html.Attributes exposing (class)
 import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
 import Maybe.Extra exposing ((?), isNothing)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
-import SecureVote.Components.UI.Typo exposing (headline)
+import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Utils exposing (isValidEthAddress, setCandTxFrom)
+import SecureVote.SPAs.SwarmMVP.Ballots.ProdBallots exposing (renderedGetCIFor)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getUserErc20Addr, setUserErc20Addr, userErc20AddrId)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance))
@@ -68,6 +69,7 @@ swmAddressV model =
         ("Your " ++ erc20Abrv ++ " Address")
         [ Options.styled span [ cs "dark-gray db pa2 mv3 f4" ] [ text <| "Please enter your Ethereum address holding " ++ erc20Abrv ++ " tokens below" ]
         , Options.styled p [ cs "pa2" ] [ strong [] [ text "Note: " ], text <| "Your address is only used to confirm your " ++ erc20Abrv ++ " token balance. ", strong [] [ text "This is an optional step." ] ]
+        , subhead <| "Your ballance will be shown as it was in " ++ renderedGetCIFor model.currentBallot.id
         , div [ class "center" ]
             [ div [ class "flex flex-column items-center mh2" ]
                 [ div [ class "w-100 flex flex-column items-start" ]

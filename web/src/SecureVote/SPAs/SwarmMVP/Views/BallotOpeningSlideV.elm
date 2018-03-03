@@ -41,22 +41,29 @@ openingSlide model =
                     []
 
         introText =
+            let
+                smallP =
+                    p [ class "mb3 lh-title" ]
+            in
             [ [ text <| "Ballot description: " ++ b.openingDesc ]
             ]
                 ++ discussionLink
                 ++ [ [ subhead "Voting" ]
-                   , [ text "You will be presented with a number of options. Each option has a description explaining it in more detail."
+                   , [ strong [] [ text <| "This is a stake-weighted vote using SWM balances as they were at " ++ formatTsAsDate model.currentBallot.startTime ] ]
+                   , [ div []
+                        [ smallP [ text "You will be presented with a number of options. Each option has a description explaining it in more detail." ]
+                        , smallP [ text "When you vote, you allocate each option a number from -3 to +3 (inclusive). It's important to choose a vote for each option. (This method of voting is called 'Range Voting'.)" ]
+                        , smallP [ text "If you'd like, ", a [ href "https://www.youtube.com/watch?v=afEwklJEzFc", target "_blank" ] [ text "here is a video" ], text " walking you through the voting process." ]
+                        , smallP [ text "When you're ready, let's vote!" ]
+                        ]
                      ]
-                   , [ text "When you vote, you allocate each option a number from -3 to +3 (inclusive). It's important to choose a vote for each option. (This method of voting is called 'Range Voting'.)" ]
-                   , [ text "If you'd like, ", a [ href "https://www.youtube.com/watch?v=afEwklJEzFc", target "_blank" ] [ text "here is a video" ], text " walking you through the voting process." ]
-                   , [ text "When you're ready, let's vote!" ]
                    ]
 
         introParagraphs =
             div [ class "center" ] <| List.map renderPara introText
 
         renderPara txt =
-            Options.styled span [ body1, cs "black db pa1 mv2" ] txt
+            Options.styled span [ body1, cs "black db pa1 ma1" ] txt
 
         continueBtn =
             if ballotOver then

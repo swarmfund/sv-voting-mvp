@@ -31,3 +31,8 @@ type alias ReleaseSchedule =
     { nReleases : Int
     , releaseLength : Int
     }
+
+
+type ChainIndex
+    = Latest
+    | BlockNumber Int

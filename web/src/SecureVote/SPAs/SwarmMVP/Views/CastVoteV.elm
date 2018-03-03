@@ -14,6 +14,7 @@ import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Utils exposing (rawTokenBalance18DpsToBalance)
+import SecureVote.SPAs.SwarmMVP.Ballots.ProdBallots exposing (renderedGetCIFor)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(DlogTxt))
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, getUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
@@ -34,7 +35,7 @@ castVoteView model =
 
                 ifZeroOr addr b =
                     if eq b zero then
-                        "No tokens for " ++ addr ++ " in ERC20 contract at " ++ model.currentBallot.erc20Addr
+                        "Zero balance"
                     else
                         rawTokenBalance18DpsToBalance b
             in
@@ -45,7 +46,7 @@ castVoteView model =
 
         balanceV =
             if "" /= (withDefault "" <| getUserErc20Addr model) then
-                [ Options.styled div [ cs "mt2 mb4 pa1 f4" ] [ text <| "Vote weighting (" ++ model.currentBallot.erc20Abrv ++ " balance): " ++ balanceStr ] ]
+                [ subhead <| "Vote weighting (" ++ model.currentBallot.erc20Abrv ++ " balance): " ++ balanceStr ++ " at block " ++ renderedGetCIFor model.currentBallot.id ]
             else
                 []
 
