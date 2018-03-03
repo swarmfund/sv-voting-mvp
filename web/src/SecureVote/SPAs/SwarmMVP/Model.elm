@@ -9,7 +9,8 @@ import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
 import SecureVote.Eth.Types exposing (AuditDoc)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (allBallots, allDevBallots, initBallot, initDevBallot)
-import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
+import SecureVote.SPAs.SwarmMVP.Ballots.ProdBallots exposing (getChainIndexFor)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams, ChainIndex)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(ListAllVotesR, NotFoundR, SwmAddressR))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidNotMade))
@@ -62,6 +63,10 @@ initModel dev mainTitle =
                 ( initDevBallot, devEthNode, allDevBallots )
             else
                 ( initBallot, initEthNode, allBallots )
+
+        balanceLocations =
+            Dict.fromList <|
+                List.map (\b -> ( b.id, getChainIndexFor b.id )) allBallots_
     in
     { mdl = Material.model
     , snack = Material.Snackbar.model

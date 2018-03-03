@@ -1,8 +1,31 @@
 module SecureVote.SPAs.SwarmMVP.Ballots.ProdBallots exposing (..)
 
-import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotOption, BallotParams)
+import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotOption, BallotParams, ChainIndex(..))
 import SecureVote.SPAs.SwarmMVP.Const exposing (swmErc20Addr)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(DlogTxt))
+
+
+getChainIndexFor i =
+    case i of
+        1002000 ->
+            5173410
+
+        1001000 ->
+            5173410
+
+        _ ->
+            -1
+
+
+renderedGetCIFor i =
+    let
+        ci =
+            getChainIndexFor i
+    in
+    if ci < 0 then
+        "the most recent block"
+    else
+        "block " ++ toString ci
 
 
 marchSurveyROI : BallotParams msg
