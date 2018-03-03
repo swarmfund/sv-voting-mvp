@@ -3443,14 +3443,6 @@ enhanced-resolve@^3.3.0, enhanced-resolve@^3.4.0, enhanced-resolve@^3.4.1:
     object-assign "^4.0.1"
     tapable "^0.2.7"
 
-enhanced-resolve@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/enhanced-resolve/-/enhanced-resolve-4.0.0.tgz#e34a6eaa790f62fccd71d93959f56b2b432db10a"
-  dependencies:
-    graceful-fs "^4.1.2"
-    memory-fs "^0.4.0"
-    tapable "^1.0.0"
-
 entities@~1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/entities/-/entities-1.1.1.tgz#6e5c2d0a5621b5dadaecef80b90edfb5cd7772f0"
@@ -8219,9 +8211,9 @@ purescript@^0.11.6:
     rimraf "^2.6.1"
     to-executable-name "^1.1.0"
 
-"purs-loader@git://github.com/secure-vote/purs-loader#e3df473e79a1f1bff0de1b8bf4568cefe1b37f6d":
+purs-loader@^3.1.2:
   version "3.1.2"
-  resolved "git://github.com/secure-vote/purs-loader#e3df473e79a1f1bff0de1b8bf4568cefe1b37f6d"
+  resolved "https://registry.yarnpkg.com/purs-loader/-/purs-loader-3.1.2.tgz#f93a4fcda9b864543a25c4645dda2b88a819835d"
   dependencies:
     bluebird "^3.3.5"
     chalk "^1.1.3"
@@ -9059,7 +9051,7 @@ semver-truncate@^1.0.0:
   dependencies:
     semver "^5.3.0"
 
-"semver@2 || 3 || 4 || 5", semver@^5.0.1, semver@^5.3.0:
+"semver@2 || 3 || 4 || 5", semver@^5.3.0:
   version "5.4.1"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.4.1.tgz#e059c09d8571f0540823733433505d3a2f00b18e"
 
@@ -10234,16 +10226,6 @@ truncated-list@^0.1.0:
 tryer@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/tryer/-/tryer-1.0.0.tgz#027b69fa823225e551cace3ef03b11f6ab37c1d7"
-
-ts-loader@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/ts-loader/-/ts-loader-4.0.0.tgz#1d79f777e4f09de88a60697d8d4a96e55164caa9"
-  dependencies:
-    chalk "^2.3.0"
-    enhanced-resolve "^4.0.0"
-    loader-utils "^1.0.2"
-    micromatch "^3.1.4"
-    semver "^5.0.1"
 
 tty-browserify@0.0.0, tty-browserify@~0.0.0:
   version "0.0.0"
