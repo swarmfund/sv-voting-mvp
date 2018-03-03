@@ -19,7 +19,7 @@ async function testOwner(accounts) {
 
     await asyncAssertThrow(
         () => lg.setPayTo(accounts[1], {from: accounts[1]}),
-        "can't change payTo"
+        "bad user can't change payTo"
     );
     assert.equal(
         await lg.payTo(),
@@ -27,27 +27,29 @@ async function testOwner(accounts) {
         "payTo can't be changed arbitrarily"
     );
 
-    assert.equal(await lg.paymentEnabled(), false, "payment starts false");
-    await lg.setPaymentEnabled(true, {from: accounts[0]});
-    assert.equal(await lg.paymentEnabled(), true, "payment made true");
+    assert.equal(await lg.paymentEnabled(), true, "payment starts false");
+    await lg.setPaymentEnabled(false, {from: accounts[0]});
+    assert.equal(await lg.paymentEnabled(), false, "payment made false");
 
     await lg.setPayTo(accounts[10], {from: accounts[0]});
     assert.equal(await lg.payTo(), accounts[10], "payTo changable");
 
     const dPrice1 = 9876;
     const iPrice1 = 3849;
-    await lg.setEth(dPrice1, iPrice1, {from: accounts[0]});
-    assert.equal(await lg.requiredEthForDemoc(), dPrice1, "eth/democ matches");
-    assert.equal(await lg.requiredEthForIssue(), iPrice1, "eth/issue matches");
+    await lg.setEth([dPrice1, iPrice1], {from: accounts[0]});
+    assert.equal(await lg.democFee(), dPrice1, "eth/democ matches");
+    assert.equal(await lg.ballotFee(), iPrice1, "eth/issue matches");
+
+    await lg.setPaymentEnabled(true, {from: accounts[0]});
 
     // ensure noone can set the price
     await asyncAssertThrow(
-        () => lg.setEth(5, 5, {from: accounts[1]}),
+        () => lg.setEth([5, 5], {from: accounts[1]}),
         "setEth only by owner"
     );
     await asyncAssertThrow(
         () => lg.initDemoc("some democ", {from: accounts[1]}),
-        "initDemoc should fail"
+        "initDemoc should fail when payment required with no payment"
     );
 
     // check payments
@@ -122,7 +124,7 @@ async function testOwner(accounts) {
         "no free lunch (issue)"
     );
     log("give accounts[1] whitelist access")
-    await lg.setWhitelistIssue(accounts[1], true);
+    await lg.setWhitelistBallot(accounts[1], true);
     log("accounts 1 makes ballot with no payment")
     await lg.addBallot(democId, democId, lbb.address, {
         from: accounts[1]
@@ -173,10 +175,55 @@ async function testOwner(accounts) {
     const newBallotVC = LBB.at(newBallot[2]);
     assert.equal(newBallot[0], await newBallotVC.specHash(), "spec hashes should match as reported by LGI and LBB");
     assert.equal(democId, await newBallotVC.specHash(), "spec hashe should match what we gave it");
-
-
 }
 
+
+const testPayments = async (acc) => {
+    const admin = acc[0];
+    const userPaid = acc[1];
+    const userFree = acc[2];
+
+    const [democPrice, ballotPrice] = S.map(a => web3.toWei(a, 'ether'), [0.05, 0.01]);
+
+    const lg = await LGIndex.new();
+    await lg.setEth([democPrice, ballotPrice], {from: admin});
+    await lg.setWhitelistDemoc(userFree, true, {from: admin});
+    await lg.setWhitelistBallot(userFree, true, {from: admin});
+
+    await asyncAssertThrow(() => lg.initDemoc("userPaidFail", {from: userPaid}), "userPaid must pay");
+
+    // test making a payment and getting change
+    const _userPaidBalPre = await getBalance(userPaid);
+    const _democInitPaid = await lg.initDemoc("userPaidGood", {from: userPaid, value: democPrice + 1337, gasPrice: 0});
+    const _userPaidBalPost = await getBalance(userPaid);
+    assert.isTrue(_userPaidBalPre.eq(_userPaidBalPost.add(democPrice)), "extra wei should be refunded");
+
+    // assert event and get democId
+    console.log("democInitPaid", _democInitPaid);
+    assertOnlyEvent("PaymentMade", _democInitPaid);
+    const _dInitEvent = getEventFromTxR("DemocInit", _democInitPaid);
+    const democId = _dInitEvent.args.democHash;
+
+    // test a payment for democId
+    await asyncAssertThrow(() => lg.deployBallot(democId, democId, democId, [0, 0], [true, true], {from: userPaid}), "userPaid can't publish issues for free");
+    const _ballotTxR = await lg.deployBallot(democId, democId, democId, [0, 0], [true, true], {
+        from: userPaid,
+        value: ballotPrice
+    });
+    const _ballotDeployE = getEventFromTxR("BallotInit", _ballotTxR);
+
+    // test userFree can do this for free
+    const _democFreeE = getEventFromTxR("DemocInit", await lg.initDemoc("free democ", {from: userFree}));
+    const _freeDemocId = _democFreeE.args.democHash;
+    await lg.deployBallot(_freeDemocId, _freeDemocId, _freeDemocId, [0, 0], [true, true], {from: userFree});
+}
+
+
 contract("LittleGovIndex", function (_accounts) {
-    it("whole test suite", wrapTest(_accounts, testOwner));
+    tests = [
+        ["end-to-end-ish", testOwner],
+        ["payment amounts", testPayments],
+
+    ];
+    S.map(([desc, f]) => it(desc, wrapTest(_accounts, f)), tests);
 });

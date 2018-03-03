@@ -26,21 +26,39 @@ contract LittleGovIndex {
     // addresses that do not have to pay for democs
     mapping (address => bool) public democWhitelist;
     // democs that do not have to pay for issues
-    mapping (address => bool) public issueWhitelist;
+    mapping (address => bool) public ballotWhitelist;
 
     // payment details
     address public payTo;
-    uint256 public requiredEthForDemoc;
-    uint256 public requiredEthForIssue;
-    bool public paymentEnabled = false;
+    // uint128's used because they account for amounts up to 3.4e38 wei or 3.4e20 ether
+    uint128 public democFee = 0.05 ether; // 0.05 ether; about $50 at 3 March 2018
+    mapping (address => uint128) democFeeFor;
+    uint128 public ballotFee = 0.01 ether; // 0.01 ether; about $10 at 3 March 2018
+    mapping (address => uint128) ballotFeeFor;
+    bool public paymentEnabled = true;
+
+    uint8 constant PAY_DEMOC = 0;
+    uint8 constant PAY_BALLOT = 1;
+
+    function getPaymentParams(uint8 paymentType) internal constant returns (bool, uint128, uint128) {
+        if (paymentType == PAY_DEMOC) {
+            return (democWhitelist[msg.sender], democFee, democFeeFor[msg.sender]);
+        } else if (paymentType == PAY_BALLOT) {
+            return (ballotWhitelist[msg.sender], ballotFee, ballotFeeFor[msg.sender]);
+        } else {
+            assert(false);
+        }
+    }
 
     //* EVENTS /
 
-    event PaymentMade(uint256 value, uint256 remainder, address sender, address paidTo);
+    event PaymentMade(uint128[2] valAndRemainder, address sender, address paidTo);
     event NoPayment(address sender);
     event DemocInit(string name, bytes32 democHash, address admin);
     event BallotInit(bytes32 specHash, uint64[2] openPeriod, bool[2] flags);
     event BallotAdded(bytes32 democHash, bytes32 specHash, bytes32 extraData, address votingContract);
+    event SetFees(uint128[2] _newFees);
+    event PaymentEnabled(bool _feeEnabled);
 
     //* MODIFIERS /
 
@@ -49,16 +67,30 @@ contract LittleGovIndex {
         _;
     }
 
-    modifier payReq(mapping (address => bool) whitelist, uint256 v) {
+    modifier payReq(uint8 paymentType) {
+        // get our whitelist, generalFee, and fee's for particular addresses
+        bool wl;
+        uint128 genFee;
+        uint128 feeFor;
+        (wl, genFee, feeFor) = getPaymentParams(paymentType);
+        // init v to something large in case of exploit or something
+        uint128 v = 1000 ether;
         // check whitelists - do not require payment in some cases
-        if (paymentEnabled && !whitelist[msg.sender]) {
+        if (paymentEnabled && !wl) {
+            v = feeFor;
+            if (v == 0){
+                // if there's no fee for the individual user then set it to the general fee
+                v = genFee;
+            }
             require(msg.value >= v);
 
             // handle payments
-            uint256 remainder = msg.value - v;
+            uint128 remainder = uint128(msg.value) - v;
             payTo.transfer(v); // .transfer so it throws on failure
-            msg.sender.transfer(remainder);
-            PaymentMade(v, remainder, msg.sender, payTo);
+            if (!msg.sender.send(remainder)){
+                payTo.transfer(remainder);
+            }
+            PaymentMade([v, remainder], msg.sender, payTo);
         }
 
         // do main
@@ -87,9 +119,10 @@ contract LittleGovIndex {
         payTo = newPayTo;
     }
 
-    function setEth(uint256 _newEthPerDemoc, uint256 _newEthPerIssue) onlyBy(owner) public {
-        requiredEthForDemoc = _newEthPerDemoc;
-        requiredEthForIssue = _newEthPerIssue;
+    function setEth(uint128[2] newFees) onlyBy(owner) public {
+        democFee = newFees[PAY_DEMOC];
+        ballotFee = newFees[PAY_BALLOT];
+        SetFees([democFee, ballotFee]);
     }
 
     function setOwner(address _owner) onlyBy(owner) public {
@@ -98,19 +131,25 @@ contract LittleGovIndex {
 
     function setPaymentEnabled(bool _enabled) onlyBy(owner) public {
         paymentEnabled = _enabled;
+        PaymentEnabled(_enabled);
     }
 
     function setWhitelistDemoc(address addr, bool _free) onlyBy(owner) public {
         democWhitelist[addr] = _free;
     }
 
-    function setWhitelistIssue(address addr, bool _free) onlyBy(owner) public {
-        issueWhitelist[addr] = _free;
+    function setWhitelistBallot(address addr, bool _free) onlyBy(owner) public {
+        ballotWhitelist[addr] = _free;
+    }
+
+    function setFeeFor(address addr, uint128[2] fees) onlyBy(owner) public {
+        democFeeFor[addr] = fees[PAY_DEMOC];
+        ballotFeeFor[addr] = fees[PAY_BALLOT];
     }
 
     //* DEMOCRACY FUNCTIONS - INDIVIDUAL */
 
-    function initDemoc(string democName) payReq(democWhitelist, requiredEthForDemoc) public payable returns (bytes32) {
+    function initDemoc(string democName) payReq(PAY_DEMOC) public payable returns (bytes32) {
         bytes32 democHash = keccak256(democName, msg.sender, democList.length, this);
         democList.push(democHash);
         democs[democHash].name = democName;
@@ -144,7 +183,7 @@ contract LittleGovIndex {
 
     function addBallot(bytes32 democHash, bytes32 extraData, address votingContract)
                       onlyBy(democs[democHash].admin)
-                      payReq(issueWhitelist, requiredEthForIssue)
+                      payReq(PAY_BALLOT)
                       public
                       payable
                       {
@@ -156,7 +195,7 @@ contract LittleGovIndex {
     function deployBallot(bytes32 democHash, bytes32 specHash, bytes32 extraData,
                           uint64[2] openPeriod, bool[2] flags)
                           onlyBy(democs[democHash].admin)
-                          payReq(issueWhitelist, requiredEthForIssue)
+                          payReq(PAY_BALLOT)
                           public payable {
         // the start time is max(startTime, block.timestamp) to avoid a DoS whereby a malicious electioneer could disenfranchise
         // token holders who have recently acquired tokens.

@@ -179,7 +179,7 @@ const testABallot = accounts => async (_vc = S.Nothing, account = S.Nothing) => 
         from: myAddr
     });
 
-    await assertOnlyEvent("SuccessfulPkVote", _submitBallotWithPk);
+    assertOnlyEvent("SuccessfulPkVote", _submitBallotWithPk);
 
     // const _nVotesRet = await vc.nVotesCast();
     const _ballotId = await vc.voterToBallotID(myAddr);
@@ -195,11 +195,6 @@ const testABallot = accounts => async (_vc = S.Nothing, account = S.Nothing) => 
 
     return true;
 };
-
-async function assertOnlyEvent(eventName, txResponse) {
-    const _eventName = txResponse.logs[0]["event"];
-    assert.equal(eventName, _eventName, "Event " + eventName + " should be emitted");
-}
 
 function sAssertEq(a, b, msg) {
     return assert.true(S.equals(a, b), msg);
