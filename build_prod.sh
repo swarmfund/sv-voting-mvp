@@ -14,12 +14,12 @@ function check_error {
 function do_webpack {
   # sysconfcpus workaround: https://github.com/elm-lang/elm-compiler/issues/1473
   if [ -e $HOME/bin/sysconfcpus ]; then
-    $HOME/bin/sysconfcpus -n 1 yarn run webpack "$@" 2>&1
+    $HOME/bin/sysconfcpus -n 1 webpack "$@" 2>&1
     check_error $?
     echo "sysconfcpus -n 1 build succeeeded"
   else
     echo "sysconfcpus failed, falling back to regular build"
-    yarn run webpack "$@" 2>&1
+    webpack "$@" 2>&1
     check_error $?
   fi
 }
