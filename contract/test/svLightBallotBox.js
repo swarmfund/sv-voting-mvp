@@ -1,4 +1,4 @@
-var LittleBallotBox = artifacts.require("./LittleBallotBox.sol");
+var LittleBallotBox = artifacts.require("./SVLightBallotBox.sol");
 
 require("./testUtils")();
 

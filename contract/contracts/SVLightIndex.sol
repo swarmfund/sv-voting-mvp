@@ -1,10 +1,17 @@
 pragma solidity ^0.4.19;
 
 
-import { LittleBallotBox } from "./LittleBallotBox.sol";
+//
+// The Index by which democracies and ballots are tracked (and optionally deployed).
+// Author: Max Kaye <max@secure.vote>
+// License: MIT
+//
 
 
-contract LittleGovIndex {
+import { SVLightBallotBox } from "./SVLightBallotBox.sol";
+
+
+contract SVLightIndex {
 
     address public owner;
 
@@ -102,7 +109,7 @@ contract LittleGovIndex {
 
 
     // constructor
-    function LittleGovIndex() public {
+    function SVLightIndex() public {
         owner = msg.sender;
         payTo = msg.sender;
     }
@@ -187,7 +194,7 @@ contract LittleGovIndex {
                       public
                       payable
                       {
-        LittleBallotBox bb = LittleBallotBox(votingContract);
+        SVLightBallotBox bb = SVLightBallotBox(votingContract);
         bytes32 specHash = bb.specHash();
         uint64 startTs = bb.startTime();
         _commitBallot(democHash, specHash, extraData, votingContract, startTs);
@@ -201,7 +208,7 @@ contract LittleGovIndex {
         // the start time is max(startTime, block.timestamp) to avoid a DoS whereby a malicious electioneer could disenfranchise
         // token holders who have recently acquired tokens.
         uint64 startTs = max(openPeriod[0], uint64(block.timestamp));
-        LittleBallotBox votingContract = new LittleBallotBox(specHash, [startTs, openPeriod[1]], flags);
+        SVLightBallotBox votingContract = new SVLightBallotBox(specHash, [startTs, openPeriod[1]], flags);
         votingContract.setOwner(msg.sender);
         _commitBallot(democHash, specHash, extraData, address(votingContract), startTs);
         BallotInit(specHash, [startTs, openPeriod[1]], flags);
