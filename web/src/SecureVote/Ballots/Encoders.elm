@@ -21,7 +21,7 @@ bSpecToJson b =
                         [ ( "ballotTitle", E.string d.ballotTitle )
                         , ( "shortDesc", E.string d.shortDesc )
                         , ( "longDesc", E.string d.longDesc )
-                        , ( "startTime", toNullable E.int d.startTime )
+                        , ( "startTime", E.int d.startTime )
                         , ( "endTime", E.int d.endTime )
                         , ( "erc20Addr", E.string d.erc20Addr )
                         , ( "discussionLink", toNullable E.string d.discussionLink )

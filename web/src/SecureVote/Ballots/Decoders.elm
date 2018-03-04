@@ -23,7 +23,7 @@ handleBV01Spec val =
                 |> required "ballotTitle" string
                 |> required "shortDesc" string
                 |> required "longDesc" string
-                |> required "startTime" (nullable int)
+                |> required "startTime" int
                 |> required "endTime" int
                 |> required "erc20Addr" string
                 |> required "discussionLink" (nullable string)

@@ -4,8 +4,9 @@ import Html exposing (Attribute, Html, div, h1, h2, h3, img, p, span, text)
 import Html.Attributes exposing (attribute, class, id, src, style)
 import Material.Snackbar as Snackbar
 import Maybe.Extra exposing ((?))
+import Monocle.Common exposing (dict)
+import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Components.UI.Dialog exposing (dialog)
-import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageForward), Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
@@ -35,7 +36,7 @@ rootView model =
         ]
 
 
-slideHost : Model -> ( Route, Html Msg ) -> List ( Route, BallotParams Msg -> Html Msg ) -> List (Html Msg) -> Html Msg
+slideHost : Model -> ( Route, Html Msg ) -> List ( Route, ( String, BallotSpec ) -> Html Msg ) -> List (Html Msg) -> Html Msg
 slideHost model ( rootRoute, rootSlide ) slideParis extraHtml =
     let
         currSlide =
@@ -78,20 +79,24 @@ slideHost model ( rootRoute, rootSlide ) slideParis extraHtml =
             div [ attribute "data-sv-slide" <| toString route, class "" ]
                 [ inner ]
 
-        drawSlide maybeBallot ( route, slide ) =
+        drawSlide model ( route, slide ) =
+            let
+                bHash =
+                    model.currentBallot ? "UNKNOWN"
+            in
             drawSlideWrap route <|
-                case maybeBallot of
-                    Just b ->
+                case ( model.currentBallot, (dict bHash).getOption model.specToDeets ) of
+                    ( Just bH, Just bSpec ) ->
                         let
                             slide_ =
-                                slide b
+                                slide ( bH, bSpec )
                         in
                         drawParticularSlide route slide_
 
-                    Nothing ->
+                    _ ->
                         div [] []
 
         slides =
-            [ drawSlideWrap rootRoute (drawParticularSlide rootRoute rootSlide) ] ++ List.map (drawSlide model.currentBallot) slideParis
+            [ drawSlideWrap rootRoute (drawParticularSlide rootRoute rootSlide) ] ++ List.map (drawSlide model) slideParis
     in
     div [ class "w-100", id "sv-main" ] (slides ++ extraHtml)

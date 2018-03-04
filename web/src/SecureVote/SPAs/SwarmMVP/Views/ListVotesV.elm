@@ -13,37 +13,41 @@ import SecureVote.Components.UI.Elevation exposing (elevation)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Loading exposing (loadingSpinner)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
+import SecureVote.Crypto.Hashing exposing (hashToInt)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(OpeningSlideR))
 import SecureVote.Utils.Time exposing (readableTime)
+import Tuple exposing (first, second)
 
 
 listVotesView : Model -> Html Msg
 listVotesView model =
     let
         allBallots =
-            sortBy
-                (\b ->
-                    case b of
-                        BVerFF ->
-                            99999999999999999
+            Dict.toList model.specToDeets
+                |> List.map
+                    (\( k, v ) ->
+                        case v of
+                            BVer01 i ->
+                                Just ( k, i )
 
-                        BVer01 bInner ->
-                            bInner.startTime ? 0
-                )
-            <|
-                Dict.values model.specToDeets
+                            _ ->
+                                Nothing
+                    )
+                |> filter isJust
+                |> Maybe.Extra.combine
+                |> Maybe.withDefault []
 
         currentBallots =
-            List.sortBy .endTime <| filter (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime) allBallots
+            List.sortBy (.endTime << second) <| filter (second >> (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime)) allBallots
 
         futureBallots =
-            List.sortBy .startTime <| filter (\{ startTime, endTime } -> startTime > model.now && endTime > model.now) allBallots
+            List.sortBy (.startTime << second) <| filter (second >> (\{ startTime, endTime } -> startTime > model.now && endTime > model.now)) allBallots
 
         pastBallots =
-            List.sortBy ((*) -1 << .endTime) <| filter (\{ startTime, endTime } -> model.now >= endTime) allBallots
+            List.sortBy ((*) -1 << .endTime << second) <| filter (second >> (\{ startTime, endTime } -> model.now >= endTime)) allBallots
 
         drawIfNotEmpty bs v =
             if length bs == 0 then
@@ -69,9 +73,9 @@ listVotesView model =
                 ]
                     ++ map drawBallotButton pastBallots
 
-        drawBallotButton ballot =
+        drawBallotButton ( bHash, ballot ) =
             let
-                { id, ballotTitle, startTime, endTime, description } =
+                { ballotTitle, startTime, endTime, shortDesc } =
                     ballot
 
                 cardColor =
@@ -91,9 +95,9 @@ listVotesView model =
             Card.view
                 ([ cs "ma3 ba b--light-silver"
                  , css "width" "auto"
-                 , Options.onClick <| MultiMsg [ SetBallot ballot, PageGoForward OpeningSlideR ]
+                 , Options.onClick <| MultiMsg [ SetBallot bHash, PageGoForward OpeningSlideR ]
                  ]
-                    ++ elevation id model
+                    ++ elevation (hashToInt bHash) model
                 )
                 [ Card.title [ cs "pb0 mb0 w-100" ]
                     [ div [ class "dt w-100" ]
@@ -102,7 +106,7 @@ listVotesView model =
                         ]
                     ]
                 , Card.text [ cs "tl dark-gray w-100" ]
-                    [ text description
+                    [ text shortDesc
                     ]
 
                 -- , Card.actions [ Card.border, cs "tl" ] [ styled span [ Typo.caption ] [ text voteStatus ] ]

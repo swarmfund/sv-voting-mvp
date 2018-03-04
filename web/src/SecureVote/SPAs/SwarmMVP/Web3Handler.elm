@@ -3,8 +3,8 @@ module SecureVote.SPAs.SwarmMVP.Web3Handler exposing (..)
 import Json.Decode as D exposing (Value, int)
 import Json.Decode.Pipeline exposing (decode, required)
 import RemoteData exposing (RemoteData(Failure, Success))
-import SecureVote.Eth.Types exposing (BallotInfo)
-import SecureVote.Eth.Web3 exposing (ReadResponse, democNBallots, gotBallotInfo)
+import SecureVote.Eth.Types exposing (BallotInfo, Erc20Abrv)
+import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 
 
@@ -23,72 +23,8 @@ handleResponse msg res =
 decodeRead : ReadResponse -> Msg
 decodeRead { success, errMsg, response, method } =
     case method of
-        "getBallotOptionsLegacy" ->
-            if success then
-                decodeBallotOptsLegacy response
-            else
-                MultiMsg [ LogErr errMsg, FromWeb3 <| GetBallotOptsLegacy (Failure errMsg) ]
-
-        "getBallotOptions" ->
-            if success then
-                decodeBallotOpts response
-            else
-                MultiMsg [ LogErr errMsg, FromWeb3 <| GetBallotOpts (Failure errMsg) ]
-
-        "ballotPeriod" ->
-            if success then
-                decodeBallotPeriod response
-            else
-                MultiMsg [ LogErr errMsg, FromWeb3 <| GetBallotPeriod (Failure errMsg) ]
-
         _ ->
             LogErr "Unknown method returned from web3"
-
-
-decodeBallotPeriod : Value -> Msg
-decodeBallotPeriod val =
-    let
-        decoder =
-            decode (\s e -> { startTime = s, endTime = e })
-                |> required "startTime" int
-                |> required "endTime" int
-    in
-    case D.decodeValue decoder val of
-        Ok bPeriod ->
-            FromWeb3 <| GetBallotPeriod <| Success bPeriod
-
-        Err msg ->
-            FromWeb3 <| GetBallotPeriod <| Failure msg
-
-
-decodeBallotOptsLegacy : Value -> Msg
-decodeBallotOptsLegacy val =
-    let
-        llDr =
-            D.list (D.list D.int)
-    in
-    case D.decodeValue llDr val of
-        Ok opts ->
-            FromWeb3 <| GetBallotOptsLegacy (Success opts)
-
-        Err err ->
-            MultiMsg [ LogErr err, FromWeb3 <| GetBallotOptsLegacy (Failure err) ]
-
-
-decodeBallotOpts : Value -> Msg
-decodeBallotOpts val =
-    let
-        llDr =
-            decode (\isGood hashes -> { isGood = isGood, hashes = hashes })
-                |> required "isGood" D.bool
-                |> required "hashes" (D.list D.string)
-    in
-    case D.decodeValue llDr val of
-        Ok opts ->
-            FromWeb3 <| GetBallotOpts (Success opts)
-
-        Err err ->
-            MultiMsg [ LogErr err, FromWeb3 <| GetBallotOpts (Failure err) ]
 
 
 readOptsErr : String -> Msg
@@ -127,6 +63,26 @@ gotBallotInfoSub =
                         |> required "specHash" D.string
                         |> required "extraData" D.string
                         |> required "votingContract" D.string
+                        |> required "startTs" D.int
             in
             handleResponse GotBallotInfo <| D.decodeValue decoder val
+        )
+
+
+gotErc20AbrvHandler : Sub Msg
+gotErc20AbrvHandler =
+    let
+        decoder =
+            decode Erc20Abrv
+                |> required "erc20Addr" D.string
+                |> required "addr" D.string
+    in
+    gotErc20Abrv
+        (\v ->
+            case D.decodeValue decoder v of
+                Ok o ->
+                    FromWeb3 <| GotErc20Abrv o
+
+                Err e ->
+                    LogErr e
         )

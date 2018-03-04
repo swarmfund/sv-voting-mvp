@@ -5,10 +5,11 @@ import Html.Attributes exposing (class, style)
 import Material.Dialog as Dialog
 import Material.Icon as MIcon
 import Material.Options as Options exposing (cs, css)
+import Maybe.Extra exposing ((?))
 import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(Mdl))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(..))
 import SecureVote.SPAs.SwarmMVP.Views.DialogV exposing (..)
@@ -17,8 +18,11 @@ import SecureVote.SPAs.SwarmMVP.Views.DialogV exposing (..)
 dialog : Model -> Html Msg
 dialog model =
     let
+        bHash =
+            model.currentBallot ? "NO CURRENT BALLOT"
+
         innerHtml =
-            case ( model.dialogHtml.route, model.currentBallot ) of
+            case ( model.dialogHtml.route, (mBSpec bHash).getOption model ) of
                 ( SettingsDialog, _ ) ->
                     settingsDialogV model
 
@@ -29,16 +33,16 @@ dialog model =
                     infoDialogV model
 
                 ( GethDialog, Just b ) ->
-                    gethDialogV model b
+                    gethDialogV model ( bHash, b )
 
                 ( VerifyDialog, Just b ) ->
-                    verifyDialogV model b
+                    verifyDialogV model ( bHash, b )
 
                 ( FullAuditDialog, Just b ) ->
-                    fullAuditDialogV model b
+                    fullAuditDialogV model ( bHash, b )
 
                 ( MEWDialog, Just b ) ->
-                    mewDialog model b
+                    mewDialog model ( bHash, b )
 
                 ( NotFoundDialog, _ ) ->
                     h1 [ class "red" ] [ text "Not Found" ]

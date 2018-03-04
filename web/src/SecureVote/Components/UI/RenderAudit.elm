@@ -5,10 +5,12 @@ import Dict
 import Html exposing (Html, div, li, span, table, td, text, th, thead, tr, ul)
 import Html.Attributes exposing (class)
 import Maybe.Extra exposing ((?))
+import SecureVote.Ballots.Lenses exposing (..)
+import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult)
 import SecureVote.Eth.Utils exposing (isLegacyAddress)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import Tuple exposing (second)
 
@@ -23,8 +25,8 @@ isAuditSuccessMsg msg =
             False
 
 
-renderResults : Model -> BallotParams Msg -> BallotResult -> Html msg
-renderResults model currBallot { nVotes, totals } =
+renderResults : Model -> ( String, BallotSpec ) -> BallotResult -> Html msg
+renderResults model ( bHash, bSpec ) { nVotes, totals } =
     let
         sortedTotals =
             List.reverse <| List.sortBy (D.toFloat << second) totals
@@ -39,17 +41,17 @@ renderResults model currBallot { nVotes, totals } =
         procHS ( t, score ) =
             ( text t, span [ sCls score ] [ text <| D.toString score ] )
 
-        convHash h =
-            if isLegacyAddress currBallot.contractAddr then
-                h
-                {- We get the titles given to us with the legacy address -}
-            else
-                Dict.get h model.optHashToTitle ? ""
-
+        --optTitles =
+        --    case bVoteOpts.get bSpec of
+        --        OptsSimple RangeVotingPlusMinus3 opts ->
+        --            List.map .optionTitle opts
+        --
+        --        OptsBinary -> ["Resolution: "]
+        --
+        --        OptsNothing -> ["Error: Options Not Found!"]
+        --
         titledTotals =
-            List.map procHS <|
-                List.filter (\( t, s ) -> t /= "") <|
-                    List.map (\( h, s ) -> ( convHash h, s )) sortedTotals
+            List.map procHS sortedTotals
 
         commonCs =
             class "pa3"
@@ -69,7 +71,7 @@ renderResults model currBallot { nVotes, totals } =
             ++ List.map (tr [ trCs ] << procTS) titledTotals
 
 
-renderAudit : Model -> BallotParams Msg -> Html msg
+renderAudit : Model -> ( String, BallotSpec ) -> Html msg
 renderAudit model currBallot =
     case List.head <| List.filter isAuditSuccessMsg model.auditMsgs of
         Just (AuditSuccess res) ->
@@ -79,7 +81,7 @@ renderAudit model currBallot =
             div [ class "center" ] <| renderAuditLog True model currBallot
 
 
-renderAuditLog : Bool -> Model -> BallotParams Msg -> List (Html msg)
+renderAuditLog : Bool -> Model -> ( String, BallotSpec ) -> List (Html msg)
 renderAuditLog truncate model currBallot =
     List.map (renderAuditMsg model currBallot) <|
         if truncate then
@@ -88,7 +90,7 @@ renderAuditLog truncate model currBallot =
             model.auditMsgs
 
 
-renderAuditMsg : Model -> BallotParams Msg -> AuditDoc -> Html msg
+renderAuditMsg : Model -> ( String, BallotSpec ) -> AuditDoc -> Html msg
 renderAuditMsg model currBallot auditMsg =
     let
         wrapper attrs msg =

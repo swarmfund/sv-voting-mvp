@@ -4,26 +4,27 @@ import Html exposing (Html, a, div, em, p, span, strong, text)
 import Html.Attributes exposing (class, href, style, target)
 import Material.Options as Options exposing (cs, css)
 import Material.Typography exposing (body1, display1, display2, display3, display4, title)
+import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
+import SecureVote.Ballots.Lenses exposing (..)
+import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.RenderAudit exposing (isAuditSuccessMsg, renderAudit)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(FullAuditDialog), Route(..))
+import SecureVote.Utils.Int exposing (maxInt)
 
 
-openingSlide : Model -> BallotParams Msg -> Html Msg
-openingSlide model currBallot =
+openingSlide : Model -> ( String, BallotSpec ) -> Html Msg
+openingSlide model ( bHash, bSpec ) =
     let
         ballotOver =
-            currBallot.endTime < model.now
-
-        b =
-            currBallot
+            (bEndTime.getOption bSpec ? maxInt) < model.now
 
         getDomain l =
             String.split "/" l
@@ -32,7 +33,7 @@ openingSlide model currBallot =
                 |> Maybe.withDefault l
 
         discussionLink =
-            case b.discussionLink of
+            case bDiscLink.getOption bSpec of
                 Just l ->
                     [ [ text <| "A discussion for this topic has been started at " ++ getDomain l ]
                     , [ btn 3948573984 model [ PriBtn, Link l ] [ text "Discuss This Ballot" ] ]
@@ -42,7 +43,7 @@ openingSlide model currBallot =
                     []
 
         introText =
-            [ [ text <| "Ballot description: " ++ b.openingDesc ]
+            [ [ text <| "Ballot description: " ++ bShortDesc.getOption bSpec ? "NO DESCRIPTION" ]
             ]
                 ++ discussionLink
                 ++ [ [ subhead "Voting" ]
@@ -58,7 +59,7 @@ openingSlide model currBallot =
 
         resultsParas =
             div [ class "mb3" ]
-                [ div [ class "mb3" ] [ renderAudit model currBallot ]
+                [ div [ class "mb3" ] [ renderAudit model ( bHash, bSpec ) ]
                 , btn 893479357 model [ PriBtn, Attr (class "ph2"), Click (SetDialog "Voting Audit Log" FullAuditDialog), OpenDialog ] [ text "Full Voting Audit Log" ]
                 ]
 
@@ -83,11 +84,11 @@ openingSlide model currBallot =
                 else
                     "Counting Votes..."
             else
-                "This vote is open to all " ++ currBallot.erc20Abrv ++ " token holders."
+                "This vote is open to all " ++ (mErc20Abrv bHash).get model ++ " token holders."
     in
     fullPageSlide 9483579329
         model
-        currBallot.ballotTitle
+        (bTitle.getOption bSpec ? "NO BALLOT TITLE")
         [ Options.styled div [ cs "black pa2 mv3 f4" ] [ text subtitleText ]
         , div
             [ style [ ( "max-width", "700px" ) ], class "center" ]

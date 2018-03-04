@@ -1,8 +1,12 @@
 port module SecureVote.Crypto.Hashing exposing (..)
 
+import Bitwise
+import Hex
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Result.Extra exposing (unpack)
+import SecureVote.Utils.String exposing (chunk)
+import String.Extra
 
 
 -- Types
@@ -122,10 +126,6 @@ type alias HashModel =
     String
 
 
-
--- { errHandler : String -> ( m, c ) } ->
-
-
 hashUpdate : HashMsg -> HashModel -> ( HashModel, Cmd HashMsg )
 hashUpdate msg model =
     case msg of
@@ -139,5 +139,16 @@ hashUpdate msg model =
             ( model, Cmd.none )
 
 
+hashToInt : String -> Int
+hashToInt h =
+    let
+        hNoP =
+            String.Extra.replace "0x" "" h
 
--- errHandler m
+        chunks =
+            chunk 8 h
+
+        ints =
+            List.map (Hex.fromString >> Result.withDefault 0) chunks
+    in
+    List.foldl Bitwise.xor 0 ints

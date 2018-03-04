@@ -9,22 +9,25 @@ import Material.Options as Options exposing (cs)
 import Material.Typography as Typo exposing (display2, title)
 import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Success))
+import SecureVote.Ballots.Lenses exposing (..)
+import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Loading exposing (loadingSpinner)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
+import SecureVote.Crypto.Hashing exposing (hashToInt)
 import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Utils exposing (processCandidateTx)
-import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate, getDelegateAddress)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate, genVoteOptId, getDelegateAddress)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(GethDialog, MEWDialog, VerifyDialog), Route(SwmSubmitR))
+import SecureVote.Utils.Lists exposing (enumerate)
 
 
-votingView : Model -> BallotParams Msg -> Html Msg
-votingView model currBallot =
+votingView : Model -> ( String, BallotSpec ) -> Html Msg
+votingView model ( bHash, bSpec ) =
     let
         tableRow ( desc, value ) =
             tr []
@@ -32,17 +35,29 @@ votingView model currBallot =
                 , td [ class "tl", style [ ( "word-wrap", "break-word" ) ] ] [ text value ]
                 ]
 
-        getResults { id, title, description } =
-            ( title
-            , toString <| Dict.get id model.ballotRange ? 0
+        getResults ( i, { optionTitle, optionDesc } ) =
+            ( optionTitle
+            , toString <| Dict.get (genVoteOptId bHash i) model.ballotRange ? 0
             )
 
+        renderBinaryVote =
+            "NOT IMPLEMENTED"
+
+        drawOptSummary opts =
+            case opts of
+                OptsSimple simpleVer simpleOpts ->
+                    List.map tableRow <| List.map getResults (enumerate simpleOpts)
+
+                OptsBinary ->
+                    [ tableRow ( "Voting", renderBinaryVote ) ]
+
+                OptsNothing ->
+                    [ tableRow ( "Error", "No Options Available" ) ]
+
         displayResults =
-            table [ class "mt2 dt--fixed w-auto-l" ]
-                (List.map tableRow
-                    (List.map getResults currBallot.voteOptions)
-                    ++ [ tableRow ( "Delegate", getDelegateAddress model ? "None" ) ]
-                )
+            table [ class "mt2 dt--fixed w-auto-l" ] <|
+                Maybe.map drawOptSummary (bVoteOpts.getOption bSpec)
+                    ? []
 
         ( startTime, endTime ) =
             case model.ballotOpen of

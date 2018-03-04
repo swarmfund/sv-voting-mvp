@@ -5,19 +5,21 @@ import Html.Attributes exposing (class)
 import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
 import Maybe.Extra exposing ((?), isNothing)
+import Monocle.Common exposing (dict)
+import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.Eth.Utils exposing (isValidEthAddress, setCandTxFrom)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getUserErc20Addr, setUserErc20Addr, userErc20AddrId)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmHowToVoteR))
 
 
-swmAddressV : Model -> BallotParams Msg -> Html Msg
-swmAddressV model b =
+swmAddressV : Model -> ( String, BallotSpec ) -> Html Msg
+swmAddressV model ( bHash, bSpec ) =
     let
         ( addrErr, addrErrMsg ) =
             validAddress model
@@ -27,12 +29,6 @@ swmAddressV model b =
                 Disabled
             else
                 BtnNop
-
-        setBallotDefaultMsgs =
-            List.map .id
-                >> List.map (\id_ -> SetBallotRange id_ 0)
-            <|
-                b.voteOptions
 
         msgs isSkip =
             MultiMsg <|
@@ -44,7 +40,6 @@ swmAddressV model b =
                     ]
                 )
                     ++ [ PageGoForward SwmHowToVoteR ]
-                    ++ setBallotDefaultMsgs
 
         devMsgs =
             MultiMsg <|
@@ -53,7 +48,6 @@ swmAddressV model b =
                 , SetCandidateTx <| setCandTxFrom "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
                 , ToWeb3 GetErc20Balance
                 ]
-                    ++ setBallotDefaultMsgs
 
         devBtn =
             if model.dev then
@@ -62,7 +56,7 @@ swmAddressV model b =
                 []
 
         erc20Abrv =
-            b.erc20Abrv
+            (mErc20Abrv bHash).get model
     in
     fullPageSlide 384938493
         model

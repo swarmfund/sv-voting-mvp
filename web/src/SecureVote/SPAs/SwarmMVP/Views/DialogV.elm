@@ -7,14 +7,17 @@ import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
 import Material.Typography as Typo exposing (menu, title)
 import Maybe.Extra exposing ((?))
+import Monocle.Common exposing (dict)
+import SecureVote.Ballots.Lenses exposing (bVoteOpts)
+import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.RenderAudit exposing (renderAuditLog)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Utils exposing (isValidTxid)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRender)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary, defaultDelegate, getBallotTxid, getDelegateAddress, getEthNodeTemp, setBallotTxid, setEthNodeTemp, toStrDropQts)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary, defaultDelegate, genVoteOptId, getBallotTxid, getDelegateAddress, getEthNodeTemp, setBallotTxid, setEthNodeTemp, toStrDropQts)
+import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(CheckTxid, SetProvider))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(ListAllVotesR))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(..))
@@ -22,6 +25,8 @@ import SecureVote.SPAs.SwarmMVP.Views.HowToVoteV exposing (combinedHowToVoteCopy
 import SecureVote.SPAs.SwarmMVP.Views.SetDelegateV exposing (delegateExplanationCopy)
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (orderedBallotBits)
 import SecureVote.Types.VBit exposing (vBitsToInt, vblToList)
+import SecureVote.Utils.Lenses exposing ((=|>))
+import SecureVote.Utils.Lists exposing (enumerate)
 
 
 subsubhead : String -> Html Msg
@@ -87,25 +92,25 @@ infoDialogV model =
                     ]
                 ]
 
+        bHash =
+            model.currentBallot ? "NO CURRENT BALLOT"
+
         delegateExplanationSection =
             div []
                 [ subhead "What Is Vote Delegation?"
-                , text <| String.concat <| delegateExplanationCopy model
+                , text <| String.concat <| delegateExplanationCopy bHash model
                 ]
 
         ballotInfo =
-            case ( model.route, model.currentBallot ) of
-                ( ListAllVotesR, _ ) ->
+            case model.route of
+                ListAllVotesR ->
                     span [] []
-
-                ( _, Just currBallot ) ->
-                    div []
-                        [ subhead "Smart Contract Information"
-                        , p [] [ text "The address of the smart contract for this ballot is: ", codeSection [ text currBallot.contractAddr ] ]
-                        ]
 
                 _ ->
-                    span [] []
+                    div []
+                        [ subhead "Smart Contract Information"
+                        , p [] [ text "The address of the smart contract for this ballot is: ", codeSection [ text <| mCurrVotingAddr.get model ] ]
+                        ]
 
         errLog =
             if List.isEmpty model.errors then
@@ -117,7 +122,7 @@ infoDialogV model =
                 ]
     in
     div [] <|
-        combinedHowToVoteCopy model
+        combinedHowToVoteCopy bHash model
             ++ [ delegateExplanationSection
                , ballotInfo
                , codeSourceSection
@@ -125,8 +130,8 @@ infoDialogV model =
             ++ errLog
 
 
-gethDialogV : Model -> BallotParams Msg -> Html Msg
-gethDialogV model currBallot =
+gethDialogV : Model -> ( String, BallotSpec ) -> Html Msg
+gethDialogV model ( bHash, bSpec ) =
     let
         txData =
             case model.candidateTx.data of
@@ -140,7 +145,7 @@ gethDialogV model currBallot =
         [ subhead "1. Open up your wallet and go to the send transaction screen"
         , p [] [ text "We're going to send a transaction to the voting smart contract with a pre-prepared data payload." ]
         , subhead "2. Enter the voting contract address"
-        , p [] [ text "The voting contract address is:", codeSection [ text currBallot.contractAddr ] ]
+        , p [] [ text "The voting contract address is:", codeSection [ text <| mCurrVotingAddr.get model ] ]
         , subhead "3. Enter transaction data"
         , p []
             [ text "Be sure you've set the 'value' you're sending to 0, and then paste in this transaction data."
@@ -158,8 +163,8 @@ gethDialogV model currBallot =
         ]
 
 
-mewDialog : Model -> BallotParams Msg -> Html Msg
-mewDialog model currBallot =
+mewDialog : Model -> ( bHash, bSpec ) -> Html Msg
+mewDialog model ( bHash, bSpec ) =
     let
         pubkey =
             case model.keypair of
@@ -173,7 +178,7 @@ mewDialog model currBallot =
         [ subhead "1. Go to MyEtherWallet > Contracts"
         , p [] [ text "You'll need to do this yourself." ]
         , subhead "2. Enter the contract address"
-        , p [] [ text "The voting contract address is:", codeSection [ text currBallot.contractAddr ] ]
+        , p [] [ text "The voting contract address is:", codeSection [ text <| mCurrVotingAddr.get model ] ]
         , subhead "3. Enter the ABI"
         , p [] [ text "Copy and paste this into the ABI section:", codeSection [ text model.miniVotingAbi ] ]
         , subhead "4. Copy in your encrypted ballot and ephemeral public key"
@@ -206,11 +211,22 @@ mewDialog model currBallot =
         ]
 
 
-verifyDialogV : Model -> BallotParams Msg -> Html Msg
-verifyDialogV model currBallot =
+verifyDialogV : Model -> ( String, BallotSpec ) -> Html Msg
+verifyDialogV model ( bHash, bSpec ) =
     let
         verificationUrl =
             "https://github.com/swarmfund/sv-voting-mvp/blob/master/BallotVerification.md"
+
+        rawVotesMapOver =
+            case bVoteOpts.getOption bSpec ? OptsNothing of
+                OptsBinary ->
+                    [ 0 ]
+
+                OptsSimple RangeVotingPlusMinus3 opts ->
+                    List.range 0 (List.length opts)
+
+                OptsNothing ->
+                    []
 
         verificationVars =
             -- we apply toString to these strings so they're wrapped in quotes
@@ -218,12 +234,12 @@ verifyDialogV model currBallot =
             , ( "myPubkey", toString <| Maybe.map .hexPk model.keypair ? "pubkey not found" )
             , ( "mySeckey", toString <| Maybe.map .hexSk model.keypair ? "seckey not found" )
             , ( "myDelegate", toString <| getDelegateAddress model ? defaultDelegate )
-            , ( "myVotesRaw", toString <| List.map (\vo -> Dict.get vo.id model.ballotRange ? -9999) currBallot.voteOptions )
-            , ( "myVotesOffset", toString <| List.map (vBitsToInt << vblToList) <| orderedBallotBits currBallot model.ballotBits ? [] )
+            , ( "myVotesRaw", toString <| List.map (\i -> Dict.get (genVoteOptId bHash i) model.ballotRange ? -9999) rawVotesMapOver )
+            , ( "myVotesOffset", toString <| List.map (vBitsToInt << vblToList) <| orderedBallotBits ( bHash, bSpec ) model.ballotBits ? [] )
             , ( "encBallot", toString <| model.encBytes ? "encrypted ballot not found" )
             , ( "submitBallotPrefix", toString "13c04769" )
             , ( "txData", toString <| model.candidateTx.data ? "tx data not found" )
-            , ( "votingContract", toString <| currBallot.contractAddr )
+            , ( "votingContract", toString <| mCurrVotingAddr.get model )
             ]
 
         renderVerVar ( name, content ) =
@@ -307,6 +323,6 @@ customDialogV content =
     div [] [ dialogHtmlRender [] content ]
 
 
-fullAuditDialogV : Model -> BallotParams Msg -> Html msg
-fullAuditDialogV model currBallot =
-    div [] <| renderAuditLog False model currBallot
+fullAuditDialogV : Model -> ( String, BallotSpec ) -> Html msg
+fullAuditDialogV model ( bHash, bSpec ) =
+    div [] <| renderAuditLog False model ( bHash, bSpec )
