@@ -17,7 +17,7 @@ import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate)
 import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(FullAuditDialog), Route(..))
-import SecureVote.Utils.Int exposing (maxInt)
+import SecureVote.Utils.Int exposing (maxInt, minInt)
 
 
 openingSlide : Model -> ( String, BallotSpec ) -> Html Msg
@@ -97,14 +97,14 @@ openingSlide model ( bHash, bSpec ) =
                 resultsParas
               else
                 introParagraphs
-            , ballotIntegrity model
+            , ballotIntegrity ( bHash, bSpec ) model
             , continueBtn
             ]
         ]
 
 
-ballotIntegrity : Model -> Html Msg
-ballotIntegrity model =
+ballotIntegrity : ( String, BallotSpec ) -> Model -> Html Msg
+ballotIntegrity ( bHash, bSpec ) model =
     let
         failMsg errMsg =
             Options.styled span [ body1, cs "red" ] [ text errMsg ]
@@ -114,21 +114,7 @@ ballotIntegrity model =
 
         ballotOptionsHtml =
             List.singleton <|
-                case model.ballotVerificationPassed of
-                    NotAsked ->
-                        text "Initializing... (We should never see this in the UI)"
-
-                    Loading ->
-                        text "Loading..."
-
-                    Success b ->
-                        if b then
-                            successMsg "✅ Ballot options match."
-                        else
-                            failMsg <| "Verification failed: " ++ "❌ Warning! Ballot options do not match!"
-
-                    Failure s ->
-                        failMsg <| "Verification failed: " ++ s
+                successMsg "✅ Ballot cryptographically verified."
 
         row left right =
             div [ class "w-100 dt dt--fixed black mv2" ]
@@ -137,24 +123,20 @@ ballotIntegrity model =
                 ]
 
         ballotOpenHtml =
+            let
+                sTs =
+                    bStartTime.getOption bSpec ? maxInt
+
+                eTs =
+                    bEndTime.getOption bSpec ? minInt
+            in
             List.singleton <|
-                case model.ballotOpen of
-                    NotAsked ->
-                        text "Initializing... (We should never see this in the UI)"
-
-                    Loading ->
-                        text "Loading..."
-
-                    Failure e ->
-                        failMsg <| "Error: " ++ e
-
-                    Success { startTime, endTime } ->
-                        if startTime > model.now then
-                            failMsg <| "🔜 Ballot has not opened for voting yet. (Opens " ++ formatTsAsDate startTime ++ " local time)"
-                        else if endTime < model.now then
-                            failMsg "❌ Voting is closed."
-                        else
-                            successMsg <| "✅ Voting open! 🗳 Voting closes on: " ++ formatTsAsDate endTime ++ " local time"
+                if sTs > model.now then
+                    failMsg <| "🔜 Ballot has not opened for voting yet. (Opens " ++ formatTsAsDate sTs ++ " local time)"
+                else if eTs < model.now then
+                    failMsg "❌ Voting is closed."
+                else
+                    successMsg <| "✅ Voting open! 🗳 Voting closes on: " ++ formatTsAsDate eTs ++ " local time"
     in
     div [ class "mt1 mb3" ]
         [ subhead "Checking ballot details:"

@@ -11,8 +11,8 @@ https://icons8.com/cssload/en/terms_of_use
     -moz-box-sizing: border-box;
 }
 .cssload-container {
-    margin: 38px auto 0 auto;
-    max-width: 1048px;
+    /*margin: 38px auto 0 auto;*/
+    /*max-width: 1048px;*/
 }
 
 .cssload-container ul li{
@@ -37,12 +37,13 @@ https://icons8.com/cssload/en/terms_of_use
     -moz-flex-wrap: wrap;
     justify-content: space-around;
     align-items: center;
+    padding-left: 0;
 }
 .cssload-flex-container li {
     padding: 19px;
     height: 188px;
     width: 188px;
-    margin: 56px 38px;
+    /*margin: 56px 38px;*/
     position: relative;
     text-align: center;
 }

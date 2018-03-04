@@ -75,7 +75,8 @@ gotErc20AbrvHandler =
         decoder =
             decode Erc20Abrv
                 |> required "erc20Addr" D.string
-                |> required "addr" D.string
+                |> required "abrv" D.string
+                |> required "bHash" D.string
     in
     gotErc20Abrv
         (\v ->

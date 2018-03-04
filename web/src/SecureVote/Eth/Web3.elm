@@ -323,7 +323,7 @@ port democNBallots : (Value -> msg) -> Sub msg
 port gotBallotInfo : (Value -> msg) -> Sub msg
 
 
-port getErc20Abrv : String -> Cmd msg
+port getErc20Abrv : { bHash : String, erc20Addr : String } -> Cmd msg
 
 
 port gotErc20Abrv : (Value -> msg) -> Sub msg

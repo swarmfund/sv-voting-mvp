@@ -15,7 +15,6 @@ import SecureVote.SPAs.SwarmMVP.Views.CastVoteV exposing (castVoteView)
 import SecureVote.SPAs.SwarmMVP.Views.HowToVoteV exposing (howToVoteView)
 import SecureVote.SPAs.SwarmMVP.Views.ListVotesV exposing (listVotesView)
 import SecureVote.SPAs.SwarmMVP.Views.SetAddressV exposing (swmAddressV)
-import SecureVote.SPAs.SwarmMVP.Views.SetDelegateV exposing (delegateView)
 import SecureVote.SPAs.SwarmMVP.Views.VotingV exposing (votingView)
 
 
@@ -26,7 +25,6 @@ rootView model =
         [ ( SwmAddressR, swmAddressV model )
         , ( SwmHowToVoteR, howToVoteView model )
         , ( SwmVoteR, castVoteView model )
-        , ( SwmDelegateR, delegateView model )
         , ( SwmSubmitR, votingView model )
         , ( OpeningSlideR, openingSlide model )
         ]

@@ -22,7 +22,6 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(CheckTxid, SetP
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(ListAllVotesR))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(..))
 import SecureVote.SPAs.SwarmMVP.Views.HowToVoteV exposing (combinedHowToVoteCopy)
-import SecureVote.SPAs.SwarmMVP.Views.SetDelegateV exposing (delegateExplanationCopy)
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (orderedBallotBits)
 import SecureVote.Types.VBit exposing (vBitsToInt, vblToList)
 import SecureVote.Utils.Lenses exposing ((=|>))
@@ -68,6 +67,18 @@ settingsDialogV model =
             ]
         , div [] [ text "Note: Ethereum nodes require ", em [] [ text "full" ], text " historical access for auditing past ballots. Auditing results will fail if they're not syncing in archive mode." ]
         ]
+
+
+delegateExplanationCopy : String -> Model -> List String
+delegateExplanationCopy bHash model =
+    let
+        token =
+            (mErc20Abrv bHash).get model
+    in
+    [ "You may optionally select a delegate, though this isn't required. If you would like to, please enter their " ++ token ++ " token address below. "
+    , "If your delegate casts a vote, your votes will be replaced with the votes that your delegate chooses. "
+    , "If your delegate does not cast a vote, your vote will be cast with the options you have selected. "
+    ]
 
 
 infoDialogV : Model -> Html Msg
@@ -235,7 +246,7 @@ verifyDialogV model ( bHash, bSpec ) =
             , ( "mySeckey", toString <| Maybe.map .hexSk model.keypair ? "seckey not found" )
             , ( "myDelegate", toString <| getDelegateAddress model ? defaultDelegate )
             , ( "myVotesRaw", toString <| List.map (\i -> Dict.get (genVoteOptId bHash i) model.ballotRange ? -9999) rawVotesMapOver )
-            , ( "myVotesOffset", toString <| List.map (vBitsToInt << vblToList) <| orderedBallotBits ( bHash, bSpec ) model.ballotBits ? [] )
+            , ( "myVotesOffset", toString <| List.map (vBitsToInt << vblToList) <| Result.withDefault [] <| orderedBallotBits ( bHash, bSpec ) model.ballotBits )
             , ( "encBallot", toString <| model.encBytes ? "encrypted ballot not found" )
             , ( "submitBallotPrefix", toString "13c04769" )
             , ( "txData", toString <| model.candidateTx.data ? "tx data not found" )

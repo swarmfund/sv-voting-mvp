@@ -169,7 +169,7 @@ const genConfig = () => {
                         ],
                         use: [
                             "elm-hot-loader",
-                            "elm-webpack-loader?verbose=true&warn=false&maxInstances=1" //&debug=true
+                            "elm-webpack-loader?verbose=true&warn=false&maxInstances=1&debug=true" //&debug=true
                         ]
                     }
                 ]

@@ -8,6 +8,7 @@ import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs, css)
 import Maybe.Extra exposing ((?), isJust)
+import Monocle.Common exposing (dict)
 import SecureVote.Ballots.Types exposing (BallotSpec(..))
 import SecureVote.Components.UI.Elevation exposing (elevation)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
@@ -116,7 +117,7 @@ listVotesView model =
             Dict.get model.currDemoc model.democCounts
 
         foundNBallots =
-            (Dict.get model.currDemoc model.democIssues |> Maybe.map Dict.size) ? 0
+            ((dict model.currDemoc).getOption model.democIToSpec |> Maybe.map Dict.size) ? 0
 
         gotNBallots =
             Dict.size model.specToDeets
@@ -158,8 +159,12 @@ loadingBallots =
 
 
 ballotsProgress n f g =
+    let
+        attrs =
+            [ class "f4 mv2" ]
+    in
     div [ class "v-mid center" ]
-        [ div [ class "f4" ] [ text <| "Loaded info for " ++ toString f ++ " of " ++ toString n ++ " ballots." ]
-        , div [ class "f4" ] [ text <| "Loaded data for " ++ toString g ++ " of " ++ toString n ++ " ballots." ]
+        [ div attrs [ text <| "Loaded info for " ++ toString f ++ " of " ++ toString n ++ " ballots." ]
+        , div attrs [ text <| "Loaded data for " ++ toString g ++ " of " ++ toString n ++ " ballots." ]
         , loadingSpinner ""
         ]

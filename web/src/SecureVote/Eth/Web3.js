@@ -82,8 +82,8 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
             S.map(i => {
                 index.getNthBallot(democHash, i, handleErrOr((info) => {
                     console.log("getNthBallot: ", info);
-                    const [specHash, extraData, votingContract] = info;
-                    const sendBack = {democHash, i, specHash, extraData, votingContract};
+                    const [specHash, extraData, votingContract, startTs] = info;
+                    const sendBack = {democHash, i, specHash, extraData, votingContract, startTs: startTs.toNumber()};
                     console.log("nthBallot: ", i, sendBack);
                     app.ports.gotBallotInfo.send(sendBack);
                 }));
@@ -93,13 +93,15 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
 
     // get an ERC20 contract's abreviation
-    app.ports.getErc20Abrv.subscribe(wrapIncoming(addr => {
-        const erc20 = web3js.eth.contractAddress(ERC20ABI).at(addr);
-        const sendAbrv = abrv => app.ports.gotErc20Abrv.send({erc20Addr: addr, abrv});
+    app.ports.getErc20Abrv.subscribe(wrapIncoming(({bHash, erc20Addr}) => {
+        const erc20 = web3js.eth.contract(ERC20ABI).at(erc20Addr);
+        const sendAbrv = abrv => app.ports.gotErc20Abrv.send({bHash, erc20Addr, abrv});
 
         try {
             mkPromise(erc20.symbol)()
-                .then(sendAbrv)
+                .then(abrv => {
+                    sendAbrv(abrv);
+                })
                 .catch(e => {throw e});
         } catch (e) {
             sendAbrv("ERC20");
