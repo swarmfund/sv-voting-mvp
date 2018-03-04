@@ -54,6 +54,13 @@ bShortDesc =
     Optional g s
 
 
+bLongDesc : Optional BallotSpec String
+bLongDesc =
+    Optional
+        (mapBSpecWDefault (Just << .longDesc) Nothing)
+        (\ld b -> mapBSpecWDefault (\b_ -> BVer01 { b_ | longDesc = ld }) b b)
+
+
 bErc20Addr : Optional BallotSpec String
 bErc20Addr =
     let
