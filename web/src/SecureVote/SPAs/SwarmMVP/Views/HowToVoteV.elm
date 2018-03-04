@@ -6,17 +6,20 @@ import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs)
 import Material.Typography as Typo exposing (display2)
+import Maybe.Extra exposing ((?))
+import SecureVote.Ballots.Lenses exposing (bShortDesc)
+import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
 
 
-combinedHowToVoteCopy : Model -> List (Html Msg)
-combinedHowToVoteCopy model =
+combinedHowToVoteCopy : String -> Model -> List (Html Msg)
+combinedHowToVoteCopy bHash model =
     let
         rangeVotingCopy =
             [ "Each vote consists of a choosing a score within the range -3 to +3."
@@ -30,14 +33,14 @@ combinedHowToVoteCopy model =
             ]
 
         ballotExplanationSection =
-            case ( model.route, model.currentBallot ) of
+            case ( model.route, (mBSpec bHash).getOption model ) of
                 ( ListAllVotesR, _ ) ->
                     div [] []
 
                 ( _, Just b ) ->
                     div []
                         [ subhead "What Is This Ballot?"
-                        , p [] [ text b.description ]
+                        , p [] [ text <| bShortDesc.getOption b ? "Error: Ballot Not Found" ]
                         ]
 
                 _ ->
@@ -61,11 +64,11 @@ combinedHowToVoteCopy model =
     ]
 
 
-howToVoteView : Model -> BallotParams Msg -> Html Msg
-howToVoteView model currBallot =
+howToVoteView : Model -> ( String, BallotSpec ) -> Html Msg
+howToVoteView model ( bHash, currBallot ) =
     fullPageSlide 3453456456
         model
         "How To Vote"
-        [ div [ class "mw7 center tl" ] <| combinedHowToVoteCopy model
+        [ div [ class "mw7 center tl" ] <| combinedHowToVoteCopy bHash model
         , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmVoteR) ] [ text "Continue" ]
         ]

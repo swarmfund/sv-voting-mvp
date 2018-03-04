@@ -7,7 +7,7 @@ import RemoteData exposing (RemoteData)
 import SecureVote.Ballots.SpecSource exposing (FailSpecFromIpfs, SpecFromIpfs)
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
-import SecureVote.Eth.Types exposing (AuditDoc, BallotInfo, InitRecord)
+import SecureVote.Eth.Types exposing (..)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute, Route)
 import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
@@ -30,7 +30,7 @@ type Msg
     | SetBallotRange Int Float
     | ModBallotRange Int (Maybe Int -> Maybe Int)
     | ConstructBallotPlaintext
-    | SetBallot (BallotParams Msg)
+    | SetBallot String
     | VoteWMetaMask
       -- ** Eth related msgs
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)
@@ -43,7 +43,6 @@ type Msg
     | FromCurve25519 FromCurve25519Msg
     | GotFullSpecFromIpfs (Result String SpecFromIpfs)
     | GotFailSpecFromIpfs (Result String FailSpecFromIpfs)
-      -- | ToCurve25519 ToCurve25519Msg
       -- ** Auditor msgs
     | FromAuditor AuditDoc
       -- ** Errors
@@ -65,14 +64,12 @@ type FromWeb3Msg
     | GotDataParam String
     | GotEncPubkey String
     | Web3Init InitRecord
-    | GetBallotOptsLegacy (RemoteData String (List (List Int)))
-    | GetBallotOpts (RemoteData String { isGood : Bool, hashes : List String })
     | GotTxidStatus (Result String GotTxidResp)
-    | GetBallotPeriod (RemoteData String { startTime : Int, endTime : Int })
     | GotMetaMask
     | GotMetaMaskTxid String
     | GotBallotCount (RemoteData String { democHash : String, n : Int })
     | GotBallotInfo (RemoteData String BallotInfo)
+    | GotErc20Abrv Erc20Abrv
 
 
 type FromCurve25519Msg

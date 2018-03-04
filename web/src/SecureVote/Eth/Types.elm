@@ -24,8 +24,12 @@ type alias BallotResult =
 
 
 type alias BallotInfo =
-    { democHash : String, i : Int, specHash : String, extraData : String, votingContract : String }
+    { democHash : String, i : Int, specHash : String, extraData : String, votingContract : String, startTime : Int }
 
 
 type alias WriteViaMMDoc =
     { abi : String, addr : String, method : String, args : Value }
+
+
+type alias Erc20Abrv =
+    { erc20Addr : String, abrv : String }

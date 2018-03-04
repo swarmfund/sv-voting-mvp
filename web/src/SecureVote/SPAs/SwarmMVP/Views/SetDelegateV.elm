@@ -8,27 +8,24 @@ import Material.Options as Options exposing (cs, css)
 import Material.Textfield as Textf
 import Material.Typography exposing (display2)
 import Maybe.Extra exposing ((?), isNothing)
+import Monocle.Common exposing ((=>), dict, maybe)
+import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.Eth.Utils exposing (isValidEthAddress)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (defaultDelegate, dlgtAddrField, getBoolField, getDelegateAddress, getField, setBoolField)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToCurve25519Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmSubmitR))
 
 
-delegateExplanationCopy : Model -> List String
-delegateExplanationCopy model =
+delegateExplanationCopy : String -> Model -> List String
+delegateExplanationCopy bHash model =
     let
         token =
-            case model.currentBallot of
-                Just b ->
-                    b.erc20Abrv
-
-                _ ->
-                    "ERC20"
+            (mErc20Abrv bHash).get model
     in
     [ "You may optionally select a delegate, though this isn't required. If you would like to, please enter their " ++ token ++ " token address below. "
     , "If your delegate casts a vote, your votes will be replaced with the votes that your delegate chooses. "
@@ -36,8 +33,8 @@ delegateExplanationCopy model =
     ]
 
 
-delegateView : Model -> BallotParams Msg -> Html Msg
-delegateView model currBallot =
+delegateView : Model -> ( String, BallotSpec ) -> Html Msg
+delegateView model ( bHash, currBallot ) =
     let
         btnDisabled =
             if addrErr then
@@ -49,10 +46,10 @@ delegateView model currBallot =
             validAddress (getField dlgtAddressK model)
 
         dlgtSetting =
-            "setting.delegate." ++ toString currBallot.id
+            "setting.delegate." ++ bHash
 
         dlgtAddressK =
-            dlgtAddrField currBallot
+            dlgtAddrField bHash
 
         clickMsgs_ extra =
             MultiMsg <|
@@ -96,7 +93,7 @@ delegateView model currBallot =
         model
         "Choose a Delegate"
     <|
-        [ p [ class "mw7 center" ] [ text <| String.concat <| delegateExplanationCopy model ]
+        [ p [ class "mw7 center" ] [ text <| String.concat <| delegateExplanationCopy bHash model ]
         ]
             ++ dlgtForm
 

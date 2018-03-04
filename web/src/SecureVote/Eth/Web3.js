@@ -92,6 +92,22 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     }));
 
 
+    // get an ERC20 contract's abreviation
+    app.ports.getErc20Abrv.subscribe(wrapIncoming(addr => {
+        const erc20 = web3js.eth.contractAddress(ERC20ABI).at(addr);
+        const sendAbrv = abrv => app.ports.gotErc20Abrv.send({erc20Addr: addr, abrv});
+
+        try {
+            mkPromise(erc20.symbol)()
+                .then(sendAbrv)
+                .catch(e => {throw e});
+        } catch (e) {
+            sendAbrv("ERC20");
+            implNotifyErr("Unable to get ERC20 Abbreviation for " + addr + ". Error returned: " + JSON.stringify(e).toString());
+        }
+    }));
+
+
     app.ports.getInit.subscribe(wrapIncoming(({addr, oTitles}) => {
         const contractAddr = addr;
 

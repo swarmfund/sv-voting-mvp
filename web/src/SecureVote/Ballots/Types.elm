@@ -31,7 +31,7 @@ type alias BSpec01Impl =
     { ballotTitle : String
     , shortDesc : String
     , longDesc : String
-    , startTime : Maybe Int
+    , startTime : Int
     , endTime : Int
     , erc20Addr : String
     , discussionLink : Maybe String
@@ -46,7 +46,7 @@ emptyBSpec01 =
         { ballotTitle = ""
         , shortDesc = ""
         , longDesc = ""
-        , startTime = Nothing
+        , startTime = 0
         , endTime = 2000000000
         , erc20Addr = ""
         , discussionLink = Nothing
@@ -60,6 +60,19 @@ type OptsOuter
     = OptsSimple SimpleVer (List SimpleOption)
     | OptsBinary
     | OptsNothing -- not valid, just here as placeholder
+
+
+optsNOptions : OptsOuter -> Int
+optsNOptions os =
+    case os of
+        OptsSimple RangeVotingPlusMinus3 xs ->
+            List.length xs
+
+        OptsBinary ->
+            1
+
+        OptsNothing ->
+            0
 
 
 type OptsChoice

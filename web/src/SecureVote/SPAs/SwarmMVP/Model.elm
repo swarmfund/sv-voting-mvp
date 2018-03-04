@@ -1,9 +1,14 @@
 module SecureVote.SPAs.SwarmMVP.Model exposing (..)
 
+import Decimal exposing (Decimal)
 import Dict exposing (Dict)
 import List exposing (foldl, map)
 import Material
 import Material.Snackbar
+import Maybe.Extra exposing ((?))
+import Monocle.Common exposing ((=>), dict, maybe)
+import Monocle.Lens exposing (Lens)
+import Monocle.Optional exposing (Optional)
 import RemoteData exposing (RemoteData(..))
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
@@ -15,6 +20,7 @@ import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(NotFoundDialog), Route(ListAllVotesR, NotFoundR, SwmAddressR))
 import SecureVote.SPAs.SwarmMVP.Types exposing (Flags, TxidCheckStatus(TxidNotMade))
+import SecureVote.Utils.Lenses exposing ((=|>))
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits)
 
 
@@ -29,7 +35,7 @@ type alias Model =
     , ballotRange : Dict Int Int
     , ballotBits : Dict Int (Result String RangeBallot3Bits)
     , ballotAllDone : Bool
-    , currentBallot : Maybe (BallotParams Msg)
+    , currentBallot : Maybe String
     , allBallots : Dict Int (BallotParams Msg)
     , route : Route
     , history : List Route
@@ -55,16 +61,59 @@ type alias Model =
     , metamaskTxid : Maybe String
     , democHashes : Dict Int String --^ Map (index order => democHash)
     , democCounts : Dict String Int --^ map (democHashes => number of ballots in it)
-    , democIssues : Dict String (Dict Int BallotPrelimInfo) --^ map (democHash => (ballotId => prelimInfo))
+    , democIToSpec : Dict String (Dict Int String) --^ map (democHash => (ballotId => prelimInfo))
+    , democIssues : Dict String (Dict String BallotPrelimInfo) --^ map (democHash => (ballotId => prelimInfo))
     , specToDeets : Dict String BallotSpec --^ map (specHash => RemoteData BallotSpec) - can error gracefully
     , failedSpec : Dict String String
     , fatalSpecFail : List String
     , currDemoc : String
+    , erc20Abrvs : Dict String String --^ map (erc20Addr => erc20Abrv)
+    , erc20Balance : Maybe Decimal
     }
 
 
+mErc20Abrv : String -> Lens Model String
+mErc20Abrv bHash =
+    Lens
+        (.erc20Abrvs >> (dict bHash).getOption >> Maybe.withDefault "ERC20")
+        (\abrv m -> { m | erc20Abrvs = (dict bHash).set abrv m.erc20Abrvs })
+
+
+mBSpec : String -> Optional Model BallotSpec
+mBSpec bHash =
+    Optional
+        (.specToDeets >> (dict bHash).getOption)
+        (\bSpec m -> { m | specToDeets = (dict bHash).set bSpec m.specToDeets })
+
+
+mCurrVotingAddr : Lens Model String
+mCurrVotingAddr =
+    Lens (\m -> (m.currentBallot |> Maybe.andThen (\h -> (dict m.currDemoc => dict h =|> bpiVotingAddr).getOption m.democIssues)) ? "NO ADDRESS FOR CURRENT VOTE")
+        (\a m -> (m.currentBallot |> Maybe.map (\h -> { m | democIssues = (dict m.currDemoc => dict h =|> bpiVotingAddr).set a m.democIssues })) ? m)
+
+
+mBHashBSpecPair : Model -> Maybe ( String, BallotSpec )
+mBHashBSpecPair model =
+    case model.currentBallot of
+        Just bHash ->
+            Maybe.map (\bSpec -> ( bHash, bSpec )) (Dict.get bHash model.specToDeets)
+
+        _ ->
+            Nothing
+
+
 type alias BallotPrelimInfo =
-    { specHash : String, votingContract : String, extraData : String }
+    { specHash : String, votingContract : String, extraData : String, startTime : Int }
+
+
+bpiStartTime : Lens BallotPrelimInfo Int
+bpiStartTime =
+    Lens .startTime (\i b -> { b | startTime = i })
+
+
+bpiVotingAddr : Lens BallotPrelimInfo String
+bpiVotingAddr =
+    Lens .votingContract (\s b -> { b | votingContract = s })
 
 
 initModel : Flags -> Model
@@ -112,11 +161,14 @@ initModel { dev, mainTitle, democHash } =
     , metamaskTxid = Nothing
     , democHashes = Dict.empty
     , democCounts = Dict.empty
+    , democIToSpec = Dict.empty
     , democIssues = Dict.empty
     , specToDeets = Dict.empty
     , failedSpec = Dict.empty
     , fatalSpecFail = []
     , currDemoc = democHash
+    , erc20Abrvs = Dict.empty
+    , erc20Balance = Nothing
     }
 
 
@@ -125,7 +177,7 @@ type LastPageDirection
     | PageBack
 
 
-resetAllBallotFields : Model -> BallotParams Msg -> Model
+resetAllBallotFields : Model -> { b | contractAddr : String } -> Model
 resetAllBallotFields model { contractAddr } =
     { model
         | ballotRange = Dict.empty

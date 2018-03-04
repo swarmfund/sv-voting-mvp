@@ -2,9 +2,11 @@ module SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (..)
 
 import Dict exposing (Dict)
 import Maybe.Extra exposing ((?))
+import SecureVote.Ballots.Lenses exposing (..)
+import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Eth.Types exposing (EthAddress)
 import SecureVote.Eth.Utils exposing (fromHexEth)
-import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (genVoteOptId)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.Types.VBit exposing (vBitsToBytes, vblToList)
@@ -45,11 +47,11 @@ constructBallot votes delegate =
     Maybe.map (\prefix -> voteBytes ++ prefix) ethPrefixM
 
 
-orderedBallotBits : BallotParams Msg -> Dict Int (Result String RangeBallot3Bits) -> Maybe (List RangeBallot3Bits)
-orderedBallotBits currBallot ballotBitsDict =
+orderedBallotBits : ( String, BallotSpec ) -> Dict Int (Result String RangeBallot3Bits) -> Maybe (List RangeBallot3Bits)
+orderedBallotBits ( bHash, bSpec ) ballotBitsDict =
     let
         ballotIds =
-            List.map .id currBallot.voteOptions
+            List.map (genVoteOptId bHash) (List.range 0 <| optsNOptions <| bVoteOpts.getOption bSpec ? OptsNothing)
 
         ballotBits =
             Maybe.Extra.combine <| List.map (\id -> Dict.get id ballotBitsDict ? Err "" |> Result.toMaybe) ballotIds

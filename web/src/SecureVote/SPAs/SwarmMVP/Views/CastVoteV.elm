@@ -10,20 +10,24 @@ import Material.Options as Options exposing (cs, css)
 import Material.Slider as Slider
 import Maybe exposing (withDefault)
 import Maybe.Extra exposing ((?), isJust)
+import SecureVote.Ballots.Lenses exposing (..)
+import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Utils exposing (rawTokenBalance18DpsToBalance)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
-import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(DlogTxt))
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, getUserErc20Addr)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(DlogP, DlogTxt))
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, genVoteOptId, getUserErc20Addr)
+import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmDelegateR))
+import SecureVote.Utils.Lists exposing (enumerate)
+import String exposing (lines)
 
 
-castVoteView : Model -> BallotParams Msg -> Html Msg
-castVoteView model currBallot =
+castVoteView : Model -> ( String, BallotSpec ) -> Html Msg
+castVoteView model ( bHash, bSpec ) =
     let
         balanceStr =
             let
@@ -31,22 +35,30 @@ castVoteView model currBallot =
                     getUserErc20Addr model
 
                 balM =
-                    currBallot.erc20Balance
+                    model.erc20Balance
 
                 ifZeroOr addr b =
                     if eq b zero then
-                        "No tokens for " ++ addr ++ " in ERC20 contract at " ++ currBallot.erc20Addr
+                        "No tokens for " ++ addr ++ " in ERC20 contract at " ++ bErc20Addr.getOption bSpec ? "NO ERC20 ADDRESS PROVIDED"
                     else
                         rawTokenBalance18DpsToBalance b
             in
             Maybe.map2 ifZeroOr userErc20AddrM balM ? "Loading..."
 
+        ballotOpts =
+            bVoteOpts.getOption bSpec
+
         optionList =
-            List.map optionListItem currBallot.voteOptions
+            case ballotOpts of
+                Just opts ->
+                    List.map optionListItem (enumerate <| optsToList opts)
+
+                Nothing ->
+                    []
 
         balanceV =
             if "" /= (withDefault "" <| getUserErc20Addr model) then
-                [ Options.styled div [ cs "mt2 mb4 pa1 f4" ] [ text <| "Vote weighting (" ++ currBallot.erc20Abrv ++ " balance): " ++ balanceStr ] ]
+                [ Options.styled div [ cs "mt2 mb4 pa1 f4" ] [ text <| "Vote weighting (" ++ (mErc20Abrv bHash).get model ++ " balance): " ++ balanceStr ] ]
             else
                 []
 
@@ -58,20 +70,26 @@ castVoteView model currBallot =
                 Just a ->
                     Just (f a)
 
-        optionListItem { id, title, description } =
+        optionListItem ( i, { optionTitle, optionDesc } ) =
             let
                 optBtnCs =
                     [ class "f3 relative ba br2 b--silver bg-white-20 bg-animate hover-bg-gold ph1 pt2 pointer shadow-1 noselect z-999", style [ ( "padding-bottom", "1px" ), ( "user-select", "none" ) ] ]
 
                 btnDisabledFlag =
-                    if DlogTxt "" == description then
+                    if "" == optionDesc ? "" then
                         Disabled
                     else
                         BtnNop
+
+                renderedDesc =
+                    DlogP <| List.map DlogTxt (lines <| optionDesc ? "")
+
+                id =
+                    genVoteOptId bHash i
             in
             div [ class "center mw-5 cf mb4 mt3 db w-100 bb bw1 b--silver" ]
                 [ div [ class "h-100 w-100 w-100-m w-30-l fl mt2 mb3 tl-l v-mid" ]
-                    [ span [ class "w-100 f4 tc tl-l v-mid b" ] [ text title ] ]
+                    [ span [ class "w-100 f4 tc tl-l v-mid b" ] [ text optionTitle ] ]
                 , div [ class "cf w-0 w-25-m fl dn dib-m" ]
                     -- &nbsp;
                     [ text " " ]
@@ -110,7 +128,7 @@ castVoteView model currBallot =
                     [ btn (id * 13 + 1)
                         model
                         [ SecBtn
-                        , Click (SetDialog (title ++ ": Details") (BallotDialog description))
+                        , Click (SetDialog (optionTitle ++ ": Details") (BallotDialog renderedDesc))
                         , OpenDialog
                         , btnDisabledFlag
                         ]
@@ -126,8 +144,8 @@ castVoteView model currBallot =
 
         descriptionReminder =
             div [ class "mb4" ]
-                [ subhead currBallot.ballotTitle
-                , text <| currBallot.description
+                [ subhead <| bTitle.getOption bSpec ? "NO TITLE FOR BALLOT"
+                , text <| bShortDesc.getOption bSpec ? "NO DESCRIPTION FOR BALLOT"
                 ]
     in
     fullPageSlide 123413553

@@ -8,6 +8,8 @@ import Html exposing (Html, pre)
 import Html.Attributes exposing (class)
 import ParseInt exposing (parseIntRadix, toRadix)
 import Result.Extra exposing (isOk)
+import SecureVote.Ballots.Types exposing (BallotSpec)
+import SecureVote.Crypto.Hashing exposing (hashToInt)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(SetBoolField, SetField))
@@ -44,9 +46,9 @@ setBallotTxid =
     SetField txidCheckId
 
 
-dlgtAddrField : BallotParams msg -> String
-dlgtAddrField b =
-    "delegate.address." ++ toString b.id
+dlgtAddrField : String -> String
+dlgtAddrField bHash =
+    "delegate.address." ++ toString bHash
 
 
 getField : String -> Model -> Maybe String
@@ -93,6 +95,11 @@ setEthNodeTemp =
 ballotRangeAbs : Int
 ballotRangeAbs =
     3
+
+
+genVoteOptId : String -> Int -> Int
+genVoteOptId bHash i =
+    hashToInt bHash + i
 
 
 
