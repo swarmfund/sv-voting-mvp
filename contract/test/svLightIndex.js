@@ -1,5 +1,5 @@
-const LGIndex = artifacts.require("./LittleGovIndex.sol");
-const LBB = artifacts.require("./LittleBallotBox.sol");
+const LGIndex = artifacts.require("./SVLightIndex.sol");
+const LBB = artifacts.require("./SVLightBallotBox.sol");
 
 require("./testUtils")();
 

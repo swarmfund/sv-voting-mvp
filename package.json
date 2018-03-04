@@ -78,7 +78,7 @@
     "sol-test-watch": "cd contract && reflex truffle test",
     "_testrpc": "testrpc -a 201",
     "_sol-cmp": "./bin/solidity/compile.sh",
-    "sol-compile": "yarn _sol-cmp -c LittleGovIndex.sol && yarn _sol-cmp -c LittleBallotBox.sol",
+    "sol-compile": "yarn _sol-cmp -c SVLightIndex.sol && yarn _sol-cmp -c SVLightBallotBox.sol",
     "sol-compile-dlgt": "yarn _sol-cmp -c SVDelegation.sol",
     "sol-deploy": "node ./bin/solidity/deploy.js",
     "sol-deploy-auto": "yarn sol-deploy --unsafeSkipChecks --deploy",

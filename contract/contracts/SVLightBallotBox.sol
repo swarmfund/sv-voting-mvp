@@ -1,13 +1,13 @@
 pragma solidity ^0.4.19;
 
 //
-// LittleBallotBox
-// Single use contract to manage a ballot (based on SwarmVotingMVP)
-// Author: Max Kaye
-//
+// SVLightBallotBox
+// Single use contract to manage a ballot
+// Author: Max Kaye <max@secure.vote>
+// License: MIT
 //
 // Architecture:
-// * Ballot authority declares public key with which to encrypt ballots (optional)
+// * Ballot authority declares public key with which to encrypt ballots (optional - stored in ballot spec)
 // * Users submit encrypted or plaintext ballots as blobs (dependent on above)
 // * These ballots are tracked by the ETH address of the sender
 // * Following the conclusion of the ballot, the secret key is provided
@@ -15,11 +15,11 @@ pragma solidity ^0.4.19;
 //   independently validate the results
 //
 // Notes:
-// * Since ballots are encrypted the only validation we can do is length, but UI takes care of most of it
+// * Since ballots are encrypted the only validation we can do is length, but UI takes care of most of the rest
 //
 
 
-contract LittleBallotBox {
+contract SVLightBallotBox {
     //// ** Storage Variables
 
     // Std owner pattern
@@ -112,7 +112,7 @@ contract LittleBallotBox {
     // Constructor function - init core params on deploy
     // timestampts are uint64s to give us plenty of room for millennia
     // flags are [_useEncryption, enableTesting]
-    function LittleBallotBox(bytes32 _specHash, uint64[2] openPeriod, bool[2] flags) public {
+    function SVLightBallotBox(bytes32 _specHash, uint64[2] openPeriod, bool[2] flags) public {
         owner = msg.sender;
 
         // take the max of the start time provided and the blocks timestamp to avoid a DoS against recent token holders
