@@ -104,7 +104,7 @@ castVoteView model ( bHash, bSpec ) =
         descriptionReminder =
             div [ class "mb4" ]
                 [ subhead <| bTitle.getOption bSpec ? "NO TITLE FOR BALLOT"
-                , text <| bShortDesc.getOption bSpec ? "NO DESCRIPTION FOR BALLOT"
+                , text <| bLongDesc.getOption bSpec ? "NO LONG DESCRIPTION FOR BALLOT"
                 ]
 
         contEnabled =
