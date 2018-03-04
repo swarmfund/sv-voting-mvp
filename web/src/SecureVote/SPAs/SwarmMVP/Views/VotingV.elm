@@ -56,7 +56,7 @@ votingView model ( bHash, bSpec ) =
                 OptsNothing ->
                     [ tableRow ( "Error", "No Options Available" ) ]
 
-        displayResults =
+        displayVoteSummary =
             table [ class "mt2 dt--fixed w-auto-l center" ] <|
                 Maybe.map drawOptSummary (bVoteOpts.getOption bSpec)
                     ? []
@@ -114,8 +114,8 @@ votingView model ( bHash, bSpec ) =
         model
         "Cast Your Vote"
         [ div [ class "ba dib pa2 ma1", style [ ( "min-width", "50%" ) ] ]
-            [ subhead "Ballot Summary:"
-            , displayResults
+            [ subhead "Your Vote Summary:"
+            , displayVoteSummary
             ]
         , ballotDetailsSection
         ]
