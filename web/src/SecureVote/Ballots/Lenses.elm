@@ -101,7 +101,7 @@ optsToList os =
             vos
 
         OptsBinary ->
-            [ { optionTitle = "Resolution", optionDesc = Nothing } ]
+            [ { optionTitle = "I agree with this:", optionDesc = Nothing } ]
 
         OptsNothing ->
             []
