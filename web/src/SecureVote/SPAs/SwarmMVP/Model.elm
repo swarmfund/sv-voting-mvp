@@ -69,6 +69,8 @@ type alias Model =
     , currDemoc : String
     , erc20Abrvs : Dict String String --^ map (bHash => erc20Abrv)
     , erc20Balance : Maybe Decimal
+    , indexABI : String
+    , ballotBoxABI : String
     }
 
 
@@ -86,10 +88,18 @@ mBSpec bHash =
         (\bSpec m -> { m | specToDeets = (dict bHash).set bSpec m.specToDeets })
 
 
+mVotingAddr : String -> Optional Model String
+mVotingAddr bHash =
+    Optional
+        (\m -> (dict m.currDemoc => dict bHash =|> bpiVotingAddr).getOption m.democIssues)
+        (\a m -> { m | democIssues = (dict m.currDemoc => dict bHash =|> bpiVotingAddr).set a m.democIssues })
+
+
 mCurrVotingAddr : Lens Model String
 mCurrVotingAddr =
-    Lens (\m -> (m.currentBallot |> Maybe.andThen (\h -> (dict m.currDemoc => dict h =|> bpiVotingAddr).getOption m.democIssues)) ? "NO ADDRESS FOR CURRENT VOTE")
-        (\a m -> (m.currentBallot |> Maybe.map (\h -> { m | democIssues = (dict m.currDemoc => dict h =|> bpiVotingAddr).set a m.democIssues })) ? m)
+    Lens
+        (\m -> (m.currentBallot |> Maybe.andThen (\h -> (mVotingAddr h).getOption m)) ? "NO ADDRESS FOR CURRENT VOTE")
+        (\a m -> (m.currentBallot |> Maybe.map (\h -> (mVotingAddr h).set a m)) ? m)
 
 
 mBHashBSpecPair : Model -> Maybe ( String, BallotSpec )
@@ -117,7 +127,7 @@ bpiVotingAddr =
 
 
 initModel : Flags -> Model
-initModel { dev, mainTitle, democHash } =
+initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI } =
     let
         ethNode_ =
             if dev then
@@ -169,6 +179,8 @@ initModel { dev, mainTitle, democHash } =
     , currDemoc = democHash
     , erc20Abrvs = Dict.empty
     , erc20Balance = Nothing
+    , indexABI = indexABI
+    , ballotBoxABI = ballotBoxABI
     }
 
 

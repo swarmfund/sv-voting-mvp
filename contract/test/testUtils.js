@@ -19,6 +19,9 @@ module.exports = function () {
             res = await f();
             didError = false;
         } catch (e) {
+            const invalidJump = e.message.search('invalid JUMP') >= 0;
+            const invalidOpCode = e.message.search('invalid opcode') >= 0;
+            assert(invalidJump || invalidOpCode, "Expected throw, got '" + e + "' instead.");
         }
 
         if (!didError) {

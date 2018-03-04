@@ -74,7 +74,7 @@ getDelegateAddress model =
 
 defaultDelegate : String
 defaultDelegate =
-    "0x9999999999999999999999999999999999999999"
+    "0x0000000000000000000000000000000000000000"
 
 
 ethNodeTemp : String

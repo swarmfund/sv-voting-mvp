@@ -14,7 +14,7 @@ import SecureVote.Ballots.Lenses exposing (..)
 import SecureVote.Ballots.SpecSource exposing (CidType(Sha256), getBallotSpec)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
-import SecureVote.Eth.Utils exposing (keccak256OverString)
+import SecureVote.Eth.Utils exposing (keccak256OverString, toHex)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (doBallotOptsMatchRSched, voteOptionsRSched)
@@ -93,7 +93,7 @@ update msg model =
                 ! []
 
         ModBallotRange id f ->
-            { model | ballotRange = Dict.update id f model.ballotRange } ! []
+            update (SetBallotRange id <| toFloat <| f <| Dict.get id model.ballotRange ? 0) model
 
         SetBallot bHash ->
             let
@@ -131,24 +131,32 @@ update msg model =
                                         (flip constructBallot defaultDelegate)
                             )
 
+                plainHexBytes =
+                    plainBytesM
+                        |> Result.toMaybe
+                        |> Maybe.andThen toHex
+
                 skM =
                     Maybe.map .hexSk model.keypair
 
                 remotePkM =
                     mBHashBSpecPair model |> Maybe.andThen (second >> bEncPK.getOption)
 
+                voteAddr =
+                    mBHashBSpecPair model |> Maybe.andThen (\( bHash, _ ) -> (mVotingAddr bHash).getOption model)
+
                 ( msg, encCmds ) =
-                    case ( skM, remotePkM, plainBytesM ) of
-                        ( Just sk, Just pk, Ok bs ) ->
+                    case ( skM, remotePkM, plainBytesM, plainHexBytes, voteAddr ) of
+                        ( Just sk, Just pk, Ok bs, _, _ ) ->
                             ( NoOp, [ encryptBytes { hexSk = sk, hexRemotePk = pk, bytesToSign = bs } ] )
 
-                        ( _, Nothing, Ok bs ) ->
-                            ( NoOp, [] )
+                        ( _, Nothing, _, Just bs, Just voteAddr_ ) ->
+                            ( NoOp, [ constructDataParam { ballot = bs, useEnc = False, voterPubkey = "", votingContractAddr = voteAddr_, abi = model.ballotBoxABI } ] )
 
-                        ( _, _, Err s ) ->
+                        ( _, _, Err s, _, _ ) ->
                             ( LogErr <| "Something went wrong generating BallotPlaintext: " ++ s, [] )
 
-                        ( _, _, _ ) ->
+                        ( _, _, _, _, _ ) ->
                             ( LogErr <| "Fatal error generating BallotPlaintext!", [] )
 
                 ( m_, cmd_ ) =
@@ -402,7 +410,7 @@ updateFromCurve25519 msg model =
             in
             case ( model_.encBytes, model_.keypair, model_.candidateTx.to ) of
                 ( Just encBytes, Just keypair, Just voteCAddr ) ->
-                    model_ ! [ constructDataParam { encBallot = encBytes, voterPubkey = keypair.hexPk, votingContractAddr = voteCAddr } ]
+                    model_ ! [ constructDataParam { ballot = encBytes, useEnc = True, voterPubkey = keypair.hexPk, votingContractAddr = voteCAddr, abi = model.ballotBoxABI } ]
 
                 _ ->
                     doUpdateErr "Unable to create Ethereum tx data parameter - missing encrypted ballot, keypair, or voting contract address." model_

@@ -259,10 +259,17 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     }))
 
 
-    app.ports.constructDataParam.subscribe(wrapIncoming(({encBallot, voterPubkey, votingContractAddr}) => {
-        console.log("constructDataParam got params:", {encBallot, voterPubkey, votingContractAddr});
-        const voteC = SwmVotingContract.at(votingContractAddr);
-        const data = voteC.submitBallot.getData("0x" + encBallot, "0x" + voterPubkey);
+    app.ports.constructDataParam.subscribe(wrapIncoming((params) => {
+        params.abi = JSON.parse(params.abi);
+        const {ballot, useEnc, voterPubkey, votingContractAddr, abi} = params;
+        console.log("constructDataParam got params:", params);
+        const voteC = web3js.eth.contract(abi).at(votingContractAddr);
+        let data;
+        if (useEnc) {
+            data = voteC.submitBallotWithPk.getData("0x" + ballot, "0x" + voterPubkey);
+        } else {
+            data = voteC.submitBallotNoPk.getData("0x" + ballot);
+        }
         app.ports.implDataParam.send(data);
         console.log("constructDataParam sent: ", data);
     }))
@@ -366,24 +373,19 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
                 console.log("MetaMask returned accounts: ", acc);
 
-                if (!tx.gas) {
-                    return mkPromise(mmWeb3.eth.estimateGas)(tx)
-                        .then(gasEst => {
-                            console.log("Gas estimated at ", gasEst);
-                            tx.gas = gasEst;
-                        })
-                }
+                delete tx.gas;
             }).then(() => {
                 mmWeb3.eth.sendTransaction(tx, (err, ret) => {
                     if (err) {
                         console.error("MetaMask error: ", err);
                         // if we have a bad from address strip it out and try again.
-                        if (tx.from !== "") {
-                            tx.from = "";
-                            sendMMTx(tx);
-                        } else {
-                            implNotifyErr("Metamask Error! " + err.toString());
-                        }
+                        // if (tx.from !== "") {
+                        //     tx.from = "";
+                        //     sendMMTx(tx);
+                        // } else {
+                        //     implNotifyErr("Metamask Error! " + err.toString());
+                        // }
+                        implNotifyErr("Metamask Error! " + err.toString());
                     } else {
                         console.log("MetaMask returned: ", err, ret);
                         app.ports.metamaskTxidImpl.send(ret);

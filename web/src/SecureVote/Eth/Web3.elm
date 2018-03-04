@@ -54,7 +54,7 @@ onGotTxidStatus val =
 
 
 type alias ConsDataParamReq =
-    { encBallot : String, voterPubkey : String, votingContractAddr : String }
+    { ballot : String, useEnc : Bool, voterPubkey : String, votingContractAddr : String, abi : String }
 
 
 type alias PerformRead =
