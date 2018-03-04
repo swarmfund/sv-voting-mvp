@@ -106,6 +106,12 @@ castVoteView model ( bHash, bSpec ) =
                 [ subhead <| bTitle.getOption bSpec ? "NO TITLE FOR BALLOT"
                 , text <| bShortDesc.getOption bSpec ? "NO DESCRIPTION FOR BALLOT"
                 ]
+
+        contEnabled =
+            if Dict.size model.ballotBits > 0 then
+                BtnNop
+            else
+                Disabled
     in
     fullPageSlide 123413553
         model
@@ -114,5 +120,5 @@ castVoteView model ( bHash, bSpec ) =
         balanceV
             ++ [ descriptionReminder
                , div [ class "mw7 center black" ] optionList
-               , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs ] [ text "Continue" ]
+               , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs, contEnabled ] [ text "Continue" ]
                ]
