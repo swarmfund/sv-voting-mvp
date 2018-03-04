@@ -1,5 +1,6 @@
 module SecureVote.SPAs.SwarmMVP.Views.ListVotesV exposing (..)
 
+import Bool.Extra as BE
 import Dict
 import Html exposing (Html, div, hr, span, text)
 import Html.Attributes exposing (class, style)
@@ -122,8 +123,14 @@ listVotesView model =
         gotNBallots =
             Dict.size model.specToDeets
 
+        gotNAbrvs =
+            Dict.size model.erc20Abrvs
+
+        gotNBallotScDetails =
+            Dict.size model.ballotScDetails
+
         doneLoadingBallots =
-            isJust totalBallots && totalBallots == Just gotNBallots
+            isJust totalBallots && totalBallots == Just gotNBallots && BE.all (List.map ((==) gotNBallots) [ gotNAbrvs, gotNBallotScDetails, foundNBallots ])
 
         allBallotsView =
             currBallotV ++ futureBallotV ++ pastBallotV
@@ -141,12 +148,12 @@ listVotesView model =
         model
         model.mainTitle
     <|
-        case ( totalBallots, foundNBallots, gotNBallots, doneLoadingBallots ) of
-            ( Nothing, _, _, _ ) ->
+        case ( totalBallots, ( foundNBallots, gotNBallots, gotNAbrvs, gotNBallotScDetails ), doneLoadingBallots ) of
+            ( Nothing, _, _ ) ->
                 [ loadingBallots ]
 
-            ( Just n, f, g, False ) ->
-                [ ballotsProgress n f g ]
+            ( Just n, ns, False ) ->
+                [ ballotsProgress n ns ]
 
             _ ->
                 viewBallotsOrEmpty
@@ -158,13 +165,16 @@ loadingBallots =
         ]
 
 
-ballotsProgress n f g =
+ballotsProgress n ( f, g, ga, gd ) =
     let
         attrs =
             [ class "f4 mv2" ]
     in
     div [ class "v-mid center" ]
-        [ div attrs [ text <| "Loaded info for " ++ toString f ++ " of " ++ toString n ++ " ballots." ]
-        , div attrs [ text <| "Loaded data for " ++ toString g ++ " of " ++ toString n ++ " ballots." ]
+        [ subhead "Loading:"
+        , div attrs [ text <| "Ballot Info " ++ toString f ++ " of " ++ toString n ++ " ballots." ]
+        , div attrs [ text <| "Ballot Data " ++ toString g ++ " of " ++ toString n ++ " ballots." ]
+        , div attrs [ text <| "ERC20 Details " ++ toString ga ++ " of " ++ toString n ++ " ballots." ]
+        , div attrs [ text <| "Voting Details " ++ toString gd ++ " of " ++ toString n ++ " ballots." ]
         , loadingSpinner ""
         ]

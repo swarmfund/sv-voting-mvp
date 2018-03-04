@@ -168,8 +168,19 @@ update msg model =
             case res of
                 Ok { bHash, bSpec, cid } ->
                     let
+                        startTimeFromSC =
+                            (dict model.currDemoc => dict bHash =|> bpiStartTime).getOption model.democIssues
+
+                        updatedBSpec =
+                            case startTimeFromSC of
+                                Just sTs ->
+                                    bStartTime.set sTs bSpec
+
+                                Nothing ->
+                                    bSpec
+
                         newSpecDeets =
-                            Dict.insert bHash bSpec model.specToDeets
+                            Dict.insert bHash updatedBSpec model.specToDeets
 
                         erc20AbrvCmd =
                             case bErc20Addr.getOption bSpec of
@@ -289,13 +300,16 @@ updateToWeb3 web3msg model =
             model
                 ! [ setWeb3Provider model.ethNode ]
 
-        GetErc20Balance ->
+        GetErc20Balance bHash ->
             let
                 addr =
                     -- probs okay because it will return 0
                     getUserErc20Addr model ? "0x00"
+
+                blockN =
+                    Maybe.map (toString << .startingBlockEst) (Dict.get bHash model.ballotScDetails) ? "latest"
             in
-            model ! defaultOrB model [] (\b -> Maybe.map (\erc20Addr -> [ getErc20Balance <| GetErc20BalanceReq erc20Addr addr ]) (bErc20Addr.getOption b) ? [])
+            model ! defaultOrB model [] (\b -> Maybe.map (\erc20Addr -> [ getErc20Balance <| GetErc20BalanceReq erc20Addr addr blockN ]) (bErc20Addr.getOption b) ? [])
 
         CheckTxid txid ->
             { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]
@@ -395,6 +409,9 @@ updateFromWeb3 msg model =
 
         GotErc20Abrv { erc20Addr, bHash, abrv } ->
             { model | erc20Abrvs = Dict.insert bHash abrv model.erc20Abrvs } ! []
+
+        GotBallotSCDeets scDeets ->
+            { model | ballotScDetails = Dict.insert scDeets.bHash scDeets model.ballotScDetails } ! []
 
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )

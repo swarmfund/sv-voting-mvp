@@ -71,8 +71,9 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
 
     // scan the index to get all ballots
-    app.ports.getDemocHashes.subscribe(wrapIncoming(({indexABI, indexAddr, democHash}) => {
+    app.ports.getDemocHashes.subscribe(wrapIncoming(({indexABI, indexAddr, ballotBoxABI, democHash}) => {
         const indexABIObj = JSON.parse(indexABI);
+        const bbABIObj = JSON.parse(ballotBoxABI);
         const index = web3js.eth.contract(indexABIObj).at(indexAddr);
 
         index.nBallots(democHash, (e, nBI) => {
@@ -86,6 +87,14 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                     const sendBack = {democHash, i, specHash, extraData, votingContract, startTs: startTs.toNumber()};
                     console.log("nthBallot: ", i, sendBack);
                     app.ports.gotBallotInfo.send(sendBack);
+
+                    console.log("Getting starting block")
+                    const vc = web3js.eth.contract(bbABIObj).at(votingContract);
+                    vc.startingBlockAround(handleErrOr(sBlock => {
+                        const startingBlockEst = sBlock.toNumber();
+                        console.log(`(${votingContract}).startingBlockAround:`, startingBlockEst);
+                        app.ports.ballotInfoExtra.send({bHash: specHash, startingBlockEst});
+                    }))
                 }));
             }, S.range(0, n));
         })
@@ -252,10 +261,12 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         console.log("Web3 provider set to:", web3js.currentProvider);
     }));
 
-    app.ports.getErc20Balance.subscribe(wrapIncoming(({contractAddress, userAddress}) => {
-        console.log("getErc20Balance got params", {contractAddress, userAddress});
+    app.ports.getErc20Balance.subscribe(wrapIncoming(params => {
+        const {contractAddress, userAddress, chainIndex} = params;
+        const ci_ = parseInt(chainIndex) || chainIndex || "latest";
+        console.log("getErc20Balance got params", params);
         const tokenContract = Erc20Contract.at(contractAddress);
-        tokenContract.balanceOf.call(userAddress, handleErrOr(implSendErc20Balance))
+        tokenContract.balanceOf.call(userAddress, ci_, handleErrOr(implSendErc20Balance))
     }))
 
 

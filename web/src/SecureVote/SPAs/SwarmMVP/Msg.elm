@@ -5,6 +5,7 @@ import Material
 import Material.Snackbar as Snackbar
 import RemoteData exposing (RemoteData)
 import SecureVote.Ballots.SpecSource exposing (FailSpecFromIpfs, SpecFromIpfs)
+import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Types exposing (..)
@@ -54,7 +55,7 @@ type Msg
 
 type ToWeb3Msg
     = SetProvider
-    | GetErc20Balance
+    | GetErc20Balance String --^ string is bHash
     | CheckTxid String
     | ReInit (List String)
 
@@ -70,6 +71,7 @@ type FromWeb3Msg
     | GotBallotCount (RemoteData String { democHash : String, n : Int })
     | GotBallotInfo (RemoteData String BallotInfo)
     | GotErc20Abrv Erc20Abrv
+    | GotBallotSCDeets BallotSCDetails
 
 
 type FromCurve25519Msg

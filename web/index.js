@@ -4,7 +4,8 @@ require('./css/vendor/tachyons.min.css');
 require('./css/vendor/material.amber-light_blue.min.css');
 const R = require('ramda');
 
-import AuditWeb from "../pureSrc/SecureVote/Democs/SwarmMVP/AuditWeb.purs";
+// current build issue with netlify - ignore for now
+// import AuditWeb from "../pureSrc/SecureVote/Democs/SwarmMVP/AuditWeb.purs";
 
 const Decimal = require('decimal.js');
 window.Decimal = Decimal;
@@ -29,7 +30,7 @@ window.addEventListener('load', function() {
     const Elm = require('./src/SecureVote/SPAs/SwarmMVP/Main.elm');
     const app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen'), flags);
     console.log("Environment variables are: ", R.map(v => v.slice ? v.slice(0,80) : v, flags));
-    web3Ports(web3js, {mmDetected, mmWeb3}, app, {AuditWeb});
+    web3Ports(web3js, {mmDetected, mmWeb3}, app, {AuditWeb: null});
     curve25519Ports(app);
     specSourcePorts(app);
 }, 100);

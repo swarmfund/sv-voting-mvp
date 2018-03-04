@@ -103,7 +103,7 @@ onContractReadResponse msgGen errMsg val =
 
 
 type alias GetErc20BalanceReq =
-    { contractAddress : String, userAddress : String }
+    { contractAddress : String, userAddress : String, chainIndex : String }
 
 
 port getErc20Balance : GetErc20BalanceReq -> Cmd msg
@@ -314,7 +314,11 @@ gotAuditMsg =
     gotAuditMsgImpl decodeAuditMsg
 
 
-port getDemocHashes : { indexABI : String, indexAddr : String, democHash : String } -> Cmd msg
+type alias GetDemocHashesReq =
+    { indexABI : String, indexAddr : String, democHash : String, ballotBoxABI : String }
+
+
+port getDemocHashes : GetDemocHashesReq -> Cmd msg
 
 
 port democNBallots : (Value -> msg) -> Sub msg
@@ -327,6 +331,9 @@ port getErc20Abrv : { bHash : String, erc20Addr : String } -> Cmd msg
 
 
 port gotErc20Abrv : (Value -> msg) -> Sub msg
+
+
+port ballotInfoExtra : (Value -> msg) -> Sub msg
 
 
 

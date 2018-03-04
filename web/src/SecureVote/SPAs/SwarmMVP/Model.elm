@@ -10,7 +10,7 @@ import Monocle.Common exposing ((=>), dict, maybe)
 import Monocle.Lens exposing (Lens)
 import Monocle.Optional exposing (Optional)
 import RemoteData exposing (RemoteData(..))
-import SecureVote.Ballots.Types exposing (BallotSpec)
+import SecureVote.Ballots.Types exposing (BallotSCDetails, BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx, nullCandidateEthTx)
 import SecureVote.Eth.Nodes exposing (ethNodes)
@@ -71,6 +71,7 @@ type alias Model =
     , erc20Balance : Maybe Decimal
     , indexABI : String
     , ballotBoxABI : String
+    , ballotScDetails : Dict String BallotSCDetails --^ map (bHash => BallotSCDetails)
     }
 
 
@@ -181,6 +182,7 @@ initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI } =
     , erc20Balance = Nothing
     , indexABI = indexABI
     , ballotBoxABI = ballotBoxABI
+    , ballotScDetails = Dict.empty
     }
 
 

@@ -10,7 +10,7 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg
 import SecureVote.SPAs.SwarmMVP.Types exposing (Flags)
 import SecureVote.SPAs.SwarmMVP.Update exposing (update)
 import SecureVote.SPAs.SwarmMVP.Views.RootV exposing (rootView)
-import SecureVote.SPAs.SwarmMVP.Web3Handler exposing (decodeRead, democNVotesSub, gotBallotInfoSub, gotErc20AbrvHandler, readOptsErr)
+import SecureVote.SPAs.SwarmMVP.Web3Handler exposing (..)
 import Task exposing (perform)
 import Time exposing (every, second)
 
@@ -36,16 +36,22 @@ subscriptions model =
         , gotSpecFromIpfsHandler GotFullSpecFromIpfs
         , gotFailedSpecFromIpfsHandler GotFailSpecFromIpfs
         , gotErc20AbrvHandler
+        , ballotInfoExtraHandler
         ]
 
 
 initCmds : Model -> Flags -> List (Cmd Msg) -> Cmd Msg
-initCmds initModel { democHash, indexABI, indexAddr } extraCmds =
+initCmds initModel { democHash, indexABI, indexAddr, ballotBoxABI } extraCmds =
     Cmd.batch <|
         [ setWeb3Provider initModel.ethNode
         , perform (SetTime << round << (\t -> t / 1000)) Time.now
         , genKeyPair True
-        , getDemocHashes { democHash = democHash, indexABI = indexABI, indexAddr = indexAddr }
+        , getDemocHashes
+            { democHash = democHash
+            , indexABI = indexABI
+            , indexAddr = indexAddr
+            , ballotBoxABI = ballotBoxABI
+            }
         ]
             ++ extraCmds
 
