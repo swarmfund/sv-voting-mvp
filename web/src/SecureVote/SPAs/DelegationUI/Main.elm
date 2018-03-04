@@ -4,7 +4,7 @@ import Html
 import SecureVote.Eth.Web3 exposing (gotDelegatePayloadGen, metamaskTxidGen)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model, initModel)
 import SecureVote.SPAs.DelegationUI.Msg exposing (Msg)
-import SecureVote.SPAs.DelegationUI.MsgHandlers exposing (handleDelegationPayload, handleMetaMaskTxid)
+import SecureVote.SPAs.DelegationUI.MsgHandlers exposing (handleDelegationPayload)
 import SecureVote.SPAs.DelegationUI.Types exposing (Flags)
 import SecureVote.SPAs.DelegationUI.Update exposing (update)
 import SecureVote.SPAs.DelegationUI.Views.RootV exposing (rootV)
@@ -17,8 +17,7 @@ initF f =
 
 subscriptions model =
     Sub.batch
-        [ metamaskTxidGen handleMetaMaskTxid
-        , gotDelegatePayloadGen handleDelegationPayload
+        [ gotDelegatePayloadGen handleDelegationPayload
         ]
 
 

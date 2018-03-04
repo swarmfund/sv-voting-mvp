@@ -12,15 +12,6 @@ errHelper descMsg errMsg =
     LogErr (Debug.log errStr <| descMsg ++ errStr)
 
 
-handleMetaMaskTxid r =
-    case r of
-        Ok txid ->
-            FromWeb3 <| GotTxid txid
-
-        Err err ->
-            errHelper "MetaMask error: " err
-
-
 handleDelegationPayload r =
     case r of
         Ok payload ->

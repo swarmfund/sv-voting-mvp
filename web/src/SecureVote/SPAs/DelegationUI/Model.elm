@@ -15,9 +15,6 @@ type alias Model =
     , select : Maybe (SelectWith BallotSpecChoice Msg)
     , selectOpts : Maybe (SelectWith OptsChoice Msg)
     , delegationTx : DelegationTx
-    , savedBallots : Dict String BallotSpec
-    , jsonTx : String
-    , sha3 : String
     , mainTitle : String
     , dev : Bool
     , democHash : String
@@ -35,10 +32,7 @@ initModel { mainTitle, dev, democHash, indexAddr, delegationABI } =
     , boolFields = Dict.empty
     , select = Nothing
     , selectOpts = Nothing
-    , delegationTx = DelegationTx "" "" 0 0 ""
-    , savedBallots = Dict.empty
-    , jsonTx = "{}"
-    , sha3 = "0x"
+    , delegationTx = DelegationTx "" "" 0 200000 ""
     , mainTitle = mainTitle
     , dev = dev
     , democHash = democHash

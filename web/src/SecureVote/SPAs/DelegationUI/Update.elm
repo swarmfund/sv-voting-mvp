@@ -2,7 +2,6 @@ module SecureVote.SPAs.DelegationUI.Update exposing (..)
 
 import Dict
 import Element.Input exposing (dropMenu, menu, select, selected, updateSelection)
-import Json.Encode exposing (encode)
 import Maybe.Extra exposing ((?))
 import SecureVote.Ballots.Types exposing (emptyBSpec01)
 import SecureVote.Eth.Web3 exposing (setDelegateData)
@@ -48,25 +47,22 @@ update msg model =
             in
             { model | selectOpts = Just <| updateSelection sMsg s } ! []
 
-        --        UpdateDelegationTx ->
-        --            let
-        --                jsonBallotStr =
-        --                    encode 4 <|
-        --                        E.object
-        --                            [ ( "to", model.delegationTx.to )
-        --                            , ( "from", asd )
-        --                            ]
-        --            in
-        --            { model | jsonTx = jsonBallotStr } ! [ Task.attempt handleSha3Response (sha3 jsonBallotStr) ]
         GetDelegationPayload { delegateAddr, tokenAddr } ->
-            ( model
-            , setDelegateData
-                { delegationABI = model.delegationABI
-                , contractAddr = model.contractAddr
-                , delegateAddr = delegateAddr
-                , tokenContract = tokenAddr
-                }
-            )
+            let
+                modelDelTx =
+                    model.delegationTx
+
+                newDelegationTx =
+                    { modelDelTx | to = delegateAddr }
+            in
+            { model | delegationTx = newDelegationTx }
+                ! [ setDelegateData
+                        { delegationABI = model.delegationABI
+                        , contractAddr = model.contractAddr
+                        , delegateAddr = delegateAddr
+                        , tokenContract = tokenAddr
+                        }
+                  ]
 
         GotDelegationPayload payload ->
             let
@@ -78,32 +74,8 @@ update msg model =
             in
             { model | delegationTx = newDelegationTx } ! []
 
-        UpdateSha3 s ->
-            { model | sha3 = s } ! []
-
-        Sha3Error s ->
-            { model | sha3 = "Warning! Error from Keccak256 hash of Ballot: " ++ s } ! []
-
-        SaveJson ->
-            model ! []
-
         LogErr err ->
             { model | errors = err :: model.errors } ! []
-
-        MMsg msgs ->
-            case msgs of
-                msg_ :: msgRem ->
-                    let
-                        ( m_, cmds_ ) =
-                            update msg_ model
-
-                        ( m, cmds ) =
-                            update (MMsg msgRem) m_
-                    in
-                    ( m, Cmd.batch [ cmds_, cmds ] )
-
-                [] ->
-                    model ! []
 
         FromWeb3 w3Msg ->
             let
@@ -118,16 +90,6 @@ update msg model =
                     toW3Update w3Msg model.web3
             in
             ( { model | web3 = web3 }, cmds )
-
-
-handleSha3Response : Result Error Sha3 -> Msg
-handleSha3Response r =
-    case r of
-        Ok (Sha3 s) ->
-            UpdateSha3 s
-
-        Err (Error s) ->
-            Sha3Error s
 
 
 w3Update : FromWeb3Msg -> Web3Model -> ( Web3Model, Cmd Msg )

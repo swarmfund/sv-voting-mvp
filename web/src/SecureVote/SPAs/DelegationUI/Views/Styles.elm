@@ -17,11 +17,11 @@ type AdminStyles
     = NoS
     | Title
     | BallotElemSelector
-    | BallotPreview
-    | BallotHash
+    | TxPreview
+    | PayloadHash
     | Field
     | SubMenu
-    | BallotRender
+    | TxRender
 
 
 type Variations
@@ -42,18 +42,18 @@ stylesheet =
             [ text black
             , size 30
             ]
-        , style BallotPreview
+        , style TxPreview
             [ border black
             , rounded 5
             , all 1
             ]
-        , style BallotHash
+        , style PayloadHash
             [ border black
             , rounded 5
             , all 1
             , typeface [ monospace ]
             ]
-        , style BallotRender
+        , style TxRender
             [ typeface [ monospace ]
             ]
         , style Field
