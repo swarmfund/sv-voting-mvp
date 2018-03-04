@@ -9,7 +9,7 @@ import Material.Snackbar as Snackbar
 import Maybe exposing (andThen)
 import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
-import SecureVote.Ballots.SpecSource exposing (getBallotSpec)
+import SecureVote.Ballots.SpecSource exposing (CidType(Sha256), getBallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Utils exposing (keccak256OverString)
 import SecureVote.Eth.Web3 exposing (..)
@@ -136,6 +136,26 @@ update msg model =
             in
             { model | ballotPlaintext = plainBytesM } ! encCmds
 
+        GotFullSpecFromIpfs res ->
+            case res of
+                Ok { bHash, bSpec, cid } ->
+                    let
+                        newSpecDeets =
+                            Dict.insert bHash bSpec model.specToDeets
+                    in
+                    { model | specToDeets = newSpecDeets } ! []
+
+                Err e ->
+                    fatalFailedSpecUpdate e model
+
+        GotFailSpecFromIpfs res ->
+            case res of
+                Ok { bHash, err } ->
+                    { model | failedSpec = Dict.insert bHash err model.failedSpec } ! []
+
+                Err e ->
+                    fatalFailedSpecUpdate e model
+
         MultiMsg msgs ->
             multiUpdate msgs model []
 
@@ -179,6 +199,11 @@ update msg model =
 
 auditCmd model b =
     getBallotResults { ethUrl = model.ethNode, ethRPCAuth = "", votingAddr = b.contractAddr, erc20Addr = b.erc20Addr }
+
+
+fatalFailedSpecUpdate : String -> Model -> ( Model, Cmd Msg )
+fatalFailedSpecUpdate e model =
+    update (LogErr e) { model | fatalSpecFail = e :: model.fatalSpecFail }
 
 
 addSnack : String -> Model -> ( Model, Cmd Msg )
@@ -358,7 +383,7 @@ updateFromWeb3 msg model =
                         di =
                             Dict.update democHash updateInnerD model.democIssues
                     in
-                    { model | democIssues = di } ! [ getBallotSpec specHash ]
+                    { model | democIssues = di } ! [ getBallotSpec { specHash = specHash, cidType = Sha256 } ]
 
                 _ ->
                     doUpdateErr "Got bad ballot info from blockchain. Please check your connection or reload the page" model

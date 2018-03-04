@@ -10,6 +10,7 @@ const Decimal = require('decimal.js');
 window.Decimal = Decimal;
 
 import curve25519Ports from './src/SecureVote/Crypto/Curve25519';
+import specSourcePorts from './src/SecureVote/Ballots/SpecSource';
 
 const getFlags = require('./js/getFlags');
 const {web3js, mmDetected, mmWeb3, web3Ports} = require('./js/web3Stuff');
@@ -30,4 +31,5 @@ window.addEventListener('load', function() {
     console.log("Environment variables are: ", R.map(v => v.slice ? v.slice(0,80) : v, flags));
     web3Ports(web3js, {mmDetected, mmWeb3}, app, {AuditWeb});
     curve25519Ports(app);
+    specSourcePorts(app);
 }, 100);

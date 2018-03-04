@@ -6,7 +6,7 @@ import Json.Decode exposing (Value)
 import Json.Encode exposing (object)
 import SecureVote.Ballots.Types exposing (BallotSpec, BallotSpecChoice, OptsChoice, emptyBSpec01)
 import SecureVote.Crypto.Hashing exposing (HashModel)
-import SecureVote.SPAs.AdminUI.Fields exposing (democHashId)
+import SecureVote.SPAs.AdminUI.Fields exposing (democHashId, erc20Id)
 import SecureVote.SPAs.AdminUI.Msg exposing (Msg)
 import SecureVote.SPAs.AdminUI.Types exposing (Flags)
 
@@ -32,7 +32,16 @@ type alias Model =
 
 initModel : Flags -> Model
 initModel { mainTitle, dev, democHash, indexAddr, indexABI } =
-    { strFields = Dict.fromList [ ( democHashId, democHash ) ]
+    let
+        initStrFields =
+            [ ( democHashId, democHash ) ]
+                ++ (if dev then
+                        [ ( erc20Id, "0xc3D10aF066bde2357C92Bc4Af25FB5f42e73F1a4" ) ]
+                    else
+                        []
+                   )
+    in
+    { strFields = Dict.fromList initStrFields
     , boolFields = Dict.empty
     , select = Nothing
     , selectOpts = Nothing

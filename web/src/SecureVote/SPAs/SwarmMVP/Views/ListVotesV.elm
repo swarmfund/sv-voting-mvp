@@ -8,6 +8,7 @@ import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs, css)
 import Maybe.Extra exposing ((?), isJust)
+import SecureVote.Ballots.Types exposing (BallotSpec(..))
 import SecureVote.Components.UI.Elevation exposing (elevation)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Loading exposing (loadingSpinner)
@@ -23,7 +24,17 @@ listVotesView : Model -> Html Msg
 listVotesView model =
     let
         allBallots =
-            sortBy .startTime <| Dict.values model.allBallots
+            sortBy
+                (\b ->
+                    case b of
+                        BVerFF ->
+                            99999999999999999
+
+                        BVer01 bInner ->
+                            bInner.startTime ? 0
+                )
+            <|
+                Dict.values model.specToDeets
 
         currentBallots =
             List.sortBy .endTime <| filter (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime) allBallots
@@ -100,8 +111,11 @@ listVotesView model =
         totalBallots =
             Dict.get model.currDemoc model.democCounts
 
-        gotNBallots =
+        foundNBallots =
             (Dict.get model.currDemoc model.democIssues |> Maybe.map Dict.size) ? 0
+
+        gotNBallots =
+            Dict.size model.specToDeets
 
         doneLoadingBallots =
             isJust totalBallots && totalBallots == Just gotNBallots
@@ -122,12 +136,12 @@ listVotesView model =
         model
         model.mainTitle
     <|
-        case ( totalBallots, gotNBallots, doneLoadingBallots ) of
-            ( Nothing, _, _ ) ->
+        case ( totalBallots, foundNBallots, gotNBallots, doneLoadingBallots ) of
+            ( Nothing, _, _, _ ) ->
                 [ loadingBallots ]
 
-            ( Just n, i, False ) ->
-                [ ballotsProgress n i ]
+            ( Just n, f, g, False ) ->
+                [ ballotsProgress n f g ]
 
             _ ->
                 viewBallotsOrEmpty
@@ -139,7 +153,9 @@ loadingBallots =
         ]
 
 
-ballotsProgress n i =
+ballotsProgress n f g =
     div [ class "v-mid center" ]
-        [ loadingSpinner <| "Retrieved " ++ toString i ++ " of " ++ toString n ++ " ballots."
+        [ div [ class "f4" ] [ text <| "Loaded info for " ++ toString f ++ " of " ++ toString n ++ " ballots." ]
+        , div [ class "f4" ] [ text <| "Loaded data for " ++ toString g ++ " of " ++ toString n ++ " ballots." ]
+        , loadingSpinner ""
         ]

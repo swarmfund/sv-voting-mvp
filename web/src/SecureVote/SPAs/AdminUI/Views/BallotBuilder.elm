@@ -54,61 +54,6 @@ buildBSpecV01 m =
         }
 
 
-toNullable f m =
-    withDefault E.null (Maybe.map f m)
-
-
-bSpecToJson b =
-    case b of
-        BVer01 d ->
-            E.object
-                [ ( "ballotVersion", E.int 1 )
-                , ( "ballotInner"
-                  , E.object
-                        [ ( "ballotTitle", E.string d.ballotTitle )
-                        , ( "shortDesc", E.string d.shortDesc )
-                        , ( "longDesc", E.string d.longDesc )
-                        , ( "startTime", toNullable E.int d.startTime )
-                        , ( "endTime", E.int d.endTime )
-                        , ( "erc20Addr", E.string d.erc20Addr )
-                        , ( "discussionLink", toNullable E.string d.discussionLink )
-                        , ( "binding", E.bool d.binding )
-                        , ( "encryptionPK", toNullable E.string d.encryptionPK )
-                        , ( "options", oSpecToJson d.options )
-                        ]
-                  )
-                ]
-
-        BVerFF ->
-            null
-
-
-oSpecToJson o =
-    let
-        simpleOToJson opt =
-            E.object
-                [ ( "optionTitle", E.string opt.optionTitle )
-                , ( "optionDesc", toNullable E.string opt.optionDesc )
-                ]
-    in
-    case o of
-        OptsNothing ->
-            E.object
-                [ ( "optionsVersion", E.int 999999999 )
-                , ( "options", E.null )
-                ]
-
-        OptsSimple RangeVotingPlusMinus3 opts ->
-            E.array <| Array.fromList <| List.map simpleOToJson opts
-
-        OptsBinary ->
-            E.null
-
-
-bSpecValueToString v =
-    encode 4 v
-
-
 ballotBuilder : Model -> UiElem
 ballotBuilder model =
     let
@@ -262,11 +207,14 @@ genFilename model =
             fromTime <| (*) 1000 <| (Maybe.andThen (toMaybe << toInt) <| getStrField model startTimeId) ? 0
 
         dateStr =
-            String.join "-" <|
+            String.join "_" <|
                 List.map toString
                     [ year currDate, monthToInt <| month currDate, day currDate ]
+
+        bTitleStr =
+            decapitalize <| replace " " "-" <| getTitle model.workingBallot
     in
-    String.join "-" [ dateStr, String.slice 0 18 model.hash, decapitalize <| replace " " "-" <| getTitle model.workingBallot ++ ".json" ]
+    String.join "-" [ dateStr, bTitleStr, String.slice 0 18 model.hash ] |> (\t -> t ++ ".json")
 
 
 addBinaryOpts model =
@@ -290,10 +238,14 @@ addBinaryOpts model =
                 [ E.string democHash
                 , E.string hash
                 , E.string "0x00"
-                , E.int <| convTime startTimeId
-                , E.int <| convTime endTimeId
-                , E.bool <| isJust <| getStrField model encPkId
-                , E.bool False
+                , E.list
+                    [ E.int <| convTime startTimeId
+                    , E.int <| convTime endTimeId
+                    ]
+                , E.list
+                    [ E.bool <| isJust <| getStrField model encPkId
+                    , E.bool False
+                    ]
                 ]
 
         ballotToWrite =

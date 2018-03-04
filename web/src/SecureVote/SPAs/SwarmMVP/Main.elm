@@ -1,6 +1,7 @@
 module SecureVote.SPAs.SwarmMVP.Main exposing (..)
 
 import Html exposing (Html)
+import SecureVote.Ballots.SpecSource exposing (gotFailedSpecFromIpfsHandler, gotSpecFromIpfsHandler)
 import SecureVote.Crypto.Curve25519 exposing (..)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (setEthNodeTemp)
@@ -32,6 +33,8 @@ subscriptions model =
         , metamaskTxid
         , democNVotesSub
         , gotBallotInfoSub
+        , gotSpecFromIpfsHandler GotFullSpecFromIpfs
+        , gotFailedSpecFromIpfsHandler GotFailSpecFromIpfs
         ]
 
 

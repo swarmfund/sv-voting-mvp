@@ -3,7 +3,7 @@ module SecureVote.Ballots.Types exposing (..)
 
 type BallotSpec
     = BVer01 BSpec01Impl
-    | BVerFF -- not in use, reserved
+    | BVerFF -- not in use, reserved as NOP
 
 
 type BallotSpecChoice
