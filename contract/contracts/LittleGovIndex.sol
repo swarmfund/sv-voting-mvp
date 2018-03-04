@@ -12,6 +12,7 @@ contract LittleGovIndex {
         bytes32 specHash;
         bytes32 extraData;
         address votingContract;
+        uint64 startTs;
     }
 
     struct Democ {
@@ -52,8 +53,7 @@ contract LittleGovIndex {
 
     //* EVENTS /
 
-    event PaymentMade(uint128[2] valAndRemainder, address sender, address paidTo);
-    event NoPayment(address sender);
+    event PaymentMade(uint128[2] valAndRemainder);
     event DemocInit(string name, bytes32 democHash, address admin);
     event BallotInit(bytes32 specHash, uint64[2] openPeriod, bool[2] flags);
     event BallotAdded(bytes32 democHash, bytes32 specHash, bytes32 extraData, address votingContract);
@@ -90,7 +90,7 @@ contract LittleGovIndex {
             if (!msg.sender.send(remainder)){
                 payTo.transfer(remainder);
             }
-            PaymentMade([v, remainder], msg.sender, payTo);
+            PaymentMade([v, remainder]);
         }
 
         // do main
@@ -170,14 +170,14 @@ contract LittleGovIndex {
         return democs[democHash].ballots.length;
     }
 
-    function getNthBallot(bytes32 democHash, uint256 n) public constant returns (bytes32 specHash, bytes32 extraData, address votingContract) {
-        return (democs[democHash].ballots[n].specHash, democs[democHash].ballots[n].extraData, democs[democHash].ballots[n].votingContract);
+    function getNthBallot(bytes32 democHash, uint256 n) public constant returns (bytes32 specHash, bytes32 extraData, address votingContract, uint64 startTime) {
+        return (democs[democHash].ballots[n].specHash, democs[democHash].ballots[n].extraData, democs[democHash].ballots[n].votingContract, democs[democHash].ballots[n].startTs);
     }
 
     //* ADD BALLOT TO RECORD */
 
-    function _commitBallot(bytes32 democHash, bytes32 specHash, bytes32 extraData, address votingContract) internal {
-        democs[democHash].ballots.push(Ballot(specHash, extraData, votingContract));
+    function _commitBallot(bytes32 democHash, bytes32 specHash, bytes32 extraData, address votingContract, uint64 startTs) internal {
+        democs[democHash].ballots.push(Ballot(specHash, extraData, votingContract, startTs));
         BallotAdded(democHash, specHash, extraData, votingContract);
     }
 
@@ -189,7 +189,8 @@ contract LittleGovIndex {
                       {
         LittleBallotBox bb = LittleBallotBox(votingContract);
         bytes32 specHash = bb.specHash();
-        _commitBallot(democHash, specHash, extraData, votingContract);
+        uint64 startTs = bb.startTime();
+        _commitBallot(democHash, specHash, extraData, votingContract, startTs);
     }
 
     function deployBallot(bytes32 democHash, bytes32 specHash, bytes32 extraData,
@@ -199,10 +200,11 @@ contract LittleGovIndex {
                           public payable {
         // the start time is max(startTime, block.timestamp) to avoid a DoS whereby a malicious electioneer could disenfranchise
         // token holders who have recently acquired tokens.
-        LittleBallotBox votingContract = new LittleBallotBox(specHash, [max(openPeriod[0], uint64(block.timestamp)), openPeriod[1]], flags);
+        uint64 startTs = max(openPeriod[0], uint64(block.timestamp));
+        LittleBallotBox votingContract = new LittleBallotBox(specHash, [startTs, openPeriod[1]], flags);
         votingContract.setOwner(msg.sender);
-        _commitBallot(democHash, specHash, extraData, address(votingContract));
-        BallotInit(specHash, [max(openPeriod[0], uint64(block.timestamp)), openPeriod[1]], flags);
+        _commitBallot(democHash, specHash, extraData, address(votingContract), startTs);
+        BallotInit(specHash, [startTs, openPeriod[1]], flags);
     }
 
     // utils

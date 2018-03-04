@@ -106,6 +106,15 @@ infoDialogV model =
 
                 _ ->
                     span [] []
+
+        errLog =
+            if List.isEmpty model.errors then
+                []
+            else
+                [ subhead "Error Log"
+                , ul [] <|
+                    List.map (\e -> li [] [ text e ]) model.errors
+                ]
     in
     div [] <|
         combinedHowToVoteCopy model
@@ -113,6 +122,7 @@ infoDialogV model =
                , ballotInfo
                , codeSourceSection
                ]
+            ++ errLog
 
 
 gethDialogV : Model -> BallotParams Msg -> Html Msg

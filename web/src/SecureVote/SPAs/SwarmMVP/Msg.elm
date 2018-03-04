@@ -4,6 +4,7 @@ import Decimal exposing (Decimal)
 import Material
 import Material.Snackbar as Snackbar
 import RemoteData exposing (RemoteData)
+import SecureVote.Ballots.SpecSource exposing (FailSpecFromIpfs, SpecFromIpfs)
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
 import SecureVote.Eth.Types exposing (AuditDoc, BallotInfo, InitRecord)
@@ -40,6 +41,8 @@ type Msg
     | ToWeb3 ToWeb3Msg
     | FromWeb3 FromWeb3Msg
     | FromCurve25519 FromCurve25519Msg
+    | GotFullSpecFromIpfs (Result String SpecFromIpfs)
+    | GotFailSpecFromIpfs (Result String FailSpecFromIpfs)
       -- | ToCurve25519 ToCurve25519Msg
       -- ** Auditor msgs
     | FromAuditor AuditDoc

@@ -175,6 +175,7 @@ async function testOwner(accounts) {
     const newBallotVC = LBB.at(newBallot[2]);
     assert.equal(newBallot[0], await newBallotVC.specHash(), "spec hashes should match as reported by LGI and LBB");
     assert.equal(democId, await newBallotVC.specHash(), "spec hashe should match what we gave it");
+    assert.isTrue(newBallot[3].eq(await newBallotVC.startTime()), "start time should match on both ballots");
 }
 
 

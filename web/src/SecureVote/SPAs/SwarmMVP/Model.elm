@@ -56,7 +56,9 @@ type alias Model =
     , democHashes : Dict Int String --^ Map (index order => democHash)
     , democCounts : Dict String Int --^ map (democHashes => number of ballots in it)
     , democIssues : Dict String (Dict Int BallotPrelimInfo) --^ map (democHash => (ballotId => prelimInfo))
-    , specsToDeets : Dict String (RemoteData String BallotSpec) --^ map (specHash => RemoteData BallotSpec) - can error gracefully
+    , specToDeets : Dict String BallotSpec --^ map (specHash => RemoteData BallotSpec) - can error gracefully
+    , failedSpec : Dict String String
+    , fatalSpecFail : List String
     , currDemoc : String
     }
 
@@ -111,7 +113,9 @@ initModel { dev, mainTitle, democHash } =
     , democHashes = Dict.empty
     , democCounts = Dict.empty
     , democIssues = Dict.empty
-    , specsToDeets = Dict.empty
+    , specToDeets = Dict.empty
+    , failedSpec = Dict.empty
+    , fatalSpecFail = []
     , currDemoc = democHash
     }
 
