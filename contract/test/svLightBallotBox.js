@@ -22,7 +22,6 @@ const mkFlags = ({useEnc, testing}) => [useEnc === true, testing === true];
 async function testEarlyBallot(accounts) {
     var startTime = mkStartTime() + 2;
     var endTime = startTime + 600;
-    var shortEndTime = 0;
 
     const vc = await LittleBallotBox.new(specHash, [startTime, endTime], mkFlags({useEnc: true, testing: true}));
     await asyncAssertThrow(() => vc.submitBallotWithPk(hexPk, hexPk, { from: accounts[5] }), "should throw on early ballot");
@@ -83,7 +82,7 @@ async function testEncryptionBranching(accounts) {
     assert.isFalse(await vcNoEnc.useEncryption(), "encryption should be disabled");
     // test ballot submissions w no enc
     const _bData = hexSk;
-    const _noEnc = await vcNoEnc.submitBallotNoPK(_bData);
+    const _noEnc = await vcNoEnc.submitBallotNoPk(_bData);
     assertOnlyEvent("SuccessfulVote", _noEnc);
     const _bReturned = await vcNoEnc.ballotMap(0);
     assert.equal(_bReturned[0], _bData, "ballot data matches");

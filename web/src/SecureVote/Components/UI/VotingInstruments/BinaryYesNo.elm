@@ -32,7 +32,10 @@ drawBinaryVotingInstrument : Model -> Int -> String -> List (Html Msg)
 drawBinaryVotingInstrument model id optionTitle =
     let
         optBtnCs =
-            [ class "mv1 mh3 pa3 f3 relative ba br2 b--silver bg-white-20 bg-animate hover-bg-gold ph1 pt2 pointer shadow-1 noselect z-999", style [ ( "padding-bottom", "1px" ), ( "user-select", "none" ) ] ]
+            [ class "mv1 mh2 pa2 f3 relative ba br2 b--silver bg-white-20 bg-animate hover-bg-gold ph1 pt2 pointer shadow-1 noselect z-999", style [ ( "padding-bottom", "1px" ), ( "user-select", "none" ) ] ]
+
+        innerCs =
+            [ class "noselect pa2 ma1" ]
     in
     [ div [] [ text <| "Your vote: " ++ yesNoToString (Dict.get id model.ballotRange ? 0) ]
     , div [ class "center" ]
@@ -42,13 +45,13 @@ drawBinaryVotingInstrument model id optionTitle =
                  ]
                     ++ optBtnCs
                 )
-                [ div [ class "noselect pa3", style [] ] [ text "No" ] ]
+                [ div innerCs [ text "No" ] ]
             , span
                 (optBtnCs
                     ++ [ onClick (SetBallotRange id 1)
                        ]
                 )
-                [ div [ class "noselect pa3", style [] ] [ text "Yes️" ] ]
+                [ div innerCs [ text "Yes️" ] ]
             ]
         ]
     ]

@@ -28,7 +28,7 @@ type Msg
     | SetDialog String (DialogRoute Msg)
       -- ** Voting msgs
     | SetBallotRange Int Float
-    | ModBallotRange Int (Maybe Int -> Maybe Int)
+    | ModBallotRange Int (Int -> Int)
     | ConstructBallotPlaintext
     | SetBallot String
     | VoteWMetaMask

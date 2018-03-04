@@ -86,7 +86,7 @@ contract SVLightBallotBox {
     }
 
     modifier ballotOpen {
-        require(block.timestamp >= startTime && block.timestamp < endTime);
+        require(uint64(block.timestamp) >= startTime && uint64(block.timestamp) < endTime);
         _;
     }
 
@@ -96,12 +96,12 @@ contract SVLightBallotBox {
     }
 
     modifier isTrue(bool _b) {
-        require(_b);
+        require(_b == true);
         _;
     }
 
     modifier isFalse(bool _b) {
-        require(!_b);
+        require(_b == false);
         _;
     }
 
@@ -135,17 +135,17 @@ contract SVLightBallotBox {
 
     // Ballot submission
     function submitBallotWithPk(bytes32 encryptedBallot, bytes32 senderPubkey) isTrue(useEncryption) ballotOpen public {
-        addBallotAndVoter(encryptedBallot, senderPubkey);
+        addBallotAndVoterWithPk(encryptedBallot, senderPubkey);
         SuccessfulPkVote(msg.sender, encryptedBallot, senderPubkey);
     }
 
-    function submitBallotNoPK(bytes32 ballot) isFalse(useEncryption) ballotOpen public {
+    function submitBallotNoPk(bytes32 ballot) isFalse(useEncryption) ballotOpen public {
         addBallotAndVoterNoPk(ballot);
         SuccessfulVote(msg.sender, ballot);
     }
 
     // Internal function to ensure atomicity of voter log
-    function addBallotAndVoter(bytes32 encryptedBallot, bytes32 senderPubkey) internal {
+    function addBallotAndVoterWithPk(bytes32 encryptedBallot, bytes32 senderPubkey) internal {
         uint256 ballotNumber = addBallotAndVoterNoPk(encryptedBallot);
         associatedPubkeys[ballotNumber] = senderPubkey;
     }

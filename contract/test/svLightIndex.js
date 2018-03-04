@@ -143,7 +143,7 @@ async function testOwner(accounts) {
     // make sure whitelists are still blocking ppl
     await asyncAssertThrow(
         () =>
-            lg.addBallot(democId, democId, bytes32zero, accounts[1], {
+            lg.addBallot(democId, democId, bytes32zero, {
                 from: accounts[1]
             }),
         "no free lunch (issue)"

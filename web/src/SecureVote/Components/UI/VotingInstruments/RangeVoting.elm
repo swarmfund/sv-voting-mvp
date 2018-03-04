@@ -15,14 +15,6 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 drawRangeVotingInstrument : Model -> Int -> String -> List (Html Msg)
 drawRangeVotingInstrument model id optionTitle =
     let
-        dMod d f aM =
-            case aM of
-                Nothing ->
-                    Just d
-
-                Just a ->
-                    Just (f a)
-
         optBtnCs =
             [ class "f3 relative ba br2 b--silver bg-white-20 bg-animate hover-bg-gold ph1 pt2 pointer shadow-1 noselect z-999", style [ ( "padding-bottom", "1px" ), ( "user-select", "none" ) ] ]
     in
@@ -31,7 +23,7 @@ drawRangeVotingInstrument model id optionTitle =
         [ div [ class "inline-flex flex-row content-center cf relative", style [ ( "top", "-10px" ) ] ]
             [ span
                 ([ style [ ( "top", "-5px" ), ( "left", "15px" ) ]
-                 , onClick (ModBallotRange id (dMod -1 <| max -3 << flip (-) 1))
+                 , onClick (ModBallotRange id (max -3 << flip (-) 1))
                  ]
                     ++ optBtnCs
                 )
@@ -49,7 +41,7 @@ drawRangeVotingInstrument model id optionTitle =
             , span
                 (optBtnCs
                     ++ [ style [ ( "top", "-5px" ), ( "right", "13px" ) ]
-                       , onClick (ModBallotRange id (dMod 1 <| min 3 << (+) 1))
+                       , onClick (ModBallotRange id (min 3 << (+) 1))
                        ]
                 )
                 [ span [ class "relative noselect", style [ ( "top", "1px" ) ] ] [ text "➕️" ] ]
