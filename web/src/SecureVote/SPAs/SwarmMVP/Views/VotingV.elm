@@ -15,6 +15,7 @@ import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Loading exposing (loadingSpinner)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
+import SecureVote.Components.UI.VotingInstruments.BinaryYesNo exposing (yesNoToString)
 import SecureVote.Crypto.Hashing exposing (hashToInt)
 import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Models exposing (CandidateEthTx)
@@ -41,7 +42,8 @@ votingView model ( bHash, bSpec ) =
             )
 
         renderBinaryVote =
-            "NOT IMPLEMENTED"
+            -- show the use an error if something broke
+            yesNoToString <| Dict.get (genVoteOptId bHash 0) model.ballotRange ? -999
 
         drawOptSummary opts =
             case opts of
@@ -49,13 +51,13 @@ votingView model ( bHash, bSpec ) =
                     List.map tableRow <| List.map getResults (enumerate simpleOpts)
 
                 OptsBinary ->
-                    [ tableRow ( "Voting", renderBinaryVote ) ]
+                    [ tableRow ( "Your Vote", renderBinaryVote ) ]
 
                 OptsNothing ->
                     [ tableRow ( "Error", "No Options Available" ) ]
 
         displayResults =
-            table [ class "mt2 dt--fixed w-auto-l" ] <|
+            table [ class "mt2 dt--fixed w-auto-l center" ] <|
                 Maybe.map drawOptSummary (bVoteOpts.getOption bSpec)
                     ? []
 

@@ -1,5 +1,6 @@
 module SecureVote.Ballots.Lenses exposing (..)
 
+import Monocle.Common exposing ((=>), maybe)
 import Monocle.Lens exposing (Lens)
 import Monocle.Optional exposing (Optional)
 import SecureVote.Ballots.Types exposing (..)
@@ -77,6 +78,13 @@ bDiscLink =
     Optional
         (mapBSpecWDefault .discussionLink Nothing)
         (\a bSpec -> mapBSpecWDefault (\b -> BVer01 { b | discussionLink = Just a }) bSpec bSpec)
+
+
+bEncPK : Optional BallotSpec String
+bEncPK =
+    Optional
+        (mapBSpecWDefault .encryptionPK Nothing)
+        (\pk b -> mapBSpecWDefault (\b_ -> BVer01 { b_ | encryptionPK = Just pk }) b b)
 
 
 optsToList : OptsOuter -> List SimpleOption

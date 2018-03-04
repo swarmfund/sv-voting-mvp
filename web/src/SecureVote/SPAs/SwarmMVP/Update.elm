@@ -7,10 +7,10 @@ import Material
 import Material.Helpers as MHelp exposing (map1st, map2nd)
 import Material.Snackbar as Snackbar
 import Maybe exposing (andThen)
-import Maybe.Extra exposing ((?))
+import Maybe.Extra exposing ((?), isNothing)
 import Monocle.Common exposing ((<|>), (=>), dict, maybe)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
-import SecureVote.Ballots.Lenses exposing (bErc20Addr, bStartTime)
+import SecureVote.Ballots.Lenses exposing (..)
 import SecureVote.Ballots.SpecSource exposing (CidType(Sha256), getBallotSpec)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
@@ -28,6 +28,7 @@ import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBall
 import SecureVote.Utils.Int exposing (maxInt)
 import SecureVote.Utils.Lenses exposing ((=|>))
 import Task exposing (attempt)
+import Tuple exposing (second)
 
 
 scrollToTop : String -> Cmd Msg
@@ -108,7 +109,7 @@ update msg model =
                 doAuditIfBallotEnded =
                     case bSpecM of
                         Just bSpec ->
-                            if bStartTime.getOption bSpec ? maxInt < model.now then
+                            if (bEndTime.getOption bSpec ? maxInt) < model.now then
                                 [ auditCmd { model | currentBallot = Just bHash } ( bHash, bSpec ) ]
                             else
                                 []
@@ -122,31 +123,38 @@ update msg model =
             let
                 plainBytesM =
                     mBHashBSpecPair model
-                        |> Maybe.andThen
+                        |> Result.fromMaybe "Cannot get Ballot Spec from model - have you selected a ballot?"
+                        |> Result.andThen
                             (\( bHash, bSpec ) ->
                                 orderedBallotBits ( bHash, bSpec ) model.ballotBits
-                                    |> Maybe.andThen
-                                        (flip constructBallot <|
-                                            getDelegateAddress model
-                                                ? defaultDelegate
-                                        )
+                                    |> Result.andThen
+                                        (flip constructBallot defaultDelegate)
                             )
 
                 skM =
                     Maybe.map .hexSk model.keypair
 
                 remotePkM =
-                    model.remoteHexPk
+                    mBHashBSpecPair model |> Maybe.andThen (second >> bEncPK.getOption)
 
-                encCmds =
+                ( msg, encCmds ) =
                     case ( skM, remotePkM, plainBytesM ) of
-                        ( Just sk, Just pk, Just bs ) ->
-                            [ encryptBytes { hexSk = sk, hexRemotePk = pk, bytesToSign = bs } ]
+                        ( Just sk, Just pk, Ok bs ) ->
+                            ( NoOp, [ encryptBytes { hexSk = sk, hexRemotePk = pk, bytesToSign = bs } ] )
 
-                        _ ->
-                            []
+                        ( _, Nothing, Ok bs ) ->
+                            ( NoOp, [] )
+
+                        ( _, _, Err s ) ->
+                            ( LogErr <| "Something went wrong generating BallotPlaintext: " ++ s, [] )
+
+                        ( _, _, _ ) ->
+                            ( LogErr <| "Fatal error generating BallotPlaintext!", [] )
+
+                ( m_, cmd_ ) =
+                    update msg { model | ballotPlaintext = plainBytesM }
             in
-            { model | ballotPlaintext = plainBytesM } ! encCmds
+            m_ ! (encCmds ++ [ cmd_ ])
 
         GotFullSpecFromIpfs res ->
             case res of
@@ -158,7 +166,10 @@ update msg model =
                         erc20AbrvCmd =
                             case bErc20Addr.getOption bSpec of
                                 Just e20Addr ->
-                                    [ getErc20Abrv e20Addr ]
+                                    if isNothing (Dict.get bHash model.erc20Abrvs) then
+                                        [ getErc20Abrv { bHash = bHash, erc20Addr = e20Addr } ]
+                                    else
+                                        []
 
                                 Nothing ->
                                     []
@@ -356,19 +367,26 @@ updateFromWeb3 msg model =
                         ballotPrelim =
                             BallotPrelimInfo specHash votingContract extraData startTime
 
+                        deepInsert kOuter k v outerD =
+                            let
+                                innerD =
+                                    Dict.get kOuter outerD ? Dict.empty
+                            in
+                            Dict.insert kOuter (Dict.insert k v innerD) outerD
+
                         di =
-                            (dict democHash => dict specHash).set ballotPrelim model.democIssues
+                            deepInsert democHash specHash ballotPrelim model.democIssues
 
                         dIToSpec =
-                            (dict democHash => dict i).set specHash model.democIToSpec
+                            deepInsert democHash i specHash model.democIToSpec
                     in
                     { model | democIssues = di, democIToSpec = dIToSpec } ! [ getBallotSpec { specHash = specHash, cidType = Sha256 } ]
 
                 _ ->
                     doUpdateErr "Got bad ballot info from blockchain. Please check your connection or reload the page" model
 
-        GotErc20Abrv { erc20Addr, abrv } ->
-            { model | erc20Abrvs = Dict.insert erc20Addr abrv model.erc20Abrvs } ! []
+        GotErc20Abrv { erc20Addr, bHash, abrv } ->
+            { model | erc20Abrvs = Dict.insert bHash abrv model.erc20Abrvs } ! []
 
 
 updateFromCurve25519 : FromCurve25519Msg -> Model -> ( Model, Cmd Msg )

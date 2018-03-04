@@ -8,7 +8,6 @@ type Route
     | OpeningSlideR
     | SwmHowToVoteR
     | SwmVoteR
-    | SwmDelegateR
     | SwmSubmitR
     | ListAllVotesR
     | NotFoundR

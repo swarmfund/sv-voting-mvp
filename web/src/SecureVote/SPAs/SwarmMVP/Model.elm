@@ -45,7 +45,7 @@ type alias Model =
     , ethNode : String
     , keypair : Maybe Curve25519KeyPair
     , encBytes : Maybe String
-    , ballotPlaintext : Maybe (List Int)
+    , ballotPlaintext : Result String (List Int)
     , remoteHexPk : Maybe String
     , miniVotingAbi : String
     , verificationError : Maybe String
@@ -67,7 +67,7 @@ type alias Model =
     , failedSpec : Dict String String
     , fatalSpecFail : List String
     , currDemoc : String
-    , erc20Abrvs : Dict String String --^ map (erc20Addr => erc20Abrv)
+    , erc20Abrvs : Dict String String --^ map (bHash => erc20Abrv)
     , erc20Balance : Maybe Decimal
     }
 
@@ -145,7 +145,7 @@ initModel { dev, mainTitle, democHash } =
     , ethNode = ethNode_
     , keypair = Nothing
     , encBytes = Nothing
-    , ballotPlaintext = Nothing
+    , ballotPlaintext = Err "Not initialized yet"
     , remoteHexPk = Nothing
     , miniVotingAbi = "Error: Web3 has not initialized correctly"
     , verificationError = Nothing
@@ -185,7 +185,7 @@ resetAllBallotFields model { contractAddr } =
         , ballotAllDone = False
         , candidateTx = { nullCandidateEthTx | to = Just contractAddr }
         , encBytes = Nothing
-        , ballotPlaintext = Nothing
+        , ballotPlaintext = Err "Ballot fields reset and ballotPlaintext not set yet."
         , remoteHexPk = Nothing
         , miniVotingAbi = "Error: Ballot parameters have been reset and ABI is not set yet."
         , ballotVerificationPassed = Loading

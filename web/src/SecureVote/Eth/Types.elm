@@ -32,4 +32,4 @@ type alias WriteViaMMDoc =
 
 
 type alias Erc20Abrv =
-    { erc20Addr : String, abrv : String }
+    { erc20Addr : String, abrv : String, bHash : String }
