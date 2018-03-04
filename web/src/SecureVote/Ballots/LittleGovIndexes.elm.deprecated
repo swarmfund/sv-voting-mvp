@@ -1,8 +1,6 @@
 module SecureVote.Ballots.LittleGovIndexes exposing (..)
 
 import BigInt as BI
-import Web3.Eth.Contract as Contract
-import Web3.Types exposing (Abi(Abi), Address(Address), Sha3(Sha3))
 
 
 type alias NetworkTo a =
