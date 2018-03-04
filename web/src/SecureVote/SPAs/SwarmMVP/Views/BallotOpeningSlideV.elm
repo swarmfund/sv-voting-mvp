@@ -63,7 +63,7 @@ openingSlide model ( bHash, bSpec ) =
                         _ ->
                             ( "ERROR: UNKNOWN BALLOT TYPE", "ERROR: UNKNOWN BALLOT TYPE", [] )
             in
-            [ [ text <| "Ballot description: " ++ bShortDesc.getOption bSpec ? "NO DESCRIPTION" ]
+            [ [ text <| "Ballot description: " ++ bLongDesc.getOption bSpec ? "NO DESCRIPTION" ]
             ]
                 ++ discussionLink
                 ++ [ [ subhead "Voting" ]
