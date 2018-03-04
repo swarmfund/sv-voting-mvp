@@ -96,3 +96,7 @@ type alias SimpleOption =
 
 type SimpleVer
     = RangeVotingPlusMinus3
+
+
+type alias BallotSCDetails =
+    { bHash : String, startingBlockEst : Int }

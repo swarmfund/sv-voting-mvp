@@ -1,5 +1,6 @@
 module SecureVote.SPAs.SwarmMVP.Views.SetAddressV exposing (..)
 
+import Dict
 import Html exposing (Html, div, p, span, strong, text)
 import Html.Attributes exposing (class)
 import Material.Options as Options exposing (cs, css)
@@ -9,7 +10,7 @@ import Monocle.Common exposing (dict)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
-import SecureVote.Components.UI.Typo exposing (headline)
+import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Eth.Utils exposing (isValidEthAddress, setCandTxFrom)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (getUserErc20Addr, setUserErc20Addr, userErc20AddrId)
@@ -36,7 +37,7 @@ swmAddressV model ( bHash, bSpec ) =
                     [ SetCandidateTx (setCandTxFrom "") ]
                  else
                     [ SetCandidateTx (setCandTxFrom <| getUserErc20Addr model ? "")
-                    , ToWeb3 GetErc20Balance
+                    , ToWeb3 <| GetErc20Balance bHash
                     ]
                 )
                     ++ [ PageGoForward SwmHowToVoteR ]
@@ -46,7 +47,7 @@ swmAddressV model ( bHash, bSpec ) =
                 [ PageGoForward SwmHowToVoteR
                 , setUserErc20Addr "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
                 , SetCandidateTx <| setCandTxFrom "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
-                , ToWeb3 GetErc20Balance
+                , ToWeb3 <| GetErc20Balance bHash
                 ]
 
         devBtn =
@@ -61,8 +62,9 @@ swmAddressV model ( bHash, bSpec ) =
     fullPageSlide 384938493
         model
         ("Your " ++ erc20Abrv ++ " Address")
-        [ Options.styled span [ cs "dark-gray db pa2 mv3 f4" ] [ text <| "Please enter your Ethereum address holding " ++ erc20Abrv ++ " tokens below" ]
-        , Options.styled p [ cs "pa2" ] [ strong [] [ text "Note: " ], text <| "Your address is only used to confirm your " ++ erc20Abrv ++ " token balance. ", strong [] [ text "This is an optional step." ] ]
+        [ Options.styled span [ cs "dark-gray db pa2 mt3 f4" ] [ text <| "Please enter your Ethereum address holding " ++ erc20Abrv ++ " tokens below" ]
+        , Options.styled p [ cs "" ] [ strong [] [ text "Note: " ], text <| "Your address is only used to confirm your " ++ erc20Abrv ++ " token balance. ", strong [] [ text "This is an optional step." ] ]
+        , subhead <| "Your ballance will be shown as it was in block " ++ Maybe.map (toString << .startingBlockEst) (Dict.get bHash model.ballotScDetails) ? "Cannot find ballot starting block estimate"
         , div [ class "center" ]
             [ div [ class "flex flex-column items-center mh2" ]
                 [ div [ class "w-100 flex flex-column items-start" ]

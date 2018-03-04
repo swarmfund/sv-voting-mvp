@@ -3,6 +3,7 @@ module SecureVote.SPAs.SwarmMVP.Web3Handler exposing (..)
 import Json.Decode as D exposing (Value, int)
 import Json.Decode.Pipeline exposing (decode, required)
 import RemoteData exposing (RemoteData(Failure, Success))
+import SecureVote.Ballots.Types exposing (BallotSCDetails)
 import SecureVote.Eth.Types exposing (BallotInfo, Erc20Abrv)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
@@ -83,6 +84,25 @@ gotErc20AbrvHandler =
             case D.decodeValue decoder v of
                 Ok o ->
                     FromWeb3 <| GotErc20Abrv o
+
+                Err e ->
+                    LogErr e
+        )
+
+
+ballotInfoExtraHandler : Sub Msg
+ballotInfoExtraHandler =
+    let
+        decoder =
+            decode BallotSCDetails
+                |> required "bHash" D.string
+                |> required "startingBlockEst" D.int
+    in
+    ballotInfoExtra
+        (\v ->
+            case D.decodeValue decoder v of
+                Ok deets ->
+                    FromWeb3 <| GotBallotSCDeets deets
 
                 Err e ->
                     LogErr e

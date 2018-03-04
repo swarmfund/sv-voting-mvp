@@ -12,7 +12,6 @@ import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.RenderAudit exposing (isAuditSuccessMsg, renderAudit)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
-import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate)
 import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(..))
@@ -43,15 +42,40 @@ openingSlide model ( bHash, bSpec ) =
                     []
 
         introText =
+            let
+                smallP =
+                    p [ class "mb3 lh-title" ]
+
+                ( voteDesc, voteInst, extraHtml ) =
+                    case bVoteOpts.getOption bSpec of
+                        Just (OptsSimple RangeVotingPlusMinus3 _) ->
+                            ( "a number of options. Each option may have a description explaining it in more detail."
+                            , "you allocate each option a number from -3 to +3 (inclusive). It's important to choose a vote for each option. (This method of voting is called 'Range Voting'.)"
+                            , [ smallP [ text "If you'd like, ", a [ href "https://www.youtube.com/watch?v=afEwklJEzFc", target "_blank" ] [ text "here is a video" ], text " walking you through the voting process." ] ]
+                            )
+
+                        Just OptsBinary ->
+                            ( "a choice of Yes or No for this ballot."
+                            , "you'll need to choose 'Yes' if you agree with the resolution, or 'No' if you disagree."
+                            , []
+                            )
+
+                        _ ->
+                            ( "ERROR: UNKNOWN BALLOT TYPE", "ERROR: UNKNOWN BALLOT TYPE", [] )
+            in
             [ [ text <| "Ballot description: " ++ bShortDesc.getOption bSpec ? "NO DESCRIPTION" ]
             ]
                 ++ discussionLink
                 ++ [ [ subhead "Voting" ]
-                   , [ text "You will be presented with a number of options. Each option has a description explaining it in more detail."
+                   , [ strong [] [ text <| "This is a stake-weighted vote using SWM balances as they were at " ++ formatTsAsDate (bStartTime.getOption bSpec ? 0) ] ]
+                   , [ div [] <|
+                        [ smallP [ text <| "You will be presented with " ++ voteDesc ]
+                        , smallP [ text <| "When you vote, " ++ voteInst ]
+                        ]
+                            ++ extraHtml
+                            ++ [ smallP [ text "When you're ready, let's vote!" ]
+                               ]
                      ]
-                   , [ text "When you vote, you allocate each option a number from -3 to +3 (inclusive). It's important to choose a vote for each option. (This method of voting is called 'Range Voting'.)" ]
-                   , [ text "If you'd like, ", a [ href "https://www.youtube.com/watch?v=afEwklJEzFc", target "_blank" ] [ text "here is a video" ], text " walking you through the voting process." ]
-                   , [ text "When you're ready, let's vote!" ]
                    ]
 
         introParagraphs =
