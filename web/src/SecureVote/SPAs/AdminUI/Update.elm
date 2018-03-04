@@ -11,9 +11,6 @@ import SecureVote.SPAs.AdminUI.Components.Input exposing (genDropSelect)
 import SecureVote.SPAs.AdminUI.Model exposing (Model, Web3Model, initWeb3Model)
 import SecureVote.SPAs.AdminUI.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.AdminUI.Views.BallotBuilder exposing (buildBSpecV01)
-import Task
-import Web3.Types exposing (Error(Error), Sha3(Sha3))
-import Web3.Utils exposing (sha3)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -113,14 +110,15 @@ update msg model =
             ( { model | web3 = web3 }, cmds )
 
 
-handleSha3Response : Result Error Sha3 -> Msg
-handleSha3Response r =
-    case r of
-        Ok (Sha3 s) ->
-            UpdateHash (H.GotHash <| H.FromHashCmd EthHex s H.Keccak256)
 
-        Err (Error s) ->
-            HashError s
+--handleSha3Response : Result Error Sha3 -> Msg
+--handleSha3Response r =
+--    case r of
+--        Ok (Sha3 s) ->
+--            UpdateHash (H.GotHash <| H.FromHashCmd EthHex s H.Keccak256)
+--
+--        Err (Error s) ->
+--            HashError s
 
 
 w3Update : FromWeb3Msg -> Web3Model -> ( Web3Model, Cmd Msg )
