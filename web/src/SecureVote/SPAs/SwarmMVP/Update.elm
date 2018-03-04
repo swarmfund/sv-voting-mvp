@@ -86,7 +86,17 @@ update msg model =
                 ! []
 
         ModBallotRange id f ->
-            { model | ballotRange = Dict.update id f model.ballotRange } ! []
+            let
+                val =
+                    (f <| Dict.get id model.ballotRange) ? 0
+
+                newBallotRange =
+                    Dict.insert id val model.ballotRange
+
+                newBallotBits =
+                    Dict.insert id (ballotValToBytes val) model.ballotBits
+            in
+            { model | ballotRange = newBallotRange, ballotBits = newBallotBits } ! []
 
         SetBallot b ->
             let
