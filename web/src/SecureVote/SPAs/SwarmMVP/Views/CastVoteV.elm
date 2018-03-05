@@ -76,7 +76,7 @@ castVoteView model ( bHash, bSpec ) =
                 id =
                     genVoteOptId bHash i
             in
-            div [ class "center mw-5 cf mb4 mt3 db w-100 bb bw1 b--silver" ]
+            div [ class "center mw-5 cf mb4 mt3 db w-100 bb bw1 b--silver pb2" ]
                 [ div [ class "h-100 w-100 w-100-m w-30-l fl mt2 mb3 tl-l v-mid" ]
                     [ span [ class "w-100 f4 tc tl-l v-mid b" ] [ text optionTitle ] ]
                 , div [ class "cf w-0 w-25-m fl dn dib-m" ]
@@ -102,7 +102,7 @@ castVoteView model ( bHash, bSpec ) =
                 ]
 
         descriptionReminder =
-            div [ class "mb4" ]
+            div [ class "mb4 mh3 mw8 center" ]
                 [ subhead <| bTitle.getOption bSpec ? "NO TITLE FOR BALLOT"
                 , text <| bLongDesc.getOption bSpec ? "NO LONG DESCRIPTION FOR BALLOT"
                 ]
