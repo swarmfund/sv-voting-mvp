@@ -12,5 +12,5 @@ type Msg
     | SetDelegationType DelegationType
     | SetBoolField String Bool
     | GetDelegationPayload { delegateAddr : String, tokenAddr : String }
-    | GotDelegationPayload String
+    | ReceivedPayload String
     | LogErr String

@@ -4,10 +4,11 @@ import Dict
 import Element.Input exposing (dropMenu, menu, select, selected, updateSelection)
 import Maybe.Extra exposing ((?))
 import SecureVote.Ballots.Types exposing (emptyBSpec01)
-import SecureVote.Eth.Web3 exposing (setDelegateData)
+import SecureVote.Eth.Web3 exposing (setGlobalDelegationImpl, setTokenDelegationImpl)
 import SecureVote.SPAs.DelegationUI.Components.Input exposing (genDropSelect)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model, Web3Model, initWeb3Model)
 import SecureVote.SPAs.DelegationUI.Msg exposing (..)
+import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType(..))
 import Task
 import Web3.Types exposing (Error(Error), Sha3(Sha3))
 import Web3.Utils exposing (sha3)
@@ -45,17 +46,30 @@ update msg model =
 
                 newDelegationTx =
                     { modelDelTx | to = delegateAddr }
-            in
-            { model | delTx = newDelegationTx }
-                ! [ setDelegateData
-                        { delegationABI = model.delABI
-                        , contractAddr = model.delConAddr
-                        , delegateAddr = delegateAddr
-                        , tokenContract = tokenAddr
-                        }
-                  ]
 
-        GotDelegationPayload payload ->
+                cmd =
+                    case model.delType of
+                        Just Global ->
+                            setGlobalDelegationImpl
+                                { delegationABI = model.delABI
+                                , contractAddr = model.delConAddr
+                                , delegateAddr = delegateAddr
+                                }
+
+                        Just Token ->
+                            setTokenDelegationImpl
+                                { delegationABI = model.delABI
+                                , contractAddr = model.delConAddr
+                                , delegateAddr = delegateAddr
+                                , tokenContract = tokenAddr
+                                }
+
+                        _ ->
+                            Cmd.none
+            in
+            { model | delTx = newDelegationTx } ! [ cmd ]
+
+        ReceivedPayload payload ->
             let
                 modelDelTx =
                     model.delTx

@@ -60,11 +60,21 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     /* START DELEGATION SECTION */
 
 
-    app.ports.setDelegateData.subscribe(wrapIncoming(({delegationABI, contractAddr, delegateAddr, tokenContract}) => {
+    app.ports.setTokenDelegationImpl.subscribe(wrapIncoming(({delegationABI, contractAddr, delegateAddr, tokenContract}) => {
         const delegateABIObj = JSON.parse(delegationABI);
         const delegateContract = web3js.eth.contract(delegateABIObj).at(contractAddr);
 
         const payload = delegateContract.setTokenDelegation.getData(tokenContract, delegateAddr);
+
+        app.ports.gotDelegatePayloadImpl.send(payload);
+    }));
+
+
+    app.ports.setGlobalDelegationImpl.subscribe(wrapIncoming(({delegationABI, contractAddr, delegateAddr}) => {
+        const delegateABIObj = JSON.parse(delegationABI);
+        const delegateContract = web3js.eth.contract(delegateABIObj).at(contractAddr);
+
+        const payload = delegateContract.setGlobalDelegation.getData(delegateAddr);
 
         app.ports.gotDelegatePayloadImpl.send(payload);
     }));

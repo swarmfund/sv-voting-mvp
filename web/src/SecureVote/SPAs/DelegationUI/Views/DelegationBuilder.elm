@@ -21,12 +21,7 @@ delegationFields model =
             onClick <|
                 GetDelegationPayload
                     { delegateAddr = getStrField model delegateId ? ""
-                    , tokenAddr =
-                        tcChoiceToAddr <|
-                            if model.delType == Just Global then
-                                Nothing
-                            else
-                                I.selected model.tokenConAddr
+                    , tokenAddr = tcChoiceToAddr <| I.selected model.tokenConAddr
                     }
 
         isDisabled =

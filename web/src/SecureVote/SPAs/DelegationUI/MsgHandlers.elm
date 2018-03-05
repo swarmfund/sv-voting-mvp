@@ -15,7 +15,7 @@ errHelper descMsg errMsg =
 handleDelegationPayload r =
     case r of
         Ok payload ->
-            GotDelegationPayload payload
+            ReceivedPayload payload
 
         Err err ->
             errHelper "Delegation Payload error: " err
