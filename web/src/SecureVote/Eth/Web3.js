@@ -117,6 +117,20 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     }));
 
 
+    app.ports.getTxInfoContractWrite.subscribe(wrapIncoming(params => {
+        const {to, abi, method, args} = params;
+        console.log("getTxInfoContractWrite got:", params);
+
+        const c = web3js.eth.contract(JSON.parse(abi)).at(to);
+        const data = c[method].getData(...args);
+
+        console.log("getTxInfo got data", data);
+        const toRet = JSON.stringify({to, data}, null, 4);
+        console.log("Sending to gotTxInfo", toRet);
+        app.ports.gotTxInfo.send(toRet);
+    }));
+
+
     // app.ports.getInit.subscribe(wrapIncoming(({addr, oTitles}) => {
     //     const contractAddr = addr;
     //

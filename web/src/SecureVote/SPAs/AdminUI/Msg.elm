@@ -4,7 +4,7 @@ import Element.Input exposing (SelectMsg)
 import SecureVote.Ballots.Types exposing (BallotSpecChoice, OptsChoice)
 import SecureVote.Crypto.Hashing exposing (HashAlg, HashMsg)
 import SecureVote.Eth.Models exposing (MinEthTx)
-import SecureVote.Eth.Types exposing (WriteViaMMDoc)
+import SecureVote.Eth.Types exposing (GetTxInfoContractWrite, GotTxInfoPayload, WriteViaMMDoc)
 
 
 type Msg
@@ -25,6 +25,7 @@ type Msg
 
 type FromWeb3Msg
     = GotTxid String
+    | GotTxInfo String
 
 
 type ToWeb3Msg
