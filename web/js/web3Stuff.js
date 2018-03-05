@@ -1,5 +1,5 @@
 import Web3Legacy from 'web3';
-import Web3OnePointO from './vendor/web3-1.0.min';
+// import Web3OnePointO from './vendor/web3-1.0.min';
 
 import web3Ports from '../src/SecureVote/Eth/Web3';
 
@@ -18,7 +18,7 @@ if (typeof web3 !== 'undefined') {
     mmWeb3 = web3js;
 }
 
-window.web3 = new Web3OnePointO(web3js.currentProvider);
+// window.web3 = new Web3OnePointO(web3js.currentProvider);
 
 export {
     web3js,
