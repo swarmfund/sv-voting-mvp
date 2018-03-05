@@ -160,7 +160,7 @@ update msg model =
                             ( LogErr <| "Fatal error generating BallotPlaintext!", [] )
 
                 ( m_, cmd_ ) =
-                    update msg { model | ballotPlaintext = plainBytesM }
+                    update msg { model | ballotPlaintext = plainBytesM, ballotRawHex = plainHexBytes }
             in
             m_ ! (encCmds ++ [ cmd_ ])
 
