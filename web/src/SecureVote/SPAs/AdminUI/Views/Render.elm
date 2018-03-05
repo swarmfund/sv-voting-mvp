@@ -8,6 +8,11 @@ import SecureVote.SPAs.AdminUI.Msg exposing (Msg)
 import SecureVote.SPAs.AdminUI.Views.Styles exposing (AdminStyles(..), UiElem, Variations(..))
 
 
+renderScrollable : UiElem -> UiElem
+renderScrollable elem =
+    paragraph NoS [ width fill, padding 20, paddingRight 20, xScrollbar ] [ elem ]
+
+
 renderBallotSpec : Model -> UiElem
 renderBallotSpec model =
     column BallotPreview
@@ -19,8 +24,15 @@ renderBallotHash : Model -> UiElem
 renderBallotHash model =
     row BallotHash
         []
-        [ paragraph NoS [ width fill, padding 20, paddingRight 20, height <| px 60, xScrollbar ] [ text model.hash ]
+        [ renderScrollable <| text model.hash
         ]
+
+
+renderTxInfo : Model -> UiElem
+renderTxInfo model =
+    row BallotHash
+        []
+        [ renderScrollable (text model.web3.txInfo) ]
 
 
 renderEventLog : Model -> UiElem

@@ -2,15 +2,18 @@ module SecureVote.SPAs.AdminUI.Update exposing (..)
 
 import Dict
 import Element.Input exposing (dropMenu, menu, select, selected, updateSelection)
-import Maybe.Extra exposing ((?))
+import Maybe.Extra exposing ((?), isJust)
 import SecureVote.Ballots.Encoders exposing (bSpecToJson, bSpecValueToString)
 import SecureVote.Ballots.Types exposing (emptyBSpec01)
 import SecureVote.Crypto.Hashing as H exposing (HashAlg(Sha256), HashFmt(EthHex), hash, hashUpdate)
-import SecureVote.Eth.Web3 exposing (performContractWriteMM)
+import SecureVote.Eth.Web3 exposing (getTxInfoContractWrite, performContractWriteMM)
 import SecureVote.SPAs.AdminUI.Components.Input exposing (genDropSelect)
+import SecureVote.SPAs.AdminUI.Fields exposing (..)
+import SecureVote.SPAs.AdminUI.Helpers exposing (genDeployArgs, getStrField)
 import SecureVote.SPAs.AdminUI.Model exposing (Model, Web3Model, initWeb3Model)
 import SecureVote.SPAs.AdminUI.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.AdminUI.Views.BallotBuilder exposing (buildBSpecV01)
+import String exposing (toInt)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -59,8 +62,35 @@ update msg model =
 
                 jsonBallotStr =
                     bSpecValueToString <| bSpecToJson newWorkingBallot
+
+                web3 =
+                    model.web3
+
+                sTs =
+                    getStrField model startTimeId |> Result.fromMaybe "can't get start time" |> Result.andThen toInt |> Result.withDefault 0xFFFFFFFF
+
+                eTs =
+                    getStrField model endTimeId |> Result.fromMaybe "can't get end time" |> Result.andThen toInt |> Result.withDefault 0x00
             in
-            { model | workingBallot = newWorkingBallot, jsonBallot = jsonBallotStr } ! [ hash { input = H.String, output = EthHex, alg = Sha256 } jsonBallotStr ]
+            { model | workingBallot = newWorkingBallot, jsonBallot = jsonBallotStr, web3 = { web3 | txInfo = "Loading..." } }
+                ! [ hash { input = H.String, output = EthHex, alg = Sha256 } jsonBallotStr
+                  , getTxInfoContractWrite
+                        { to = model.indexAddr
+                        , abi = model.indexABI
+                        , method = "deployBallot"
+                        , args =
+                            genDeployArgs
+                                { democHash = getStrField model democHashId ? "NO DEMOC HASH FOUND - ERROR 0x0000000000000000000000000000000000000000000000000000000000000000"
+                                , bHash = model.hash
+                                , extraData = "0x0000000000000000000000000000000000000000000000000000000000000000"
+                                , openPeriod =
+                                    ( sTs
+                                    , eTs
+                                    )
+                                , useEnc = isJust (getStrField model encPkId)
+                                }
+                        }
+                  ]
 
         --, , Task.attempt handleSha3Response (sha3 jsonBallotStr) ]
         UpdateHash m ->
@@ -126,6 +156,9 @@ w3Update msg model =
     case msg of
         GotTxid txid ->
             { model | txid = Just txid } ! []
+
+        GotTxInfo txInfo ->
+            { model | txInfo = txInfo } ! []
 
 
 toW3Update : ToWeb3Msg -> Web3Model -> ( Web3Model, Cmd Msg )

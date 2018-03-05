@@ -61,9 +61,11 @@ initModel { mainTitle, dev, democHash, indexAddr, indexABI } =
 
 type alias Web3Model =
     { txid : Maybe String
+    , txInfo : String
     }
 
 
 initWeb3Model =
     { txid = Nothing
+    , txInfo = "Nothing yet.."
     }

@@ -33,3 +33,11 @@ type alias WriteViaMMDoc =
 
 type alias Erc20Abrv =
     { erc20Addr : String, abrv : String, bHash : String }
+
+
+type alias GotTxInfoPayload =
+    { to : String, data : String }
+
+
+type alias GetTxInfoContractWrite =
+    { to : String, abi : String, method : String, args : Value }

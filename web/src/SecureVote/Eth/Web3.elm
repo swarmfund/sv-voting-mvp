@@ -7,7 +7,7 @@ import Json.Decode.Pipeline exposing (decode, required)
 import Maybe exposing (withDefault)
 import Maybe.Extra exposing (combine)
 import SecureVote.Eth.Models exposing (CandidateEthTx, MinEthTx)
-import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult, InitRecord, WriteViaMMDoc)
+import SecureVote.Eth.Types exposing (..)
 import SecureVote.Eth.Utils exposing (dropEthPrefix)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
@@ -313,6 +313,20 @@ port gotErc20Abrv : (Value -> msg) -> Sub msg
 
 
 port ballotInfoExtra : (Value -> msg) -> Sub msg
+
+
+port getTxInfoContractWrite : GetTxInfoContractWrite -> Cmd msg
+
+
+port gotTxInfo : (Value -> msg) -> Sub msg
+
+
+handleGotTxInfo : (Result String String -> msg) -> Sub msg
+handleGotTxInfo msgF =
+    gotTxInfo
+        (\v ->
+            msgF <| decodeValue string v
+        )
 
 
 

@@ -1,6 +1,6 @@
 module SecureVote.SPAs.AdminUI.MsgHandlers exposing (..)
 
-import SecureVote.SPAs.AdminUI.Msg exposing (FromWeb3Msg(GotTxid), Msg(..))
+import SecureVote.SPAs.AdminUI.Msg exposing (FromWeb3Msg(..), Msg(..))
 
 
 errHelper : String -> a -> Msg
@@ -19,3 +19,13 @@ handleMetaMaskTxid r =
 
         Err err ->
             errHelper "MetaMask error: " err
+
+
+handleGotTxInfoAdmin : Result String String -> Msg
+handleGotTxInfoAdmin r =
+    case r of
+        Ok gotTxInfo ->
+            FromWeb3 <| GotTxInfo gotTxInfo
+
+        Err err ->
+            errHelper "GotTxInfo error generating tx data: " err

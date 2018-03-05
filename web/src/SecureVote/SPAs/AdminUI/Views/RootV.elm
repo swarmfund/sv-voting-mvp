@@ -9,7 +9,7 @@ import SecureVote.SPAs.AdminUI.Helpers exposing (getStrField)
 import SecureVote.SPAs.AdminUI.Model exposing (Model)
 import SecureVote.SPAs.AdminUI.Msg exposing (Msg)
 import SecureVote.SPAs.AdminUI.Views.BallotBuilder exposing (ballotBuilder)
-import SecureVote.SPAs.AdminUI.Views.Render exposing (renderBallotHash, renderBallotSpec, renderEventLog)
+import SecureVote.SPAs.AdminUI.Views.Render exposing (renderBallotHash, renderBallotSpec, renderEventLog, renderTxInfo)
 import SecureVote.SPAs.AdminUI.Views.Styles exposing (AdminStyles(..), UiElem, Variations(..), stylesheet)
 
 
@@ -50,6 +50,8 @@ rootV model =
                     , renderBallotSpec model
                     , subheading NoS [] "Ballot Hash"
                     , renderBallotHash model
+                    , subheading NoS [] "Tx Preview"
+                    , renderTxInfo model
                     , subheading NoS [] "Event Log"
                     , renderEventLog model
                     ]
