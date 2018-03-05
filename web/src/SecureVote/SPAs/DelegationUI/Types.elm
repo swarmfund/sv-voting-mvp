@@ -12,3 +12,30 @@ type alias DelegationTx =
     , gas : Int
     , data : String
     }
+
+
+type DelegationType
+    = Global
+    | Token
+
+
+type TokenContractChoice
+    = Swarm
+
+
+tcChoiceToStr : TokenContractChoice -> String
+tcChoiceToStr c =
+    case c of
+        Swarm ->
+            "Swarm Token"
+
+
+tcChoiceToAddr : Maybe TokenContractChoice -> String
+tcChoiceToAddr c =
+    case c of
+        Just Swarm ->
+            --        TODO: Update Swarm Contract Address
+            "0x23452345"
+
+        _ ->
+            ""

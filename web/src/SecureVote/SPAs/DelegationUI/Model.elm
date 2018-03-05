@@ -4,16 +4,16 @@ import Dict exposing (Dict)
 import Element.Input exposing (SelectWith)
 import Json.Decode exposing (Value)
 import Json.Encode exposing (object)
-import SecureVote.Ballots.Types exposing (BallotSpec, BallotSpecChoice, OptsChoice, emptyBSpec01)
+import SecureVote.SPAs.DelegationUI.Components.Input exposing (genDropSelect)
 import SecureVote.SPAs.DelegationUI.Msg exposing (Msg)
-import SecureVote.SPAs.DelegationUI.Types exposing (DelegationTx, Flags)
+import SecureVote.SPAs.DelegationUI.Types exposing (DelegationTx, DelegationType(Global), Flags, TokenContractChoice)
 
 
 type alias Model =
     { strFields : Dict String String
     , boolFields : Dict String Bool
-    , select : Maybe (SelectWith BallotSpecChoice Msg)
-    , selectOpts : Maybe (SelectWith OptsChoice Msg)
+    , select : SelectWith TokenContractChoice Msg
+    , delegationType : Maybe DelegationType
     , delegationTx : DelegationTx
     , mainTitle : String
     , dev : Bool
@@ -30,8 +30,8 @@ initModel : Flags -> Model
 initModel { mainTitle, dev, democHash, indexAddr, delegationABI } =
     { strFields = Dict.empty
     , boolFields = Dict.empty
-    , select = Nothing
-    , selectOpts = Nothing
+    , select = genDropSelect
+    , delegationType = Just Global
     , delegationTx = DelegationTx "" "" 0 200000 ""
     , mainTitle = mainTitle
     , dev = dev

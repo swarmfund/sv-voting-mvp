@@ -32,20 +32,15 @@ update msg model =
         SetBoolField k v ->
             { model | boolFields = Dict.insert k v model.boolFields } ! []
 
-        SelectBallot selectMsg ->
+        SelectTokenContract selectMsg ->
             let
                 s =
-                    model.select ? genDropSelect
+                    model.select
             in
-            { model | select = Just (updateSelection selectMsg s), web3 = initWeb3Model } ! []
+            { model | select = updateSelection selectMsg s } ! []
 
-        --            { model | select = Just (updateSelection selectMsg s), workingBallot = emptyBSpec01, web3 = initWeb3Model } ! []
-        SelectOptType sMsg ->
-            let
-                s =
-                    model.selectOpts ? dropMenu Nothing SelectOptType
-            in
-            { model | selectOpts = Just <| updateSelection sMsg s } ! []
+        SetDelegationType delType ->
+            { model | delegationType = Just delType } ! []
 
         GetDelegationPayload { delegateAddr, tokenAddr } ->
             let

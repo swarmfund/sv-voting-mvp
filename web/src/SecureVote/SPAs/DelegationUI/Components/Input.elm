@@ -2,8 +2,8 @@ module SecureVote.SPAs.DelegationUI.Components.Input exposing (..)
 
 import Element.Attributes exposing (minHeight, padding, px, spacing, vary)
 import Element.Input as I
-import SecureVote.SPAs.DelegationUI.Msg exposing (Msg(SelectBallot))
-import SecureVote.SPAs.DelegationUI.Views.Styles exposing (AdminStyles(..), Variations(..))
+import SecureVote.SPAs.DelegationUI.Msg exposing (Msg(SelectTokenContract))
+import SecureVote.SPAs.DelegationUI.Views.Styles exposing (DelegationStyles(..), Variations(..))
 
 
 stdPad =
@@ -18,8 +18,12 @@ select =
     I.select Field [ padding stdPad, spacing stdSpace, vary RoundedTop True ]
 
 
+radio =
+    I.radioRow NoS []
+
+
 genDropSelect =
-    I.dropMenu Nothing SelectBallot
+    I.dropMenu Nothing SelectTokenContract
 
 
 textInput =

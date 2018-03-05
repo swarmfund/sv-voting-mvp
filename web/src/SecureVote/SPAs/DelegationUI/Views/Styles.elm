@@ -1,21 +1,22 @@
 module SecureVote.SPAs.DelegationUI.Views.Styles exposing (..)
 
-import Color exposing (black, darkGray)
+import Color exposing (black, darkGray, red)
 import Element exposing (Element)
 import SecureVote.SPAs.DelegationUI.Msg exposing (Msg)
-import Style exposing (style, styleSheet, variation)
+import Style exposing (prop, style, styleSheet, variation)
 import Style.Border exposing (..)
 import Style.Color exposing (border, text)
 import Style.Font exposing (font, monospace, size, typeface)
 
 
 type alias UiElem =
-    Element AdminStyles Variations Msg
+    Element DelegationStyles Variations Msg
 
 
-type AdminStyles
+type DelegationStyles
     = NoS
     | Title
+    | ErrTxt
     | BallotElemSelector
     | TxPreview
     | PayloadHash
@@ -28,6 +29,7 @@ type Variations
     = NoVar
     | RoundedTop
     | RoundedAll
+    | Disabled
 
 
 radius =
@@ -42,6 +44,8 @@ stylesheet =
             [ text black
             , size 30
             ]
+        , style ErrTxt
+            [ text red ]
         , style TxPreview
             [ border black
             , rounded 5
@@ -65,6 +69,8 @@ stylesheet =
                 ]
             , variation RoundedAll
                 [ rounded radius ]
+            , variation Disabled
+                [ prop "disabled" "disabled" ]
             ]
         , style SubMenu
             [ border black

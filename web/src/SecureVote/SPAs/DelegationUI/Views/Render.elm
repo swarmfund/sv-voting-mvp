@@ -5,7 +5,7 @@ import Element.Attributes exposing (fill, height, padding, px, spacing, vary, wi
 import Json.Encode as E
 import SecureVote.SPAs.DelegationUI.Model exposing (Model)
 import SecureVote.SPAs.DelegationUI.Msg exposing (Msg)
-import SecureVote.SPAs.DelegationUI.Views.Styles exposing (AdminStyles(..), UiElem, Variations(..))
+import SecureVote.SPAs.DelegationUI.Views.Styles exposing (DelegationStyles(..), UiElem, Variations(..))
 
 
 renderTxPreview : Model -> UiElem

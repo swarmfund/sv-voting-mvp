@@ -1,15 +1,15 @@
 module SecureVote.SPAs.DelegationUI.Msg exposing (..)
 
 import Element.Input exposing (SelectMsg)
-import SecureVote.Ballots.Types exposing (BallotSpecChoice, OptsChoice)
 import SecureVote.Eth.Models exposing (MinEthTx)
+import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType, TokenContractChoice)
 
 
 type Msg
     = Nop
     | SetStrField String String
-    | SelectBallot (SelectMsg BallotSpecChoice)
-    | SelectOptType (SelectMsg OptsChoice)
+    | SelectTokenContract (SelectMsg TokenContractChoice)
+    | SetDelegationType DelegationType
     | SetBoolField String Bool
     | GetDelegationPayload { delegateAddr : String, tokenAddr : String }
     | GotDelegationPayload String

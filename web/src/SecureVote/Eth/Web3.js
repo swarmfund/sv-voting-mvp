@@ -65,7 +65,6 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         const delegateContract = web3js.eth.contract(delegateABIObj).at(contractAddr);
 
         const payload = delegateContract.setTokenDelegation.getData(tokenContract, delegateAddr);
-        console.log(payload);
 
         app.ports.gotDelegatePayloadImpl.send(payload);
     }));
