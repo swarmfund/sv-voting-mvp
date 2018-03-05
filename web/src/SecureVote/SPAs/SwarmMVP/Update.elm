@@ -314,9 +314,6 @@ updateToWeb3 web3msg model =
         CheckTxid txid ->
             { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]
 
-        ReInit oTitles ->
-            model ! []
-
 
 doUpdateErr : String -> Model -> ( Model, Cmd Msg )
 doUpdateErr msg m =
@@ -338,9 +335,6 @@ updateFromWeb3 msg model =
 
         GotEncPubkey encPk ->
             { model | remoteHexPk = Just encPk } ! []
-
-        Web3Init init ->
-            { model | miniVotingAbi = init.miniAbi } ! []
 
         GotTxidStatus txidE ->
             case txidE of
