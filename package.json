@@ -92,7 +92,7 @@
     "build-web": "./build_prod.sh",
     "prod-ui": "./build_prod.sh",
     "prod-admin-ui": "./build_prod.sh",
-    "prod-delegation-ui": "./build_prod.sh",
+    "prod-delegation-ui": "./build_prod.sh || true",
     "_live": "elm-live ./web/src/SecureVote/SPAs/SwarmMVP/Main.elm --output=./web/sv-swarm.js --dir=./web --open --debug",
     "elm-install": "elm-install",
     "elm-package": "elm-package install --yes",
