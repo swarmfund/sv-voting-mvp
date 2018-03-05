@@ -10,6 +10,7 @@
     "@types/es6-promise": "^0.0.33",
     "abi-decoder": "^1.0.9",
     "async-parallel": "^1.2.3",
+    "axios": "^0.18.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.0",

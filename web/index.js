@@ -30,7 +30,7 @@ window.addEventListener('load', function() {
     const Elm = require('./src/SecureVote/SPAs/SwarmMVP/Main.elm');
     const app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen'), flags);
     console.log("Environment variables are: ", R.map(v => v.slice ? v.slice(0,80) : v, flags));
-    web3Ports(web3js, {mmDetected, mmWeb3}, app, {AuditWeb: null});
+    web3Ports(web3js, {mmDetected, mmWeb3}, app, {AuditWeb: null, dev: flags.dev});
     curve25519Ports(app);
-    specSourcePorts(app);
+    specSourcePorts(app, {dev: flags.dev});
 }, 100);
