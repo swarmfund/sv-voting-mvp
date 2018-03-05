@@ -12,7 +12,7 @@ renderTxPreview : Model -> UiElem
 renderTxPreview model =
     let
         tx =
-            model.delegationTx
+            model.delTx
 
         jsonBallotStr =
             E.encode 4 <|
@@ -31,4 +31,4 @@ renderTxPreview model =
 
 renderPayload : Model -> UiElem
 renderPayload model =
-    el PayloadHash [ padding 20, height <| px 60 ] (text model.delegationTx.data)
+    el PayloadHash [ padding 20, height <| px 60 ] (text model.delTx.data)

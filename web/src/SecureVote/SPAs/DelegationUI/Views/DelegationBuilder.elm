@@ -21,11 +21,16 @@ delegationFields model =
             onClick <|
                 GetDelegationPayload
                     { delegateAddr = getStrField model delegateId ? ""
-                    , tokenAddr = tcChoiceToAddr <| I.selected model.select
+                    , tokenAddr =
+                        tcChoiceToAddr <|
+                            if model.delType == Just Global then
+                                Nothing
+                            else
+                                I.selected model.tokenConAddr
                     }
 
         isDisabled =
-            if delAddrInvalid model || (selectTokenInvalid model && model.delegationType == Just Token) then
+            if delAddrInvalid model || (selectTokenInvalid model && model.delType == Just Token) then
                 [ attribute "disabled" "disabled" ]
             else
                 []
@@ -68,7 +73,7 @@ radioButtons model =
         []
         [ radio
             { onChange = SetDelegationType
-            , selected = model.delegationType
+            , selected = model.delType
             , label = I.labelAbove (text "Type of Delegation")
             , options = []
             , choices =
@@ -89,12 +94,12 @@ selectTokenContract model =
         mkChoice c =
             I.choice c (text <| tcChoiceToStr c)
     in
-    if model.delegationType == Just Token then
+    if model.delType == Just Token then
         row NoS
             []
             [ select
                 { label = I.labelAbove <| text "Token Contract"
-                , with = model.select
+                , with = model.tokenConAddr
                 , max = 5
                 , options = [ I.errorBelow <| when (selectTokenInvalid model) <| el ErrTxt [] (text "Please Select a Token Contract") ]
                 , menu =
@@ -110,7 +115,7 @@ selectTokenContract model =
 
 selectTokenInvalid : Model -> Bool
 selectTokenInvalid model =
-    I.selected model.select == Nothing
+    I.selected model.tokenConAddr == Nothing
 
 
 delegateId =

@@ -13,14 +13,4 @@ type Msg
     | SetBoolField String Bool
     | GetDelegationPayload { delegateAddr : String, tokenAddr : String }
     | GotDelegationPayload String
-    | FromWeb3 FromWeb3Msg
     | LogErr String
-    | ToWeb3 ToWeb3Msg
-
-
-type FromWeb3Msg
-    = GotTxid String
-
-
-type ToWeb3Msg
-    = SendTxToMM MinEthTx

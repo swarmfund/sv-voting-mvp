@@ -7,7 +7,7 @@ import SecureVote.Ballots.Types exposing (emptyBSpec01)
 import SecureVote.Eth.Web3 exposing (setDelegateData)
 import SecureVote.SPAs.DelegationUI.Components.Input exposing (genDropSelect)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model, Web3Model, initWeb3Model)
-import SecureVote.SPAs.DelegationUI.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
+import SecureVote.SPAs.DelegationUI.Msg exposing (..)
 import Task
 import Web3.Types exposing (Error(Error), Sha3(Sha3))
 import Web3.Utils exposing (sha3)
@@ -33,27 +33,23 @@ update msg model =
             { model | boolFields = Dict.insert k v model.boolFields } ! []
 
         SelectTokenContract selectMsg ->
-            let
-                s =
-                    model.select
-            in
-            { model | select = updateSelection selectMsg s } ! []
+            { model | tokenConAddr = updateSelection selectMsg model.tokenConAddr } ! []
 
         SetDelegationType delType ->
-            { model | delegationType = Just delType } ! []
+            { model | delType = Just delType } ! []
 
         GetDelegationPayload { delegateAddr, tokenAddr } ->
             let
                 modelDelTx =
-                    model.delegationTx
+                    model.delTx
 
                 newDelegationTx =
                     { modelDelTx | to = delegateAddr }
             in
-            { model | delegationTx = newDelegationTx }
+            { model | delTx = newDelegationTx }
                 ! [ setDelegateData
-                        { delegationABI = model.delegationABI
-                        , contractAddr = model.contractAddr
+                        { delegationABI = model.delABI
+                        , contractAddr = model.delConAddr
                         , delegateAddr = delegateAddr
                         , tokenContract = tokenAddr
                         }
@@ -62,40 +58,12 @@ update msg model =
         GotDelegationPayload payload ->
             let
                 modelDelTx =
-                    model.delegationTx
+                    model.delTx
 
                 newDelegationTx =
                     { modelDelTx | data = payload }
             in
-            { model | delegationTx = newDelegationTx } ! []
+            { model | delTx = newDelegationTx } ! []
 
         LogErr err ->
             { model | errors = err :: model.errors } ! []
-
-        FromWeb3 w3Msg ->
-            let
-                ( web3, cmds ) =
-                    w3Update w3Msg model.web3
-            in
-            ( { model | web3 = web3 }, cmds )
-
-        ToWeb3 w3Msg ->
-            let
-                ( web3, cmds ) =
-                    toW3Update w3Msg model.web3
-            in
-            ( { model | web3 = web3 }, cmds )
-
-
-w3Update : FromWeb3Msg -> Web3Model -> ( Web3Model, Cmd Msg )
-w3Update msg model =
-    case msg of
-        GotTxid txid ->
-            { model | txid = Just txid } ! []
-
-
-toW3Update : ToWeb3Msg -> Web3Model -> ( Web3Model, Cmd Msg )
-toW3Update msg model =
-    case msg of
-        SendTxToMM tx ->
-            model ! []

@@ -19,15 +19,12 @@ rootV model =
             row NoS
                 [ spacing 20 ]
                 [ column NoS
-                    [ spacing 20, width fill, height fill ]
+                    [ spacing 20, width (px 400) ]
                     [ el Title [] (text "SV.Light Delegation UI")
                     , delegationFields model
                     ]
                 , column NoS
-                    [ width <| px 30 ]
-                    []
-                , column NoS
-                    [ spacing 20, width fill ]
+                    [ spacing 20 ]
                     [ el Title [] (text "Delegation Tx Preview")
                     , renderTxPreview model
                     , renderPayload model

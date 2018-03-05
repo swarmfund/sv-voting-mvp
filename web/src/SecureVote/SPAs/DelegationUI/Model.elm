@@ -12,17 +12,16 @@ import SecureVote.SPAs.DelegationUI.Types exposing (DelegationTx, DelegationType
 type alias Model =
     { strFields : Dict String String
     , boolFields : Dict String Bool
-    , select : SelectWith TokenContractChoice Msg
-    , delegationType : Maybe DelegationType
-    , delegationTx : DelegationTx
+    , tokenConAddr : SelectWith TokenContractChoice Msg
+    , delType : Maybe DelegationType
+    , delTx : DelegationTx
     , mainTitle : String
     , dev : Bool
     , democHash : String
     , errors : List String
-    , web3 : Web3Model
     , littleGovIndex : String
-    , delegationABI : String
-    , contractAddr : String
+    , delABI : String
+    , delConAddr : String
     }
 
 
@@ -30,17 +29,16 @@ initModel : Flags -> Model
 initModel { mainTitle, dev, democHash, indexAddr, delegationABI } =
     { strFields = Dict.empty
     , boolFields = Dict.empty
-    , select = genDropSelect
-    , delegationType = Just Global
-    , delegationTx = DelegationTx "" "" 0 200000 ""
+    , tokenConAddr = genDropSelect
+    , delType = Just Global
+    , delTx = DelegationTx "" "" 0 200000 ""
     , mainTitle = mainTitle
     , dev = dev
     , democHash = democHash
     , errors = []
-    , web3 = initWeb3Model
     , littleGovIndex = indexAddr
-    , delegationABI = delegationABI
-    , contractAddr = "0xd78D4beAbFD3054390D10aeb4258dC2D867f5e17"
+    , delABI = delegationABI
+    , delConAddr = "0xd78D4beAbFD3054390D10aeb4258dC2D867f5e17"
     }
 
 
