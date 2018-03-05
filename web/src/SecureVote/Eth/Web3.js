@@ -106,16 +106,14 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         const erc20 = web3js.eth.contract(ERC20ABI).at(erc20Addr);
         const sendAbrv = abrv => app.ports.gotErc20Abrv.send({bHash, erc20Addr, abrv});
 
-        try {
-            mkPromise(erc20.symbol)()
-                .then(abrv => {
-                    sendAbrv(abrv);
-                })
-                .catch(e => {throw e});
-        } catch (e) {
-            sendAbrv("ERC20");
-            implNotifyErr("Unable to get ERC20 Abbreviation for " + addr + ". Error returned: " + JSON.stringify(e).toString());
-        }
+        mkPromise(erc20.symbol)()
+            .then(abrv => {
+                sendAbrv(abrv);
+            })
+            .catch(e => {
+                sendAbrv("ERC20");
+                implNotifyErr("Unable to get ERC20 Abbreviation for " + addr + ". Error returned: " + JSON.stringify(e).toString());
+            });
     }));
 
 
