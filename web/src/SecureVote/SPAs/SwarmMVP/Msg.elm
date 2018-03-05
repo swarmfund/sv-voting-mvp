@@ -57,14 +57,12 @@ type ToWeb3Msg
     = SetProvider
     | GetErc20Balance String --^ string is bHash
     | CheckTxid String
-    | ReInit (List String)
 
 
 type FromWeb3Msg
     = GotBalance Decimal
     | GotDataParam String
     | GotEncPubkey String
-    | Web3Init InitRecord
     | GotTxidStatus (Result String GotTxidResp)
     | GotMetaMask
     | GotMetaMaskTxid String

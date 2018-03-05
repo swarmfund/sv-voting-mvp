@@ -222,27 +222,6 @@ onGotPubkey pubkeyVal =
             errHelper "Error while retrieving encryption public key: " err
 
 
-port getInit : { addr : String, oTitles : List String } -> Cmd msg
-
-
-port implInit : (Value -> msg) -> Sub msg
-
-
-onInit : (InitRecord -> Msg) -> Value -> Msg
-onInit msgConstructor initStuff =
-    let
-        decoder =
-            decode InitRecord
-                |> required "miniAbi" string
-    in
-    case decodeValue decoder initStuff of
-        Ok init ->
-            msgConstructor init
-
-        Err err ->
-            errHelper "Error while getting initial parameters from Web3: " err
-
-
 port getBallotResults : { ethUrl : String, ethRPCAuth : String, votingAddr : String, erc20Addr : String } -> Cmd msg
 
 

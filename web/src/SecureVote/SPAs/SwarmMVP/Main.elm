@@ -25,7 +25,6 @@ subscriptions model =
         , receiveCurve25519Error <| onIncomingCurve25519Error LogErr
         , implDataParam <| onRecieveDataParam
         , gotEncPubkey <| onGotPubkey
-        , implInit <| onInit (FromWeb3 << Web3Init)
         , contractReadResponse <| onContractReadResponse decodeRead readOptsErr
         , gotTxidCheckStatus onGotTxidStatus
         , gotAuditMsg

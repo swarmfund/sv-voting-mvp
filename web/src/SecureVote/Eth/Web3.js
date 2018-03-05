@@ -101,7 +101,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     }));
 
 
-    // get an ERC20 contract's abreviation
+    // get an ERC20 contract's abbreviation
     app.ports.getErc20Abrv.subscribe(wrapIncoming(({bHash, erc20Addr}) => {
         const erc20 = web3js.eth.contract(ERC20ABI).at(erc20Addr);
         const sendAbrv = abrv => app.ports.gotErc20Abrv.send({bHash, erc20Addr, abrv});
@@ -117,50 +117,50 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     }));
 
 
-    app.ports.getInit.subscribe(wrapIncoming(({addr, oTitles}) => {
-        const contractAddr = addr;
-
-        SwmVotingContract = genSwmVotingContract(contractAddr);
-
-        const miniAbi = isLegacy(contractAddr) ? SwmVotingMVPABIs.miniAbiLegacy : SwmVotingMVPABIs.miniAbi;
-        app.ports.implInit.send({
-            miniAbi: JSON.stringify(miniAbi)
-        })
-
-        const voteC = SwmVotingContract.at(contractAddr);
-
-
-        const getBallotOpts = (cb) => {
-            try {
-                voteC.getBallotOptions(cb);
-            } catch (err) {
-                cb(err, null);
-            }
-        }
-
-        getBallotOpts(isLegacy(contractAddr) ? implRecieveBallotOptsCBLegacy : implRecieveBallotOptsCB(oTitles));
-
-        try {
-            const doErr = err => {
-                implBallotPeriod(err, [0,0]);
-            }
-            voteC.startTime((err1, _startTime) => {
-                if (err1) {
-                    doErr(err1);
-                }
-                const startTime = _startTime.toNumber();
-                voteC.endTime((err2, _endTime) => {
-                    if (err2) {
-                        doErr(err2);
-                    }
-                    const endTime = _endTime.toNumber();
-                    implBallotPeriod(null, [startTime, endTime]);
-                });
-            });
-        } catch (err) {
-            implBallotPeriod(err, [0,0]);
-        }
-    }));
+    // app.ports.getInit.subscribe(wrapIncoming(({addr, oTitles}) => {
+    //     const contractAddr = addr;
+    //
+    //     SwmVotingContract = genSwmVotingContract(contractAddr);
+    //
+    //     const miniAbi = isLegacy(contractAddr) ? SwmVotingMVPABIs.miniAbiLegacy : SwmVotingMVPABIs.miniAbi;
+    //     app.ports.implInit.send({
+    //         miniAbi: JSON.stringify(miniAbi)
+    //     })
+    //
+    //     const voteC = SwmVotingContract.at(contractAddr);
+    //
+    //
+    //     const getBallotOpts = (cb) => {
+    //         try {
+    //             voteC.getBallotOptions(cb);
+    //         } catch (err) {
+    //             cb(err, null);
+    //         }
+    //     }
+    //
+    //     getBallotOpts(isLegacy(contractAddr) ? implRecieveBallotOptsCBLegacy : implRecieveBallotOptsCB(oTitles));
+    //
+    //     try {
+    //         const doErr = err => {
+    //             implBallotPeriod(err, [0,0]);
+    //         }
+    //         voteC.startTime((err1, _startTime) => {
+    //             if (err1) {
+    //                 doErr(err1);
+    //             }
+    //             const startTime = _startTime.toNumber();
+    //             voteC.endTime((err2, _endTime) => {
+    //                 if (err2) {
+    //                     doErr(err2);
+    //                 }
+    //                 const endTime = _endTime.toNumber();
+    //                 implBallotPeriod(null, [startTime, endTime]);
+    //             });
+    //         });
+    //     } catch (err) {
+    //         implBallotPeriod(err, [0,0]);
+    //     }
+    // }));
 
 
     // Implementation of port sends
