@@ -214,7 +214,7 @@ genFilename model =
         bTitleStr =
             decapitalize <| replace " " "-" <| getTitle model.workingBallot
     in
-    String.join "-" [ dateStr, bTitleStr, String.slice 0 18 model.hash ] |> (\t -> t ++ ".json")
+    String.join "-" [ dateStr, bTitleStr, model.hash ] |> (\t -> t ++ ".json")
 
 
 addBinaryOpts model =
