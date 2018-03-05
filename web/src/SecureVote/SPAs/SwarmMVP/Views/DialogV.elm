@@ -264,19 +264,35 @@ verifyDialogV model ( bHash, bSpec ) =
                 OptsNothing ->
                     []
 
+        ( useEnc, encSk, encPk, ballotPk ) =
+            case ( bEncPK.getOption bSpec, model.keypair ) of
+                ( Just ballotPk, Just kp ) ->
+                    ( True, kp.hexSk, kp.hexPk, ballotPk )
+
+                _ ->
+                    ( False, "", "", "" )
+
+        verificationExtras =
+            if useEnc then
+                [ ( "ballotEncPk", toString <| model.remoteHexPk ? "err: not found" )
+                , ( "myPubkey", toString <| Maybe.map .hexPk model.keypair ? "pubkey not found" )
+                , ( "mySeckey", toString <| Maybe.map .hexSk model.keypair ? "seckey not found" )
+                , ( "ballot", toString <| model.encBytes ? "encrypted ballot not found" )
+                , ( "submitBallotPrefix", toString "bc19bcbf" )
+                ]
+            else
+                [ ( "ballot", toString <| model.ballotRawHex ? "raw ballot not found!" )
+                , ( "submitBallotPrefix", toString "dea7b768" )
+                ]
+
         verificationVars =
             -- we apply toString to these strings so they're wrapped in quotes
-            [ ( "ballotEncPk", toString <| model.remoteHexPk ? "err: not found" )
-            , ( "myPubkey", toString <| Maybe.map .hexPk model.keypair ? "pubkey not found" )
-            , ( "mySeckey", toString <| Maybe.map .hexSk model.keypair ? "seckey not found" )
-            , ( "myDelegate", toString <| getDelegateAddress model ? defaultDelegate )
-            , ( "myVotesRaw", toString <| List.map (\i -> Dict.get (genVoteOptId bHash i) model.ballotRange ? -9999) rawVotesMapOver )
+            [ ( "myVotesRaw", toString <| List.map (\i -> Dict.get (genVoteOptId bHash i) model.ballotRange ? -9999) rawVotesMapOver )
             , ( "myVotesOffset", toString <| List.map (vBitsToInt << vblToList) <| Result.withDefault [] <| orderedBallotBits ( bHash, bSpec ) model.ballotBits )
-            , ( "encBallot", toString <| model.encBytes ? "encrypted ballot not found" )
-            , ( "submitBallotPrefix", toString "13c04769" )
             , ( "txData", toString <| model.candidateTx.data ? "tx data not found" )
             , ( "votingContract", toString <| mCurrVotingAddr.get model )
             ]
+                ++ verificationExtras
 
         renderVerVar ( name, content ) =
             text <| "var " ++ name ++ " = " ++ content ++ ";\n"
