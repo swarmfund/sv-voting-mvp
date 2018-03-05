@@ -65,6 +65,16 @@ update msg model =
 
                 web3 =
                     model.web3
+            in
+            { model | workingBallot = newWorkingBallot, jsonBallot = jsonBallotStr, web3 = { web3 | txInfo = "Loading..." } }
+                ! [ hash { input = H.String, output = EthHex, alg = Sha256 } jsonBallotStr ]
+
+        --, , Task.attempt handleSha3Response (sha3 jsonBallotStr) ]
+        UpdateHash m ->
+            let
+                -- (\s -> update (HashError s) model)
+                ( h, cmds ) =
+                    hashUpdate m model.hash
 
                 sTs =
                     getStrField model startTimeId |> Result.fromMaybe "can't get start time" |> Result.andThen toInt |> Result.withDefault 0xFFFFFFFF
@@ -72,16 +82,15 @@ update msg model =
                 eTs =
                     getStrField model endTimeId |> Result.fromMaybe "can't get end time" |> Result.andThen toInt |> Result.withDefault 0x00
             in
-            { model | workingBallot = newWorkingBallot, jsonBallot = jsonBallotStr, web3 = { web3 | txInfo = "Loading..." } }
-                ! [ hash { input = H.String, output = EthHex, alg = Sha256 } jsonBallotStr
-                  , getTxInfoContractWrite
+            { model | hash = h }
+                ! [ getTxInfoContractWrite
                         { to = model.indexAddr
                         , abi = model.indexABI
                         , method = "deployBallot"
                         , args =
                             genDeployArgs
                                 { democHash = getStrField model democHashId ? "NO DEMOC HASH FOUND - ERROR 0x0000000000000000000000000000000000000000000000000000000000000000"
-                                , bHash = model.hash
+                                , bHash = h
                                 , extraData = "0x0000000000000000000000000000000000000000000000000000000000000000"
                                 , openPeriod =
                                     ( sTs
@@ -91,15 +100,6 @@ update msg model =
                                 }
                         }
                   ]
-
-        --, , Task.attempt handleSha3Response (sha3 jsonBallotStr) ]
-        UpdateHash m ->
-            let
-                -- (\s -> update (HashError s) model)
-                ( h, cmds ) =
-                    hashUpdate m model.hash
-            in
-            ( { model | hash = h }, Cmd.none )
 
         HashError s ->
             { model | hash = "Warning! Error from hash alg: " ++ s } ! []
