@@ -1,17 +1,12 @@
 import Web3 from "web3";
 import ERC20ABI from "./ERC20ABI";
-import SwmVotingMVPABIs from "./SwmVotingMVP.abi";
 import abiDecoder from "abi-decoder";
 
 const {implNotifyErrF, wrapIncomingF} = require('../../../js/portHelpers');
 
 import {create, env} from 'sanctuary';
 const S = create({checkTypes: true, env});
-const toPairs = require('ramda/src/toPairs');
-
-
-// legacy contract w different getBallotOpts format
-const legacyContractAddr = "0x2bb10945e9f0c9483022dc473ab4951bc2a77d0f";
+// const toPairs = require('ramda/src/toPairs');
 
 
 const mkPromise = f => (...args) => {
@@ -54,20 +49,6 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
     // "Global" constants
     const Erc20Contract = web3js.eth.contract(ERC20ABI);
-    let SwmVotingContract = web3js.eth.contract(SwmVotingMVPABIs.fullAbi);
-
-
-    const isLegacy = (addr) => {
-        return addr.toLowerCase() === legacyContractAddr.toLowerCase()
-    };
-
-
-    const genSwmVotingContract = (addr) => {
-        const abi = isLegacy(addr) ? SwmVotingMVPABIs.fullAbiLegacy : SwmVotingMVPABIs.fullAbi;
-        abiDecoder.addABI(abi);
-
-        return web3js.eth.contract(abi);
-    };
 
 
     // scan the index to get all ballots
@@ -112,7 +93,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
             })
             .catch(e => {
                 sendAbrv("ERC20");
-                implNotifyErr("Unable to get ERC20 Abbreviation for " + addr + ". Error returned: " + JSON.stringify(e).toString());
+                implNotifyErr("Unable to get ERC20 Abbreviation for " + erc20Addr + ". Error returned: " + JSON.stringify(e).toString());
             });
     }));
 

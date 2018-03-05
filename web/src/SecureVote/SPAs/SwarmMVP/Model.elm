@@ -46,6 +46,7 @@ type alias Model =
     , keypair : Maybe Curve25519KeyPair
     , encBytes : Maybe String
     , ballotPlaintext : Result String (List Int)
+    , ballotRawHex : Maybe String
     , remoteHexPk : Maybe String
     , miniVotingAbi : String
     , verificationError : Maybe String
@@ -157,6 +158,7 @@ initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI } =
     , keypair = Nothing
     , encBytes = Nothing
     , ballotPlaintext = Err "Not initialized yet"
+    , ballotRawHex = Nothing
     , remoteHexPk = Nothing
     , miniVotingAbi = "Error: Web3 has not initialized correctly"
     , verificationError = Nothing

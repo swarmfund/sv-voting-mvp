@@ -8,7 +8,7 @@ import Material.Textfield as Textf
 import Material.Typography as Typo exposing (menu, title)
 import Maybe.Extra exposing ((?))
 import Monocle.Common exposing (dict)
-import SecureVote.Ballots.Lenses exposing (bVoteOpts)
+import SecureVote.Ballots.Lenses exposing (..)
 import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.RenderAudit exposing (renderAuditLog)
@@ -174,16 +174,44 @@ gethDialogV model ( bHash, bSpec ) =
         ]
 
 
-mewDialog : Model -> ( bHash, bSpec ) -> Html Msg
+mewDialog : Model -> ( String, BallotSpec ) -> Html Msg
 mewDialog model ( bHash, bSpec ) =
     let
-        pubkey =
-            case model.keypair of
-                Nothing ->
-                    "The app has not generated a keypair for you!"
+        ( ( useEnc, encPK ), pubkey ) =
+            case ( bEncPK.getOption bSpec, model.keypair ) of
+                ( Just encPK, Just kp ) ->
+                    ( ( True, encPK ), kp.hexPk )
 
-                Just kp ->
-                    kp.hexPk
+                _ ->
+                    ( ( False, "No Encryption PK" ), "No PK Needed" )
+
+        methodName =
+            if useEnc then
+                "submitBallotWithPk"
+            else
+                "submitBallotNoPk"
+
+        copyBallotHeadingExtr =
+            if useEnc then
+                "and ephemeral public key"
+            else
+                ""
+
+        ballotCopyExtra =
+            if useEnc then
+                [ codeSection [ text <| "0x" ++ model.encBytes ? "-- Error: Can't find your encrypted ballot in the app state!" ]
+                , text "You'll also need to copy in your voting public key. (This was generated as a one-time-use key for this session only)"
+                , codeSection [ text <| "0x" ++ pubkey ]
+                ]
+            else
+                [ codeSection [ text <| "0x" ++ Maybe.withDefault "-- Error: Ballot Plaintext not found!" model.ballotRawHex ]
+                ]
+
+        manualVerificationExtra =
+            if useEnc then
+                [ text "Do the same for 'associatedPubkeys' to check your public key was recorded properly." ]
+            else
+                []
     in
     div []
         [ subhead "1. Go to MyEtherWallet > Contracts"
@@ -191,16 +219,14 @@ mewDialog model ( bHash, bSpec ) =
         , subhead "2. Enter the contract address"
         , p [] [ text "The voting contract address is:", codeSection [ text <| mCurrVotingAddr.get model ] ]
         , subhead "3. Enter the ABI"
-        , p [] [ text "Copy and paste this into the ABI section:", codeSection [ text model.miniVotingAbi ] ]
-        , subhead "4. Copy in your encrypted ballot and ephemeral public key"
-        , p []
-            [ text "Select the 'submitBallot' contract method."
-            , text "Copy in your encrypted ballot (below) into the corresponding field."
-            , text "To verify your encrypted ballot, please see the 'Verify Ballot' screen."
-            , codeSection [ text <| "0x" ++ model.encBytes ? "-- Error: Can't find your encrypted ballot in the app state!" ]
-            , text "You'll also need to copy in your voting public key. (This was generated as a one-time-use key for this ballot only)"
-            , codeSection [ text <| "0x" ++ pubkey ]
+        , p [] [ text "Copy and paste this into the ABI section:", codeSection [ text model.ballotBoxABI ] ]
+        , subhead <| "4. Copy in your ballot" ++ copyBallotHeadingExtr
+        , p [] <|
+            [ text <| "Select the '" ++ methodName ++ "' contract method."
+            , text "Copy in your ballot (below) into the corresponding field."
+            , text "To verify your ballot is exactly as intended, please see the 'Verify Ballot' screen."
             ]
+                ++ ballotCopyExtra
         , subhead "5. Sign and send!"
         , p [] [ text "Next, click 'Write', confirm you are sending 0 ether, and make sure the Gas Limit is at least 115,000 or so (200,000 recommended). Once you're satisfied, click 'Generate Transaction', take note of the raw and signed transactions if you like, then click 'Yes I am sure! Make transaction.'" ]
         , subhead "6. You're done!"
@@ -211,10 +237,9 @@ mewDialog model ( bHash, bSpec ) =
             [ text "Next, choose the 'voterToBallotID' method from the dropdown menu. Enter your address in the field provided and click 'READ'." ]
         , p []
             [ text "Make a note of that number. This is your most *recent* ballot ID. (If you've voted more than once only your most recent vote counts)" ]
-        , p []
-            [ text "From the dropdown, select 'encryptedBallots' and enter your ballot ID. Confirm the answer you get back matches what you put in before." ]
-        , p []
-            [ text "Do the same for 'associatedPubkeys' to check your public key was recorded properly." ]
+        , p [] <|
+            [ text "From the dropdown, select 'ballotMap' and enter your ballot ID. Confirm the answer you get back matches what you put in before." ]
+                ++ manualVerificationExtra
         , p []
             [ text "And you're done!" ]
         , subsubhead "Automatic verification"
@@ -239,19 +264,35 @@ verifyDialogV model ( bHash, bSpec ) =
                 OptsNothing ->
                     []
 
+        ( useEnc, encSk, encPk, ballotPk ) =
+            case ( bEncPK.getOption bSpec, model.keypair ) of
+                ( Just ballotPk, Just kp ) ->
+                    ( True, kp.hexSk, kp.hexPk, ballotPk )
+
+                _ ->
+                    ( False, "", "", "" )
+
+        verificationExtras =
+            if useEnc then
+                [ ( "ballotEncPk", toString <| model.remoteHexPk ? "err: not found" )
+                , ( "myPubkey", toString <| Maybe.map .hexPk model.keypair ? "pubkey not found" )
+                , ( "mySeckey", toString <| Maybe.map .hexSk model.keypair ? "seckey not found" )
+                , ( "ballot", toString <| model.encBytes ? "encrypted ballot not found" )
+                , ( "submitBallotPrefix", toString "bc19bcbf" )
+                ]
+            else
+                [ ( "ballot", toString <| model.ballotRawHex ? "raw ballot not found!" )
+                , ( "submitBallotPrefix", toString "dea7b768" )
+                ]
+
         verificationVars =
             -- we apply toString to these strings so they're wrapped in quotes
-            [ ( "ballotEncPk", toString <| model.remoteHexPk ? "err: not found" )
-            , ( "myPubkey", toString <| Maybe.map .hexPk model.keypair ? "pubkey not found" )
-            , ( "mySeckey", toString <| Maybe.map .hexSk model.keypair ? "seckey not found" )
-            , ( "myDelegate", toString <| getDelegateAddress model ? defaultDelegate )
-            , ( "myVotesRaw", toString <| List.map (\i -> Dict.get (genVoteOptId bHash i) model.ballotRange ? -9999) rawVotesMapOver )
+            [ ( "myVotesRaw", toString <| List.map (\i -> Dict.get (genVoteOptId bHash i) model.ballotRange ? -9999) rawVotesMapOver )
             , ( "myVotesOffset", toString <| List.map (vBitsToInt << vblToList) <| Result.withDefault [] <| orderedBallotBits ( bHash, bSpec ) model.ballotBits )
-            , ( "encBallot", toString <| model.encBytes ? "encrypted ballot not found" )
-            , ( "submitBallotPrefix", toString "13c04769" )
             , ( "txData", toString <| model.candidateTx.data ? "tx data not found" )
             , ( "votingContract", toString <| mCurrVotingAddr.get model )
             ]
+                ++ verificationExtras
 
         renderVerVar ( name, content ) =
             text <| "var " ++ name ++ " = " ++ content ++ ";\n"
