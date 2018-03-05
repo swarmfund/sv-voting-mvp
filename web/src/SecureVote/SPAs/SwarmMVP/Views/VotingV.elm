@@ -62,13 +62,12 @@ votingView model ( bHash, bSpec ) =
                     ? []
 
         ( startTime, endTime ) =
-            case model.ballotOpen of
-                Success { startTime, endTime } ->
+            case ( bStartTime.getOption bSpec, bEndTime.getOption bSpec ) of
+                ( Just startTime, Just endTime ) ->
                     ( startTime, endTime + (15 * 60) )
 
-                -- should be this value anyway, included as safe default
                 _ ->
-                    ( 1509372000, 1510009200 + (15 * 60) )
+                    ( 0xFFFFFFFF, 0xFFFFEEEE )
 
         ballotClosedWarning =
             if startTime > model.now then
