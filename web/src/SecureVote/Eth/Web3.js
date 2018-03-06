@@ -9,6 +9,7 @@ const S = create({checkTypes: true, env});
 // const toPairs = require('ramda/src/toPairs');
 const filter = require('ramda/src/filter');
 const zip = require('ramda/src/zip');
+const uniq = require('ramda/src/uniq');
 
 const AsyncPar = require('async-parallel');
 import {BigNumber} from 'bignumber.js';
@@ -31,6 +32,11 @@ const promiseCb = (resolve, reject, extra = []) => (err, val) => {
         resolve([val, ...extra
         ]);
     }
+}
+
+
+const ethAddrEq = (a1, a2) => {
+    return a1.toLowerCase() === a2.toLowerCase();
 }
 
 
@@ -259,7 +265,8 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     }));
 
     app.ports.getErc20Balance.subscribe(wrapIncoming(params => {
-        const {contractAddress, userAddress, chainIndex, delegationABI, delegationAddr} = params;
+        let {contractAddress, userAddress, chainIndex, delegationABI, delegationAddr} = params;
+        userAddress = userAddress.toLowerCase();
         const ci_ = parseInt(chainIndex) || chainIndex || "latest";
         console.log("getErc20Balance got params", params);
         const tokenContract = Erc20Contract.at(contractAddress);
@@ -272,24 +279,24 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
         mkPromise(delegationC.findPossibleDelegatorsOf)(userAddress)
             .then(([voters, tokenCs]) => {
-                const voterPairs = filter(([v, tC]) => tC === contractAddress.toLowerCase(), zip(voters, tokenCs));
+                console.log(voters, tokenCs)
+                const voterPairs = uniq(filter(([v, tC]) => ethAddrEq(tC, contractAddress), zip(voters, tokenCs)));
                 return AsyncPar.map(voterPairs, ([voter, _z]) => {
                     return mkPromise(delegationC.resolveDelegation)(voter, contractAddress)
                         .then(([_a, _b, _c, delegatee, delegator_, tC]) => {
-                            if (delegatee === userAddress) {
+                            if (ethAddrEq(delegatee, userAddress) && !ethAddrEq(delegator_, userAddress)) {
                                 // if the delegate resolution matches current user then add balance
                                 return mkPromise(tokenContract.balanceOf)(voter, ci_)
                                     .then(bal => {
-                                        console.log(bal);
                                         console.log(`\nDlgtee: ${userAddress}\nDlgtor: ${voter}\nBal:    ${bal.toString(10)}\n\n`);
                                         return bal
                                     })
                                     .then(addToTotal)
                             }
                         })
-
-                }, [[userAddress, contractAddress], ...voterPairs]);
+                }, voterPairs);
             })
+            .then(() => mkPromise(tokenContract.balanceOf)(userAddress, ci_).then(addToTotal))
             .then(() => implSendErc20Balance(total))
             .then(() => console.log(`Sent balance total: ${total.toString(10)}`));
     }));
