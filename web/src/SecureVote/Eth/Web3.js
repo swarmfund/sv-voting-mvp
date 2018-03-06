@@ -260,7 +260,6 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     // Port subscriptions
     app.ports.setWeb3Provider.subscribe(wrapIncoming((web3Provider) => {
         web3js.setProvider(new Web3.providers.HttpProvider(web3Provider));
-        window.web3.setProvider(web3js.currentProvider);
         console.log("Web3 provider set to:", web3js.currentProvider);
     }));
 
