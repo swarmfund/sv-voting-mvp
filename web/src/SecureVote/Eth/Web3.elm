@@ -103,7 +103,7 @@ onContractReadResponse msgGen errMsg val =
 
 
 type alias GetErc20BalanceReq =
-    { contractAddress : String, userAddress : String, chainIndex : String }
+    { contractAddress : String, userAddress : String, chainIndex : String, delegationABI : String, delegationAddr : String }
 
 
 port getErc20Balance : GetErc20BalanceReq -> Cmd msg

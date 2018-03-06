@@ -23,4 +23,6 @@ type alias Flags =
     , indexABI : String
     , indexAddr : String
     , ballotBoxABI : String --^ BallotBox ABI
+    , delegationABI : String
+    , delegationAddr : String
     }

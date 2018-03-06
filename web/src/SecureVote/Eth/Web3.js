@@ -255,10 +255,12 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     }));
 
     app.ports.getErc20Balance.subscribe(wrapIncoming(params => {
-        const {contractAddress, userAddress, chainIndex} = params;
+        const {contractAddress, userAddress, chainIndex, delegationABI, delegationAddr} = params;
         const ci_ = parseInt(chainIndex) || chainIndex || "latest";
         console.log("getErc20Balance got params", params);
+
         const tokenContract = Erc20Contract.at(contractAddress);
+
         tokenContract.balanceOf.call(userAddress, ci_, handleErrOr(implSendErc20Balance))
     }))
 

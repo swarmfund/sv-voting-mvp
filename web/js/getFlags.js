@@ -1,6 +1,6 @@
 const svLightBallotBoxABI = require('../../_solDist/SVLightBallotBox.abi.json');
 const svLightIndexABI = require('../../_solDist/SVLightIndex.abi.json');
-const delegationABI = require('../../_solDist/SVDelegation.abi.json');
+const delegationABI = require('../../_solDist/SVDelegationV0101.abi.json');
 
 const _DEV_ = process.env.DEV;
 const DEV = (_DEV_ && _DEV_.toLowerCase() === "true") || false;
@@ -13,5 +13,7 @@ module.exports = function(){
         indexABI: JSON.stringify(svLightIndexABI),
         ballotBoxABI: JSON.stringify(svLightBallotBoxABI),
         indexAddr: process.env.INDEX_ADDR,
+        delegationABI,
+        delegationAddr: process.env.DELEGATION_ADDR
     }
 }

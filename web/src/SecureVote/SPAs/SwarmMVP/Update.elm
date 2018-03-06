@@ -309,7 +309,7 @@ updateToWeb3 web3msg model =
                 blockN =
                     Maybe.map (toString << .startingBlockEst) (Dict.get bHash model.ballotScDetails) ? "latest"
             in
-            model ! defaultOrB model [] (\b -> Maybe.map (\erc20Addr -> [ getErc20Balance <| GetErc20BalanceReq erc20Addr addr blockN ]) (bErc20Addr.getOption b) ? [])
+            model ! defaultOrB model [] (\b -> Maybe.map (\erc20Addr -> [ getErc20Balance <| GetErc20BalanceReq erc20Addr addr blockN model.delegationABI, model.delegationAddr ]) (bErc20Addr.getOption b) ? [])
 
         CheckTxid txid ->
             { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]

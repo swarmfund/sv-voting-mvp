@@ -164,9 +164,9 @@ const testRealV1OnMainnet = async (acc) => {
 
     // 0x2c926cc0e63512d23a1921af78204d0de5786537 is NOT the production version of this wallet, but a test instance
     // deployed via SV hotwallet
-    const newDCAddr = "0xf71ea2028e3c3fa58df8922eae6f5482123a17d4";
-    const oldDCAddr = "0xd78d4beabfd3054390d10aeb4258dc2d867f5e17";
-    const swmErc20Addr = "0x9e88613418cF03dCa54D6a2cf6Ad934A78C7A17A";
+    const newDCAddr = "0xf71ea2028e3c3fa58df8922eae6f5482123a17d4".toLowerCase();
+    const oldDCAddr = "0xd78d4beabfd3054390d10aeb4258dc2d867f5e17".toLowerCase();
+    const swmErc20Addr = "0x9e88613418cF03dCa54D6a2cf6Ad934A78C7A17A".toLowerCase();
 
     // contracts on mainnet
     const origDC = myW3.eth.contract(DCOrig.abi).at(oldDCAddr);
@@ -194,20 +194,23 @@ const testRealV1OnMainnet = async (acc) => {
     const voterToDelegate = {};
     let allVoters = [];
     let allDelegatees = [];
-    const addOrInit = d => (k, v) => {
+    const addOrInit = (d => (k, v) => {
         if (d[k] !== undefined) {
             d[k].push(v)
         } else {
             d[k] = [v];
         }
-    }
+    })(dlgtMap);
 
     R.map(({args}) => {
-        addOrInit(dlgtMap)(args.delegate, args.voter);
-        allVoters.push(args.voter);
-        allDelegatees.push(args.delegate);
         voterToDelegate[args.voter] = args.delegate;
-    }, R.filter(({args}) => args.tokenContract === swmErc20Addr.toLowerCase(), oldLogs));
+    }, R.filter(l => l.args.tokenContract === swmErc20Addr, oldLogs));
+
+    R.map(([v,d]) => {
+        addOrInit(d,v);
+        allVoters.push(v);
+        allDelegatees.push(d);
+    }, R.toPairs(voterToDelegate));
 
     allVoters = R.uniq(allVoters);
     allDelegatees = R.uniq(allDelegatees);
@@ -215,38 +218,30 @@ const testRealV1OnMainnet = async (acc) => {
     // test newDC resolves delegates correctly
     let i, j;
 
+    let fromChain;
+    // test newDC can successfully run `findPossibleDelegatorsOf` including backwards compatibility
+    await AsyncPar.map(allDelegatees, async d => {
+        let expVoters = dlgtMap[d];
+        let expTokens = new Array(expVoters.length);
+        expTokens.fill(swmErc20Addr);
+        fromChain = await newDC.findPossibleDelegatorsOf(d);
+        try {
+            assert.deepEqual(fromChain, [expVoters, expTokens], "possible delegators works for newDC");
+        } catch (e) {
+            log(`d: ${d}, expV: ${expVoters}, expT: ${expTokens}, fromChain: ${fromChain}`);
+            log(`Got error in allDelegates test for ${d}:`);
+            log(e);
+            throw e;
+        }
+        log(`Success for delegatee ${d}!`);
+    }, 1);
+
     await AsyncPar.map(allVoters, async v => {
         let d = voterToDelegate[v];
-        assert.equal(d, (await newDC.resolveDelegation(v, swmErc20Addr))[3], `voter ${v} delegates ${d}`);
+        assert.equal((await newDC.resolveDelegation(v, swmErc20Addr))[3], d, `voter ${v} delegates ${d}`);
         log(`passed assert for resolveDelegation: voter ${v} delegates ${d}`);
-    }, 10);
+    });
 
-    let fromChain;
-    // test newDC can successfully run `findPossibleDelegatorsOf` including backwards compat
-    try {
-        await AsyncPar.map(allDelegatees, async d => {
-            let expVoters = [];
-            let expTokens = [];
-            for (j = 0; j < oldLogs.length; j++) {
-                let l = oldLogs[j];
-                if (l.args.delegate === d) {
-                    expVoters.push(l.args.voter);
-                    expTokens.push(l.args.tokenContract);
-                }
-            }
-            fromChain = await newDC.findPossibleDelegatorsOf(d);
-            try {
-                assert.deepEqual([expVoters, expTokens], fromChain, "possible delegators works for newDC");
-            } catch (e) {
-                log(`Got error in allDelegates test: \n${e.message}\n\n${e}\n\n${JSON.stringify(e)}`);
-                throw e;
-            }
-            log("Got from chain for possible delegators: ", JSON.stringify(fromChain, null, 2));
-        }, 10);
-    } catch (e) {
-        log(`Errors: ${e}\n\n${JSON.stringify(e)}`);
-        throw e;
-    }
     log("done testing mainnet")
 }
 
