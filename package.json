@@ -24,6 +24,7 @@
     "decimal.js": "^9.0.1",
     "dialog-polyfill": "^0.4.9",
     "dotenv": "^5.0.0",
+    "dotenv-webpack": "^1.5.5",
     "elliptic": "^6.4.0",
     "elm": "^0.18.0",
     "elm-github-install": "^1.6.1",

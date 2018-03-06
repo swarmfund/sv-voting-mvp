@@ -5,6 +5,8 @@ const delegationABI = require('../../_solDist/SVDelegationV0101.abi.json');
 const _DEV_ = process.env.DEV;
 const DEV = (_DEV_ && _DEV_.toLowerCase() === "true") || false;
 
+console.log(process.env);
+
 module.exports = function(){
     const flags = {
         mainTitle: process.env.MAIN_TITLE,
@@ -13,9 +15,8 @@ module.exports = function(){
         indexABI: JSON.stringify(svLightIndexABI),
         ballotBoxABI: JSON.stringify(svLightBallotBoxABI),
         indexAddr: process.env.INDEX_ADDR,
+        delegationAddr: process.env.DELEGATION_ADDR,
         delegationABI: JSON.stringify(delegationABI),
-        delegationAddr: process.env.DELEGATION_ADDR
     }
-    console.log("Flags returning: ", flags);
     return flags;
 }

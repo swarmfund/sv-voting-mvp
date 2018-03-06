@@ -7,6 +7,8 @@ const {implNotifyErrF, wrapIncomingF} = require('../../../js/portHelpers');
 import {create, env} from 'sanctuary';
 const S = create({checkTypes: true, env});
 // const toPairs = require('ramda/src/toPairs');
+const filter = require('ramda/src/filter');
+const zip = require('ramda/src/zip');
 
 const AsyncPar = require('async-parallel');
 import {BigNumber} from 'bignumber.js';
@@ -270,7 +272,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
         mkPromise(delegationC.findPossibleDelegatorsOf)(userAddress)
             .then(([voters, tokenCs]) => {
-                const voterPairs = R.filter(([v, tC]) => tC === contractAddress, R.zip(voters, tokenCs));
+                const voterPairs = filter(([v, tC]) => tC === contractAddress.toLowerCase(), zip(voters, tokenCs));
                 return AsyncPar.map(voterPairs, ([voter, _z]) => {
                     return mkPromise(delegationC.resolveDelegation)(voter, contractAddress)
                         .then(([_a, _b, _c, delegatee, delegator_, tC]) => {
@@ -278,6 +280,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                                 // if the delegate resolution matches current user then add balance
                                 return mkPromise(tokenContract.balanceOf)(voter, ci_)
                                     .then(bal => {
+                                        console.log(bal);
                                         console.log(`\nDlgtee: ${userAddress}\nDlgtor: ${voter}\nBal:    ${bal.toString(10)}\n\n`);
                                         return bal
                                     })
@@ -285,10 +288,10 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                             }
                         })
 
-                }, [[userAddress, contractAddress], ...votePairs]);
+                }, [[userAddress, contractAddress], ...voterPairs]);
             })
             .then(() => implSendErc20Balance(total))
-            .then(() => console.log(`Sent balance total: ${bal.toString(10)}`));
+            .then(() => console.log(`Sent balance total: ${total.toString(10)}`));
     }));
 
 

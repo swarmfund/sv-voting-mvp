@@ -4,6 +4,7 @@ const path = require('path');
 const merge = require('webpack-merge');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
 
 
 const NPM_CMD = process.env.npm_lifecycle_event;
@@ -13,17 +14,12 @@ const TARGET = {
     'build-web': 'prod-ui',
     'web': 'development',
     'web-admin': 'dev-admin-ui',
-    'web-delegation': 'dev-delegation-ui'
+    'web-delegation': 'dev-delegation-ui',
 }[NPM_CMD] || NPM_CMD;
 
 
-require('dotenv').config({
-    systemvars: true,
-    path: TARGET.slice(3) === 'dev' ? './.env-dev' : './.env-prod'
-});
-
-
 console.log("TARGET =", TARGET);
+console.log(process.env);
 
 
 const defaultFilename = '[name]-[hash].js';
@@ -108,13 +104,17 @@ const common = {
         ]
     },
     plugins: [
-        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR"]),
+        // new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR", "DELEGATE_ADDR"]),
         CopyWebpackPluginConfig,
         new HTMLWebpackPlugin({
             // using .ejs prevents other loaders causing errors
             template: 'web/index.ejs',
             // inject details of output file at end of body
             inject: 'body'
+        }),
+        new Dotenv({
+            systemvars: true,
+            path: TARGET.slice(0, 3) === 'dev' ? './.env-dev' : './.env-prod'
         })
     ],
     resolve: {
