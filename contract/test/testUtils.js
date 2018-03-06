@@ -29,6 +29,23 @@ module.exports = function () {
         }
     };
 
+    this.asyncAssertDoesNotThrow = async (f, msg) => {
+        let res = "nothing returned";
+        let didError = false;
+        let errMsg;
+        try {
+            res = await f();
+        } catch (e) {
+            didError = true;
+            errMsg = e.message;
+        }
+
+        if (didError) {
+            throw Error(`Did not expect throw '${msg}' and got error: ${errMsg}`);
+        }
+        return res;
+    };
+
     const toAsync = f => async (...args) => {
         return new Promise((res, rej) => {
             f(...args, (e, d) => (e ? rej(e) : res(d)));

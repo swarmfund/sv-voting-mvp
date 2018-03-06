@@ -101,7 +101,7 @@ async function testInstantiation(accounts) {
 
     const vc = await LittleBallotBox.new(specHash, [startTime, endTime], [true, true]);
 
-    log(accounts[0]);
+    // log(accounts[0]);
     assert.equal(await vc.owner(), accounts[0], "Owner must be set on launch.");
 
     assert.equal(await vc.specHash(), specHash, "specHash should be equal");
@@ -126,13 +126,13 @@ async function testInstantiation(accounts) {
     // await sleep(startTime - (Date.now() / 1000) + 1.1)
 
     // try a single ballot first
-    await testABallot(accounts)(S.Just(vc), S.Just(accounts[0]));
+    await testABallot(accounts)(S.Just(vc), S.Just(accounts[0]), "test ballot single");
 
     const nVotes = 10;
     try {
         // now a bunch
         await AsyncPar.map(S.range(0, nVotes), async i => {
-            return await testABallot(accounts)(S.Just(vc), S.Just(accounts[i]));
+            return await testABallot(accounts)(S.Just(vc), S.Just(accounts[i]), "test ballot batch: " + i.toString());
         });
         // Woot, tested 98 ballots.
     } catch (err) {
@@ -164,7 +164,7 @@ async function testTestMode(accounts) {
     await asyncAssertThrow(() => vc.setEndTime(0), "throws on set end time when not in testing");
 }
 
-const testABallot = accounts => async (_vc = S.Nothing, account = S.Nothing) => {
+const testABallot = accounts => async (_vc = S.Nothing, account = S.Nothing, msg = "no message provided") => {
     if (S.isNothing(_vc)) {
         throw Error("must provide voting contract to `testABallot`");
     }
@@ -174,9 +174,9 @@ const testABallot = accounts => async (_vc = S.Nothing, account = S.Nothing) => 
     const encBallot = genRandomBytes32();
     const vtrPubkey = genRandomBytes32();
 
-    const _submitBallotWithPk = await vc.submitBallotWithPk(encBallot, vtrPubkey, {
+    const _submitBallotWithPk = await asyncAssertDoesNotThrow(() => vc.submitBallotWithPk(encBallot, vtrPubkey, {
         from: myAddr
-    });
+    }), msg);
 
     assertOnlyEvent("SuccessfulPkVote", _submitBallotWithPk);
 
