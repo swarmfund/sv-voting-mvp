@@ -32,12 +32,19 @@ const promiseCb = (resolve, reject, extra = []) => (err, val) => {
         resolve([val, ...extra
         ]);
     }
-}
+};
+
+
+const logPrm = (msg, f) => (arg) => {
+    f = f || (x => x);
+    console.log(msg, f(arg));
+    return arg;
+};
 
 
 const ethAddrEq = (a1, a2) => {
     return a1.toLowerCase() === a2.toLowerCase();
-}
+};
 
 
 
@@ -274,28 +281,45 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         let total = new BigNumber(0);
         const addToTotal = n => {
             total = total.plus(n);
+            return n;
         };
+        const getBalancePrm = mkPromise(tokenContract.balanceOf);
+        const resolveDlgtionsPrm = mkPromise(delegationC.resolveDelegation);
 
-        mkPromise(delegationC.findPossibleDelegatorsOf)(userAddress)
-            .then(([voters, tokenCs]) => {
-                console.log(voters, tokenCs)
-                const voterPairs = uniq(filter(([v, tC]) => ethAddrEq(tC, contractAddress), zip(voters, tokenCs)));
-                return AsyncPar.map(voterPairs, ([voter, _z]) => {
-                    return mkPromise(delegationC.resolveDelegation)(voter, contractAddress)
-                        .then(([_a, _b, _c, delegatee, delegator_, tC]) => {
-                            if (ethAddrEq(delegatee, userAddress) && !ethAddrEq(delegator_, userAddress)) {
-                                // if the delegate resolution matches current user then add balance
-                                return mkPromise(tokenContract.balanceOf)(voter, ci_)
-                                    .then(bal => {
-                                        console.log(`\nDlgtee: ${userAddress}\nDlgtor: ${voter}\nBal:    ${bal.toString(10)}\n\n`);
-                                        return bal
-                                    })
-                                    .then(addToTotal)
-                            }
-                        })
-                }, voterPairs);
+        // promises
+        const processDelegations = (([v, tC]) => {
+            // get the delegation of a voter
+            return resolveDlgtionsPrm(v, tC)
+                .then(([_dId, _prevDId, _blkAt, _delegatee, _delegator, _tC]) => {
+                    // ensure that *we* are the delegatee and also not the delegator to avoid
+                    // double counting or other shenanigans
+                    if (ethAddrEq(_delegatee, userAddress) && !ethAddrEq(_delegator, userAddress)) {
+                        return getBalancePrm(v, ci_)
+                    } else {
+                        return new BigNumber(0);
+                    }
+                }).then(addToTotal)
+                .then(logPrm(`\nFound balance for ${v} delegating ${userAddress} of`, n => n.toString(10)))
+                .catch(e => {
+                    console.log(`Err in resolveDelegationsPrm: ${e.message}`);
+                    console.log(e);
             })
-            .then(() => mkPromise(tokenContract.balanceOf)(userAddress, ci_).then(addToTotal))
+        });
+
+        const findDlgtionBals = () => mkPromise(delegationC.findPossibleDelegatorsOf)(userAddress)
+            .then(([voters, tokenCs]) => {
+                console.log(`Processing delegations of ${userAddress}: voters(${voters})`);
+                const delegatorPairs = zip(voters, tokenCs);
+                // filter out delegations that aren't for this token and get unique pairs
+                const processedVPs = uniq(filter(([v, tC]) => ethAddrEq(tC, contractAddress), delegatorPairs));
+                return AsyncPar.map(processedVPs, processDelegations);
+            });
+
+        const findUserBal = () => getBalancePrm(userAddress, ci_)
+            .then(addToTotal)
+            .then(logPrm("Found user balance of: ", n => n.toString(10)));
+
+        AsyncPar.invoke([findDlgtionBals, findUserBal])
             .then(() => implSendErc20Balance(total))
             .then(() => console.log(`Sent balance total: ${total.toString(10)}`));
     }));
