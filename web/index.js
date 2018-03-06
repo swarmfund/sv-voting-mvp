@@ -18,6 +18,8 @@ const {web3js, mmDetected, mmWeb3, web3Ports} = require('./js/web3Stuff');
 
 window.addEventListener('load', function() {
     const flags = getFlags();
+    console.log(flags);
+    console.log("Environment variables are: ", R.map(function(v){ if(v){ return v.slice ? v.slice(0,80) : v} else { return v }}, flags));
 
     if (!flags.dev) {
         require('./js/birds.js');
@@ -29,7 +31,6 @@ window.addEventListener('load', function() {
 
     const Elm = require('./src/SecureVote/SPAs/SwarmMVP/Main.elm');
     const app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen'), flags);
-    console.log("Environment variables are: ", R.map(v => v.slice ? v.slice(0,80) : v, flags));
     web3Ports(web3js, {mmDetected, mmWeb3}, app, {AuditWeb: null, dev: flags.dev});
     curve25519Ports(app);
     specSourcePorts(app, {dev: flags.dev});

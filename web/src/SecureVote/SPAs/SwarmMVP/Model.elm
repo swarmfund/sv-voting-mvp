@@ -73,6 +73,8 @@ type alias Model =
     , indexABI : String
     , ballotBoxABI : String
     , ballotScDetails : Dict String BallotSCDetails --^ map (bHash => BallotSCDetails)
+    , delegationABI : String
+    , delegationAddr : String
     }
 
 
@@ -129,7 +131,7 @@ bpiVotingAddr =
 
 
 initModel : Flags -> Model
-initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI } =
+initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, delegationAddr } =
     let
         ethNode_ =
             if dev then
@@ -185,6 +187,8 @@ initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI } =
     , indexABI = indexABI
     , ballotBoxABI = ballotBoxABI
     , ballotScDetails = Dict.empty
+    , delegationABI = delegationABI
+    , delegationAddr = delegationAddr
     }
 
 

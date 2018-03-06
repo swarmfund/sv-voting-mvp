@@ -38,7 +38,13 @@ const main = () => {
     const args_ = yargs.options({
         "contractName": {
             type: 'string',
-            describe: "The contract name of an alternate contract to deploy, do not include '.sol'"
+            describe: "The contract name of an alternate contract to deploy, do not include '.sol'",
+            demand: true
+        },
+        "argsJson": {
+            type: 'string',
+            describe: "Args to provide with contractName in json encoding - required for deploying arbitrary",
+            demand: true
         }
     }).help(false).version(false).argv;
 
@@ -85,6 +91,10 @@ const main = () => {
             describe: "The contract name of an alternate contract to deploy, do not include '.sol'",
             type: 'string'
         },
+        "argsJson": {
+            type: 'string',
+            describe: "Args to provide with contractName in json encoding - required for deploying arbitrary"
+        },
         "specHash": {
             describe: "The Keccak256 (eth-sha3) hash of the ballot spec",
             type: 'string',
@@ -127,7 +137,7 @@ const main = () => {
         const contract = web3.eth.contract(abi);
 
         // set the contract deployment arguments
-        const contractArgs = args.contractName ? [] : [args.startTime, args.endTime, args.useEncryption, args.testing, args.specHash];
+        const contractArgs = args.contractName ? JSON.parse(args.argsJson) : [args.startTime, args.endTime, args.useEncryption, args.testing, args.specHash];
 
         // organise our arguments for getting final bytecode
         const bytecodeArgs = R.append({data: "0x" + bin}, contractArgs);

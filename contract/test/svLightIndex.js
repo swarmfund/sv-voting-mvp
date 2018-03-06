@@ -53,7 +53,7 @@ async function testOwner(accounts) {
     );
 
     // check payments
-    log("mk democ okay paid");
+    // log("mk democ okay paid");
     const balBefore = await getBalance(accounts[1]);
     // log(await getBlockNumber())
     const democId_ = await lg.initDemoc("some democ", {
@@ -62,9 +62,9 @@ async function testOwner(accounts) {
         gasPrice: 0
     });
     // log(await getBlockNumber())
-    log("democCreationTx: ", democId_.tx, "---   nLogs:", democId_.logs.length);
+    // log("democCreationTx: ", democId_.tx, "---   nLogs:", democId_.logs.length);
     const balAfter = await getBalance(accounts[1]);
-    log("balances", balBefore.toString(), balAfter.toString());
+    // log("balances", balBefore.toString(), balAfter.toString());
     assert.isTrue(
         balBefore.minus(dPrice1).eq(balAfter),
         "payment should be accurate and remainder refunded // before: " +
@@ -72,15 +72,15 @@ async function testOwner(accounts) {
         " // after: " +
         balAfter.toString()
     );
-    log("init done!");
+    // log("init done!");
     const democId = await lg.democList(0);
-    log("democId", democId);
+    // log("democId", democId);
 
     await lg.setPaymentEnabled(false, {from: accounts[0]});
     assert.equal(await lg.paymentEnabled(), false, "payment null now");
 
     // check pay okay but still free fails
-    log("mk democ not okay");
+    // log("mk democ not okay");
     await lg.setPaymentEnabled(true, {from: accounts[0]});
     await asyncAssertThrow(
         () => lg.initDemoc("free lunch democ (bad)", {from: accounts[1]}),
@@ -93,27 +93,27 @@ async function testOwner(accounts) {
             }),
         "no free lunch (issue)"
     );
-    log("bad ballots over, confirming we can still make them...")
+    // log("bad ballots over, confirming we can still make them...")
 
     const lbb = await LBB.new(democId, [0, 0], [true, false]);
-    log("created LBB to work with... adding a ballot");
+    // log("created LBB to work with... adding a ballot");
 
     // make sure we can still pay for a ballot though
     await lg.addBallot(democId, democId, lbb.address, {from: accounts[1], value: iPrice1});
-    log("addballot okay paid");
+    // log("addballot okay paid");
     await lg.addBallot(democId, democId, lbb.address, {
         from: accounts[1],
         value: iPrice1,
         gasPrice: 0
     });
-    log("ballot added!");
+    // log("ballot added!");
     await lg.setPaymentEnabled(false, {from: accounts[0]});
-    log("add ballot okay free");
+    // log("add ballot okay free");
     await lg.addBallot(democId, democId, lbb.address, {
         from: accounts[1]
     });
 
-    log("enable payments")
+    // log("enable payments")
     // whitelist for issues
     await lg.setPaymentEnabled(true, {from: accounts[0]});
     await asyncAssertThrow(
@@ -123,9 +123,9 @@ async function testOwner(accounts) {
             }),
         "no free lunch (issue)"
     );
-    log("give accounts[1] whitelist access")
+    // log("give accounts[1] whitelist access")
     await lg.setWhitelistBallot(accounts[1], true);
-    log("accounts 1 makes ballot with no payment")
+    // log("accounts 1 makes ballot with no payment")
     await lg.addBallot(democId, democId, lbb.address, {
         from: accounts[1]
     });
@@ -135,9 +135,9 @@ async function testOwner(accounts) {
         () => lg.initDemoc("free lunch democ (bad)", {from: accounts[1]}),
         "no free lunch democ"
     );
-    log("give accounts[1] democ whitelist")
+    // log("give accounts[1] democ whitelist")
     await lg.setWhitelistDemoc(accounts[1], true);
-    log("confirm whitelist works")
+    // log("confirm whitelist works")
     await lg.initDemoc("actually free lunch (good)", {from: accounts[1]});
 
     // make sure whitelists are still blocking ppl
@@ -149,26 +149,26 @@ async function testOwner(accounts) {
         "no free lunch (issue)"
     );
 
-    log("confirm a[1] is admin of", democId);
+    // log("confirm a[1] is admin of", democId);
     assert.equal(accounts[1], (await lg.getDemocInfo(democId))[1], "admin should be accounts[1]");
     await asyncAssertThrow(
         () => lg.initDemoc("free lunch democ (bad)", {from: accounts[2]}),
         "no free lunch democ"
     );
 
-    log("try and deploy a ballot through the index")
+    // log("try and deploy a ballot through the index")
     // check we can deploy a new ballot
     await lg.setPaymentEnabled(false, {from: accounts[0]})
     // get some info before hand and validate it
     const nBallotsPre = await lg.nBallots(democId);
-    log("got pre-deploy nBallots", nBallotsPre.toNumber());
+    // log("got pre-deploy nBallots", nBallotsPre.toNumber());
     await asyncAssertThrow(() => lg.getNthBallot(democId, nBallotsPre), "nonexistant democ will throw");
 
-    log("confirmed there is not ballot there yet - deploying now")
+    // log("confirmed there is not ballot there yet - deploying now")
     await lg.deployBallot(democId, democId, bytes32zero, [0, 20000000000], [false, false], {from: accounts[1]});
-    log("deployed...")
+    // log("deployed...")
     const newBallot = await lg.getNthBallot(democId, nBallotsPre);
-    log("got new ballot!", newBallot);
+    // log("got new ballot!", newBallot);
     assert.notEqual(bytes32zero, newBallot[0], "n+1th ballot should now not be zeros");
 
     // check that we can read it and all that
@@ -200,7 +200,6 @@ const testPayments = async (acc) => {
     assert.isTrue(_userPaidBalPre.eq(_userPaidBalPost.add(democPrice)), "extra wei should be refunded");
 
     // assert event and get democId
-    console.log("democInitPaid", _democInitPaid);
     assertOnlyEvent("PaymentMade", _democInitPaid);
     const _dInitEvent = getEventFromTxR("DemocInit", _democInitPaid);
     const democId = _dInitEvent.args.democHash;
