@@ -8,6 +8,9 @@ import {create, env} from 'sanctuary';
 const S = create({checkTypes: true, env});
 // const toPairs = require('ramda/src/toPairs');
 
+const AsyncPar = require('async-parallel');
+import {BigNumber} from 'bignumber.js';
+
 
 const mkPromise = f => (...args) => {
     return new Promise((resolve, reject) => {
@@ -232,7 +235,6 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         const toRet = balance.toString(10);
         console.log('implSendErc20Balance got:', toRet);
         app.ports.implErc20Balance.send(toRet);
-
     });
 
 
@@ -258,11 +260,36 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         const {contractAddress, userAddress, chainIndex, delegationABI, delegationAddr} = params;
         const ci_ = parseInt(chainIndex) || chainIndex || "latest";
         console.log("getErc20Balance got params", params);
-
         const tokenContract = Erc20Contract.at(contractAddress);
+        const delegationC = web3js.eth.contract(JSON.parse(delegationABI)).at(delegationAddr);
 
-        tokenContract.balanceOf.call(userAddress, ci_, handleErrOr(implSendErc20Balance))
-    }))
+        let total = new BigNumber(0);
+        const addToTotal = n => {
+            total = total.plus(n);
+        };
+
+        mkPromise(delegationC.findPossibleDelegatorsOf)(userAddress)
+            .then(([voters, tokenCs]) => {
+                const voterPairs = R.filter(([v, tC]) => tC === contractAddress, R.zip(voters, tokenCs));
+                return AsyncPar.map(voterPairs, ([voter, _z]) => {
+                    return mkPromise(delegationC.resolveDelegation)(voter, contractAddress)
+                        .then(([_a, _b, _c, delegatee, delegator_, tC]) => {
+                            if (delegatee === userAddress) {
+                                // if the delegate resolution matches current user then add balance
+                                return mkPromise(tokenContract.balanceOf)(voter, ci_)
+                                    .then(bal => {
+                                        console.log(`\nDlgtee: ${userAddress}\nDlgtor: ${voter}\nBal:    ${bal.toString(10)}\n\n`);
+                                        return bal
+                                    })
+                                    .then(addToTotal)
+                            }
+                        })
+
+                }, [[userAddress, contractAddress], ...votePairs]);
+            })
+            .then(() => implSendErc20Balance(total))
+            .then(() => console.log(`Sent balance total: ${bal.toString(10)}`));
+    }));
 
 
     app.ports.constructDataParam.subscribe(wrapIncoming((params) => {

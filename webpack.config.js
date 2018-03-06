@@ -4,7 +4,6 @@ const path = require('path');
 const merge = require('webpack-merge');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
-require('dotenv').config({systemvars: true});
 
 
 const NPM_CMD = process.env.npm_lifecycle_event;
@@ -16,6 +15,13 @@ const TARGET = {
     'web-admin': 'dev-admin-ui',
     'web-delegation': 'dev-delegation-ui'
 }[NPM_CMD] || NPM_CMD;
+
+
+require('dotenv').config({
+    systemvars: true,
+    path: TARGET.slice(3) === 'dev' ? './.env-dev' : './.env-prod'
+});
+
 
 console.log("TARGET =", TARGET);
 

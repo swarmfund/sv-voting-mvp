@@ -6,14 +6,16 @@ const _DEV_ = process.env.DEV;
 const DEV = (_DEV_ && _DEV_.toLowerCase() === "true") || false;
 
 module.exports = function(){
-    return {
+    const flags = {
         mainTitle: process.env.MAIN_TITLE,
         dev: DEV,
         democHash: process.env.DEMOC_HASH || "",
         indexABI: JSON.stringify(svLightIndexABI),
         ballotBoxABI: JSON.stringify(svLightBallotBoxABI),
         indexAddr: process.env.INDEX_ADDR,
-        delegationABI,
+        delegationABI: JSON.stringify(delegationABI),
         delegationAddr: process.env.DELEGATION_ADDR
     }
+    console.log("Flags returning: ", flags);
+    return flags;
 }
