@@ -12,3 +12,28 @@ getStrField m k =
 getBoolField : Model -> String -> Maybe Bool
 getBoolField m k =
     Dict.get k m.boolFields
+
+
+getBoolFieldWD : Model -> String -> Bool
+getBoolFieldWD m k =
+    Dict.get k m.boolFields |> Maybe.withDefault False
+
+
+delegateId =
+    "delegateId"
+
+
+tokenId =
+    "tokenId"
+
+
+setDlgtCollapseId =
+    "clpsSetDelegate"
+
+
+txPrevCollapseId =
+    "txPrevCollapseId"
+
+
+viewDlgtCollapsedId =
+    "viewDlgtCollapsedId"

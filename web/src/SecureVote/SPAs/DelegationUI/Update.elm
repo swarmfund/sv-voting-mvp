@@ -6,10 +6,11 @@ import Maybe.Extra exposing ((?))
 import SecureVote.Ballots.Types exposing (emptyBSpec01)
 import SecureVote.Eth.Web3 exposing (setGlobalDelegationImpl, setTokenDelegationImpl)
 import SecureVote.SPAs.DelegationUI.Components.Input exposing (genDropSelect)
+import SecureVote.SPAs.DelegationUI.Helpers exposing (..)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model, Web3Model, initWeb3Model)
 import SecureVote.SPAs.DelegationUI.Msg exposing (..)
 import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType(..))
-import Task
+import SecureVote.Tokens.Types exposing (tcChoiceToAddr)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -26,38 +27,47 @@ update msg model =
                     else
                         Dict.insert k v model.strFields
             in
-            { model | strFields = sf } ! []
+            update OnFieldUpdate { model | strFields = sf }
 
         SetBoolField k v ->
-            { model | boolFields = Dict.insert k v model.boolFields } ! []
+            update OnFieldUpdate { model | boolFields = Dict.insert k v model.boolFields }
+
+        ToggleBoolField k ->
+            update OnFieldUpdate { model | boolFields = Dict.update k (Maybe.withDefault False >> not >> Just) model.boolFields }
 
         SelectTokenContract selectMsg ->
-            { model | tokenConAddr = updateSelection selectMsg model.tokenConAddr } ! []
+            update OnFieldUpdate { model | tokenConAddr = updateSelection selectMsg model.tokenConAddr }
 
         SetDelegationType delType ->
             { model | delType = Just delType } ! []
 
-        GetDelegationPayload { delegateAddr, tokenAddr } ->
+        OnFieldUpdate ->
             let
                 modelDelTx =
                     model.delTx
 
                 newDelegationTx =
-                    { modelDelTx | to = delegateAddr }
+                    { modelDelTx | to = model.delegationAddr }
+
+                delegateAddr =
+                    getStrField model delegateId ? ""
+
+                tokenAddr =
+                    tcChoiceToAddr <| selected model.tokenConAddr
 
                 cmd =
                     case model.delType of
                         Just Global ->
                             setGlobalDelegationImpl
-                                { delegationABI = model.delABI
-                                , contractAddr = model.delConAddr
+                                { delegationABI = model.delegationABI
+                                , contractAddr = model.delegationAddr
                                 , delegateAddr = delegateAddr
                                 }
 
                         Just Token ->
                             setTokenDelegationImpl
-                                { delegationABI = model.delABI
-                                , contractAddr = model.delConAddr
+                                { delegationABI = model.delegationABI
+                                , contractAddr = model.delegationAddr
                                 , delegateAddr = delegateAddr
                                 , tokenContract = tokenAddr
                                 }

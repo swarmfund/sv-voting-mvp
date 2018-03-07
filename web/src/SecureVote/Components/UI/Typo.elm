@@ -1,8 +1,11 @@
 module SecureVote.Components.UI.Typo exposing (..)
 
-import Html exposing (span, text)
+import Element exposing (..)
+import Element.Attributes exposing (..)
+import Html as H
 import Material.Options as Options exposing (cs)
 import Material.Typography as T
+import SecureVote.Components.UI.CommonStyles exposing (..)
 
 
 cCs =
@@ -10,8 +13,16 @@ cCs =
 
 
 headline txt =
-    Options.styled span [ cs <| "black db f2-ns f3-m f3 fw2 lh-title " ++ cCs ] [ text txt ]
+    Options.styled H.span [ cs <| "black db f2-ns f3-m f3 fw2 lh-title " ++ cCs ] [ H.text txt ]
 
 
 subhead txt =
-    Options.styled span [ cs <| "black db f3-ns f4-m f4 fw2 lh-title " ++ cCs ] [ text txt ]
+    Options.styled H.span [ cs <| "black db f3-ns f4-m f4 fw2 lh-title " ++ cCs ] [ H.text txt ]
+
+
+title w msg =
+    el (w Title) [] (text msg)
+
+
+subtitle w msg =
+    el (w SubTitle) [] (text msg)

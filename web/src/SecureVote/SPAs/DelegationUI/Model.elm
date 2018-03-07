@@ -4,41 +4,38 @@ import Dict exposing (Dict)
 import Element.Input exposing (SelectWith)
 import Json.Decode exposing (Value)
 import Json.Encode exposing (object)
-import SecureVote.SPAs.DelegationUI.Components.Input exposing (genDropSelect)
+import SecureVote.SPAs.DelegationUI.Components.Input exposing (genAutoComplete, genDropSelect)
 import SecureVote.SPAs.DelegationUI.Msg exposing (Msg)
-import SecureVote.SPAs.DelegationUI.Types exposing (DelegationTx, DelegationType(Global), Flags, TokenContractChoice)
+import SecureVote.SPAs.DelegationUI.Types exposing (DelegationTx, DelegationType(Global), Flags)
+import SecureVote.Tokens.Types exposing (TokenContract)
 
 
 type alias Model =
     { strFields : Dict String String
     , boolFields : Dict String Bool
-    , tokenConAddr : SelectWith TokenContractChoice Msg
+    , tokenConAddr : SelectWith TokenContract Msg
     , delType : Maybe DelegationType
     , delTx : DelegationTx
     , mainTitle : String
     , dev : Bool
-    , democHash : String
     , errors : List String
-    , littleGovIndex : String
-    , delABI : String
-    , delConAddr : String
+    , delegationABI : String
+    , delegationAddr : String
     }
 
 
 initModel : Flags -> Model
-initModel { mainTitle, dev, democHash, indexAddr, delegationABI } =
+initModel { mainTitle, dev, delegationABI, delegationAddr } =
     { strFields = Dict.empty
     , boolFields = Dict.empty
-    , tokenConAddr = genDropSelect
+    , tokenConAddr = genAutoComplete
     , delType = Just Global
-    , delTx = DelegationTx "" "" 0 200000 ""
+    , delTx = DelegationTx "" "" 0 ""
     , mainTitle = mainTitle
     , dev = dev
-    , democHash = democHash
     , errors = []
-    , littleGovIndex = indexAddr
-    , delABI = delegationABI
-    , delConAddr = "0xd78D4beAbFD3054390D10aeb4258dC2D867f5e17"
+    , delegationABI = delegationABI
+    , delegationAddr = delegationAddr
     }
 
 

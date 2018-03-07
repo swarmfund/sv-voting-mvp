@@ -2,6 +2,7 @@ module SecureVote.SPAs.DelegationUI.Views.Styles exposing (..)
 
 import Color exposing (black, darkGray, red)
 import Element exposing (Element)
+import SecureVote.Components.UI.CommonStyles exposing (CommonStyle, Variations(..), commonStyleSheet)
 import SecureVote.SPAs.DelegationUI.Msg exposing (Msg)
 import Style exposing (prop, style, styleSheet, variation)
 import Style.Border exposing (..)
@@ -15,7 +16,6 @@ type alias UiElem =
 
 type DelegationStyles
     = NoS
-    | Title
     | ErrTxt
     | BallotElemSelector
     | TxPreview
@@ -23,13 +23,7 @@ type DelegationStyles
     | Field
     | SubMenu
     | TxRender
-
-
-type Variations
-    = NoVar
-    | RoundedTop
-    | RoundedAll
-    | Disabled
+    | CS CommonStyle
 
 
 radius =
@@ -37,13 +31,9 @@ radius =
 
 
 stylesheet =
-    styleSheet
+    styleSheet <|
         [ style NoS []
         , style BallotElemSelector []
-        , style Title
-            [ text black
-            , size 30
-            ]
         , style ErrTxt
             [ text red ]
         , style TxPreview
@@ -56,9 +46,6 @@ stylesheet =
             , rounded 5
             , all 1
             , typeface [ monospace ]
-            ]
-        , style TxRender
-            [ typeface [ monospace ]
             ]
         , style Field
             [ border black
@@ -79,3 +66,4 @@ stylesheet =
             , roundBottomLeft radius
             ]
         ]
+            ++ commonStyleSheet CS
