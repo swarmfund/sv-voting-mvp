@@ -153,6 +153,23 @@ const testBackwardsCompatibility = async (acc) => {
 }
 
 
+const testRevocation = async (acc) => {
+    const dcOrig = await DCOrig.new();
+    const dc = await DCv11.new(dcOrig.address);
+
+    const [v1, v2, d1, d2, t1] = acc;
+
+    await dc.setTokenDelegation(t1, d1, {from: v1});
+    await dc.setGlobalDelegation(d2, {from: v1});
+
+    assert.equal(d1, (await dc.resolveDelegation(v1, t1))[3], "token delegation matches");
+    assert.equal(d2, (await dc.resolveDelegation(v1, zeroAddr))[3], "token delegation matches");
+
+    await dc.setTokenDelegation(t1, zeroAddr, {from: v1});
+    assert.equal(d2, (await dc.resolveDelegation(v1, t1))[3], "token delegation resolves to global delegation after revocation");
+}
+
+
 const testRealV1OnMainnet = async (acc) => {
     if (process.env.DO_MAINNET_DELEGATION_TEST !== "true") {
         console.warn("WARNING: Skipping mainnet delegation test, use 'DO_MAINNET_DELEGATION_TEST=true' to perform this test");
@@ -288,6 +305,7 @@ contract("SVDelegationV0101", function (_accounts) {
         ["complex global and token delegation", testDelegationMixed],
         ["multiple delegates in local and global config", testMultiDelegations],
         ["is backwards compatible", testBackwardsCompatibility],
+        ["revocations resolve correctly", testRevocation],
         ["test v1 on kovan backwards compat", testKovanBackwardsCompat],
         ["test v1 on mainnet backwards compatibility", testRealV1OnMainnet]
     ];

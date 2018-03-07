@@ -19,7 +19,6 @@ const TARGET = {
 
 
 console.log("TARGET =", TARGET);
-console.log(process.env);
 
 
 const defaultFilename = '[name]-[hash].js';

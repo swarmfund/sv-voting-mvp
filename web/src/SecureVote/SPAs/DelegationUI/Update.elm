@@ -10,8 +10,6 @@ import SecureVote.SPAs.DelegationUI.Model exposing (Model, Web3Model, initWeb3Mo
 import SecureVote.SPAs.DelegationUI.Msg exposing (..)
 import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType(..))
 import Task
-import Web3.Types exposing (Error(Error), Sha3(Sha3))
-import Web3.Utils exposing (sha3)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
