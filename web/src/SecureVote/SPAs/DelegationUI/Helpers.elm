@@ -39,7 +39,7 @@ viewDelegationArgs model =
             getStrField model getDlgtTypeId ? "none"
 
         tokenAddr =
-            getStrField model getDelegationTokenAddrId ? "Error: no token address set when viewing delegation"
+            tcChoiceToAddr (selected model.tokenConAddr)
 
         tokenStr =
             if dlgtType == "global" then

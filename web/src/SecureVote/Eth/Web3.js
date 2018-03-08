@@ -392,7 +392,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                 app.ports.contractReadResponse.send({success: true, errMsg: "", method, resp, addr});
             }).catch(err => {
                 console.log(`Error reading ${addr}.${method}(${args}) => ${err.message}`);
-                app.ports.contractReadResponse.send({success: false, errMsg: err.message, method, response: null, addr});
+                app.ports.contractReadResponse.send({success: false, errMsg: err.message, method, resp: null, addr});
         })
     }));
 

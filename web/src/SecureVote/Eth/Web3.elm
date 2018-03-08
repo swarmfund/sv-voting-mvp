@@ -69,9 +69,6 @@ port contractReadResponse : (Value -> msg) -> Sub msg
 onContractReadResponse : (ReadResponse -> msg) -> (String -> msg) -> Value -> msg
 onContractReadResponse msgGen errMsg val =
     let
-        _ =
-            Debug.log ("contract read got back err: " ++ toString val) True
-
         decoder =
             decode ReadResponse
                 |> required "success" Decode.bool
@@ -82,13 +79,10 @@ onContractReadResponse msgGen errMsg val =
     in
     case Decode.decodeValue decoder val of
         Ok secVal ->
-            if secVal.success then
-                msgGen secVal
-            else
-                errMsg secVal.errMsg
+            msgGen secVal
 
         Err err ->
-            errMsg err
+            errMsg <| Debug.log "contract read got back err: " err
 
 
 

@@ -24,6 +24,27 @@ import SecureVote.SPAs.DelegationUI.Views.Styles exposing (DelegationStyles(..),
 import SecureVote.Tokens.Types exposing (TokenContract(..), tcChoiceToAddr, tcChoiceToStr)
 
 
+mkChoice c =
+    I.choice c (text <| tcChoiceToStr c)
+
+
+mkMenu cs =
+    I.menu SubMenu [] <| List.map mkChoice cs
+
+
+tokenSelector model =
+    select CS
+        { label = I.labelAbove <| el DNoS [ width fill ] (text "Token Contract")
+        , with = model.tokenConAddr
+        , max = 5
+        , options = [ I.errorBelow <| when (selectTokenInvalid model) <| el ErrTxt [] (text "Please Select a Token Contract") ]
+        , menu =
+            mkMenu
+                [ Swarm
+                ]
+        }
+
+
 delegationFields : Model -> UiElem
 delegationFields model =
     let
@@ -90,26 +111,10 @@ globalOrTokenChoice model =
 
 selectTokenContract : Model -> UiElem
 selectTokenContract model =
-    let
-        mkChoice c =
-            I.choice c (text <| tcChoiceToStr c)
-
-        mkMenu cs =
-            I.menu SubMenu [] <| List.map mkChoice cs
-    in
     if model.delType == Just Token then
         row DNoS
             [ width fill ]
-            [ select CS
-                { label = I.labelAbove <| el DNoS [ width fill ] (text "Token Contract")
-                , with = model.tokenConAddr
-                , max = 5
-                , options = [ I.errorBelow <| when (selectTokenInvalid model) <| el ErrTxt [] (text "Please Select a Token Contract") ]
-                , menu =
-                    mkMenu
-                        [ Swarm
-                        ]
-                }
+            [ tokenSelector model
             ]
     else
         empty
@@ -153,12 +158,13 @@ viewDlgtFields model =
     let
         tokenAddrInput =
             if getStrField model getDlgtTypeId == Just "token" then
-                textInput CS
-                    { onChange = SetStrField getDelegationTokenAddrId
-                    , value = getStrField model getDelegationTokenAddrId ? ""
-                    , label = I.labelAbove (text "Token Address (ERC20)")
-                    , options = []
-                    }
+                --                textInput CS
+                --                    { onChange = SetStrField getDelegationTokenAddrId
+                --                    , value = getStrField model getDelegationTokenAddrId ? ""
+                --                    , label = I.labelAbove (text "Token Address (ERC20)")
+                --                    , options = []
+                --                    }
+                tokenSelector model
             else
                 empty
     in
