@@ -1,17 +1,22 @@
 module SecureVote.Components.UI.CommonStyles exposing (..)
 
 import Color exposing (..)
-import Style exposing (Property, Style, StyleSheet, cursor, style, variation)
-import Style.Color exposing (text)
+import Style exposing (Property, Style, StyleSheet, cursor, prop, style, variation)
+import Style.Border exposing (..)
+import Style.Color exposing (border, text)
 import Style.Font exposing (..)
 
 
 cmnPad =
-    10
+    20
 
 
-cmdSpacing =
-    10
+cmnSpacing =
+    20
+
+
+cmnRound =
+    5
 
 
 type alias RenderInputType s =
@@ -27,9 +32,11 @@ type CommonStyle
     = CodeStyle
     | Warning
     | Collapsible
+    | PageTitle
     | Title
     | SubTitle
     | SubSubTitle
+    | Field
     | NoS
 
 
@@ -54,6 +61,11 @@ commonStyleSheet wrap =
             , text red
             ]
           )
+        , ( PageTitle
+          , [ text black
+            , size 40
+            ]
+          )
         , ( Title
           , [ text black
             , size 30
@@ -70,4 +82,18 @@ commonStyleSheet wrap =
             , size 15
             ]
           )
+        , ( Field
+          , [ border black
+            , all 1
+            , variation RoundedTop
+                [ roundTopRight cmnRound
+                , roundTopLeft cmnRound
+                ]
+            , variation RoundedAll
+                [ rounded cmnRound ]
+            , variation Disabled
+                [ prop "disabled" "disabled" ]
+            ]
+          )
+        , ( Collapsible, [] )
         ]

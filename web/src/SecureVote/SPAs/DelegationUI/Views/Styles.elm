@@ -15,12 +15,11 @@ type alias UiElem =
 
 
 type DelegationStyles
-    = NoS
+    = DNoS
     | ErrTxt
     | BallotElemSelector
     | TxPreview
     | PayloadHash
-    | Field
     | SubMenu
     | TxRender
     | CS CommonStyle
@@ -32,7 +31,7 @@ radius =
 
 stylesheet =
     styleSheet <|
-        [ style NoS []
+        [ style DNoS []
         , style BallotElemSelector []
         , style ErrTxt
             [ text red ]
@@ -46,18 +45,6 @@ stylesheet =
             , rounded 5
             , all 1
             , typeface [ monospace ]
-            ]
-        , style Field
-            [ border black
-            , all 1
-            , variation RoundedTop
-                [ roundTopRight radius
-                , roundTopLeft radius
-                ]
-            , variation RoundedAll
-                [ rounded radius ]
-            , variation Disabled
-                [ prop "disabled" "disabled" ]
             ]
         , style SubMenu
             [ border black

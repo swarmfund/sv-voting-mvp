@@ -3,7 +3,10 @@ module SecureVote.SPAs.DelegationUI.Update exposing (..)
 import Dict
 import Element.Input exposing (dropMenu, menu, select, selected, updateSelection)
 import Maybe.Extra exposing ((?))
+import RemoteData exposing (RemoteData(Success))
 import SecureVote.Ballots.Types exposing (emptyBSpec01)
+import SecureVote.Eth.Msg as EthMsg
+import SecureVote.Eth.Update as EthUpdate
 import SecureVote.Eth.Web3 exposing (setGlobalDelegationImpl, setTokenDelegationImpl)
 import SecureVote.SPAs.DelegationUI.Components.Input exposing (genDropSelect)
 import SecureVote.SPAs.DelegationUI.Helpers exposing (..)
@@ -50,7 +53,7 @@ update msg model =
                     { modelDelTx | to = model.delegationAddr }
 
                 delegateAddr =
-                    getStrField model delegateId ? ""
+                    getStrField model setDelegateAddrId ? ""
 
                 tokenAddr =
                     tcChoiceToAddr <| selected model.tokenConAddr
@@ -87,5 +90,30 @@ update msg model =
             in
             { model | delTx = newDelegationTx } ! []
 
+        ViewDlgtResp r ->
+            { model | viewDlgtResp = r } ! []
+
+        MMsg msgs ->
+            case msgs of
+                [] ->
+                    model ! []
+
+                msg :: msgs_ ->
+                    let
+                        ( m_, cmds_ ) =
+                            update (MMsg msgs_) model
+
+                        ( m__, cmds__ ) =
+                            update msg m_
+                    in
+                    m__ ! [ cmds_, cmds__ ]
+
         LogErr err ->
             { model | errors = err :: model.errors } ! []
+
+        Web3 ethMsg ->
+            let
+                ( web3Mdl, cmd ) =
+                    EthUpdate.update ethMsg model.web3
+            in
+            { model | web3 = web3Mdl } ! [ Cmd.map Web3 cmd ]

@@ -26,3 +26,7 @@ title w msg =
 
 subtitle w msg =
     el (w SubTitle) [] (text msg)
+
+
+pageTitle w msg =
+    el (w PageTitle) [] (text msg)

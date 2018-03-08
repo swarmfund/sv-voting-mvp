@@ -1,10 +1,10 @@
 module SecureVote.SPAs.DelegationUI.Main exposing (..)
 
 import Html
-import SecureVote.Eth.Web3 exposing (gotDelegatePayloadGen, metamaskTxidGen)
+import SecureVote.Eth.Web3 exposing (contractReadResponse, gotDelegatePayloadGen, metamaskTxidGen, onContractReadResponse)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model, initModel)
-import SecureVote.SPAs.DelegationUI.Msg exposing (Msg)
-import SecureVote.SPAs.DelegationUI.MsgHandlers exposing (handleDelegationPayload)
+import SecureVote.SPAs.DelegationUI.Msg exposing (Msg(LogErr))
+import SecureVote.SPAs.DelegationUI.MsgHandlers exposing (handleContractRead, handleDelegationPayload)
 import SecureVote.SPAs.DelegationUI.Types exposing (Flags)
 import SecureVote.SPAs.DelegationUI.Update exposing (update)
 import SecureVote.SPAs.DelegationUI.Views.RootV exposing (rootV)
@@ -18,6 +18,7 @@ initF f =
 subscriptions model =
     Sub.batch
         [ gotDelegatePayloadGen handleDelegationPayload
+        , contractReadResponse (onContractReadResponse (handleContractRead model) LogErr)
         ]
 
 

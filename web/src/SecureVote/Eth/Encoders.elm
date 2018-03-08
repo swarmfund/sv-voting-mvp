@@ -1,7 +1,7 @@
 module SecureVote.Eth.Encoders exposing (..)
 
 import Json.Encode exposing (Value, int, object, string)
-import SecureVote.Eth.Models exposing (MinEthTx)
+import SecureVote.Eth.Types exposing (..)
 
 
 minEthTxEncoder : MinEthTx -> Value

@@ -4,9 +4,11 @@ import Dict exposing (Dict)
 import Element.Input exposing (SelectWith)
 import Json.Decode exposing (Value)
 import Json.Encode exposing (object)
+import RemoteData exposing (RemoteData(NotAsked))
+import SecureVote.Eth.Model exposing (EthMdl, initEthMdl)
 import SecureVote.SPAs.DelegationUI.Components.Input exposing (genAutoComplete, genDropSelect)
 import SecureVote.SPAs.DelegationUI.Msg exposing (Msg)
-import SecureVote.SPAs.DelegationUI.Types exposing (DelegationTx, DelegationType(Global), Flags)
+import SecureVote.SPAs.DelegationUI.Types exposing (..)
 import SecureVote.Tokens.Types exposing (TokenContract)
 
 
@@ -21,6 +23,8 @@ type alias Model =
     , errors : List String
     , delegationABI : String
     , delegationAddr : String
+    , viewDlgtResp : RemoteData String DelegationResp
+    , web3 : EthMdl
     }
 
 
@@ -36,6 +40,8 @@ initModel { mainTitle, dev, delegationABI, delegationAddr } =
     , errors = []
     , delegationABI = delegationABI
     , delegationAddr = delegationAddr
+    , viewDlgtResp = NotAsked
+    , web3 = initEthMdl
     }
 
 

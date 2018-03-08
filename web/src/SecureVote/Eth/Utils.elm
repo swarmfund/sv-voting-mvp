@@ -8,7 +8,7 @@ import Keccak exposing (ethereum_keccak_256)
 import Maybe.Extra exposing ((?), combine)
 import ParseInt
 import Regex exposing (Regex, contains, regex)
-import SecureVote.Eth.Models exposing (CandidateEthTx, MinEthTx)
+import SecureVote.Eth.Types exposing (..)
 
 
 keccak256OverString : String -> Maybe String

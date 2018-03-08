@@ -25,7 +25,6 @@ subscriptions model =
         , receiveCurve25519Error <| onIncomingCurve25519Error LogErr
         , implDataParam <| onRecieveDataParam
         , gotEncPubkey <| onGotPubkey
-        , contractReadResponse <| onContractReadResponse decodeRead readOptsErr
         , gotTxidCheckStatus onGotTxidStatus
         , gotAuditMsg
         , gotMetamask

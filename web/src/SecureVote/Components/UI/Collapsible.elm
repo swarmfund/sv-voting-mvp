@@ -6,22 +6,25 @@ import Element.Events exposing (onClick)
 import SecureVote.Components.UI.CommonStyles exposing (..)
 
 
-collapsible w { onCollapse, isCollapsed, header, body } =
+collapsible w { onCollapse, isCollapsed, header, body, startOpen } =
     let
+        collapsed_ =
+            not <| xor startOpen isCollapsed
+
         collapsedSymbol =
-            if isCollapsed then
+            if collapsed_ then
                 "➕"
             else
                 "➖"
 
         collapsedSection =
-            if isCollapsed then
+            if collapsed_ then
                 []
             else
                 body
     in
     column (w Collapsible)
-        [ spacing cmdSpacing ]
+        [ spacing cmnSpacing ]
     <|
         [ el (w Title) [ onClick onCollapse, vary BtnCursor True ] <| text <| collapsedSymbol ++ " " ++ header
         ]

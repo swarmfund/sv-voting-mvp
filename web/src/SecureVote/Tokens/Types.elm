@@ -19,4 +19,4 @@ tcChoiceToAddr c =
             "0x9e88613418cF03dCa54D6a2cf6Ad934A78C7A17A"
 
         _ ->
-            "Unknown Contract"
+            "No contract selected"

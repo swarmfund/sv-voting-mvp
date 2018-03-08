@@ -16,3 +16,13 @@ type alias DelegationTx =
 type DelegationType
     = Global
     | Token
+
+
+type alias DelegationResp =
+    { dId : Int
+    , prevDId : Int
+    , setAtBlock : Int
+    , delegatee : String
+    , delegator : String
+    , tokenAddr : String
+    }
