@@ -10,6 +10,8 @@ const S = create({checkTypes: true, env});
 const filter = require('ramda/src/filter');
 const zip = require('ramda/src/zip');
 const uniq = require('ramda/src/uniq');
+const map = require('ramda/src/map');
+const isNil = require('ramda/src/isNil');
 
 const AsyncPar = require('async-parallel');
 import {BigNumber} from 'bignumber.js';
@@ -29,8 +31,7 @@ const promiseCb = (resolve, reject, extra = []) => (err, val) => {
     if (err) {
         reject(err);
     } else {
-        resolve([val, ...extra
-        ]);
+        resolve([val, ...extra]);
     }
 };
 
@@ -47,6 +48,20 @@ const ethAddrEq = (a1, a2) => {
 };
 
 
+const convertBigNums = (args) => {
+    const _args = Array.isArray(args) ? args : [args];
+    return map(a => {
+        if (!isNil(a) && (isNil(a.s) || isNil(a.e) || isNil(a.c))) {
+            // then we do not have a bignum (note: better way to check?)
+            return a;
+        } else if (!isNil(a) && a.toString) {
+            // then we have an object with fields s, e, and c
+            return a.toString(10);
+        }
+        return a
+    }, _args)
+}
+
 
 const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     if (mmDetected) {
@@ -59,6 +74,27 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
 
     /* START DELEGATION SECTION */
+
+
+    app.ports.setTokenDelegationImpl.subscribe(wrapIncoming(({delegationABI, contractAddr, delegateAddr, tokenContract}) => {
+        const delegateABIObj = JSON.parse(delegationABI);
+        const delegateContract = web3js.eth.contract(delegateABIObj).at(contractAddr);
+
+        console.log(`Getting data for setTokenDelegation(${tokenContract}, ${delegateAddr})`);
+        const payload = delegateContract.setTokenDelegation.getData(tokenContract, delegateAddr);
+
+        app.ports.gotDelegatePayloadImpl.send(payload);
+    }));
+
+
+    app.ports.setGlobalDelegationImpl.subscribe(wrapIncoming(({delegationABI, contractAddr, delegateAddr}) => {
+        const delegateABIObj = JSON.parse(delegationABI);
+        const delegateContract = web3js.eth.contract(delegateABIObj).at(contractAddr);
+
+        const payload = delegateContract.setGlobalDelegation.getData(delegateAddr);
+
+        app.ports.gotDelegatePayloadImpl.send(payload);
+    }));
 
 
     /* END DELEGATION SECTION */
@@ -338,22 +374,26 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         }
         app.ports.implDataParam.send(data);
         console.log("constructDataParam sent: ", data);
-    }))
+    }));
 
 
     app.ports.getEncryptionPublicKey.subscribe(wrapIncoming(contractAddr => {
         const voteC = SwmVotingContract.at(contractAddr);
         voteC.getEncPubkey(handleErrOr(app.ports.gotEncPubkey.send));
-    }))
+    }));
 
-    app.ports.performContractRead.subscribe(wrapIncoming((successF, failF, contractAddr, methodName, args) => {
-        const voteC = SwmVotingContract.at(contractAddr);
-        try {
-            const response = voteC[methodName](...args);
-            app.ports.contractReadResponse.send(successF(response));
-        } catch (err) {
-            app.ports.contractReadResponse.send(failF(err.toString()));
-        }
+    app.ports.performContractRead.subscribe(wrapIncoming(({abi, addr, method, args}) => {
+        console.log(`Reading ${addr}.${method}(${args})`);
+        const c = web3js.eth.contract(JSON.parse(abi)).at(addr);
+        mkPromise(c[method])(...args)
+            .then(response => {
+                const resp = convertBigNums(response);
+                console.log(`Read ${addr}.${method}(${args}) w/ response ${resp}`);
+                app.ports.contractReadResponse.send({success: true, errMsg: "", method, resp, addr});
+            }).catch(err => {
+                console.log(`Error reading ${addr}.${method}(${args}) => ${err.message}`);
+                app.ports.contractReadResponse.send({success: false, errMsg: err.message, method, resp: null, addr});
+        })
     }));
 
     // // this function takes an object and returns a list of values sorted by the keys.
@@ -387,13 +427,13 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
             } else {
                 let logMsg = "";
                 try {
-                    const logs = abiDecoder.decodeLogs(getTxR.logs);
+                    const logs = abiDecoder.decodeLogs(getTxlogs);
                     console.log(logs);
                     logMsg = logs[0].events[0].value;
                 } catch (err) {
                     console.log('checkTxid decoding error broke with: ', err.toString());
                 }
-                ret = {data: getTx.input, confirmed: getTx.blockNumber !== null, gas: getTxR.gasUsed || 0, logMsg};
+                ret = {data: getTx.input, confirmed: getTx.blockNumber !== null, gas: getTxgasUsed || 0, logMsg};
             }
             app.ports.gotTxidCheckStatus.send(ret);
         }).catch(err => {

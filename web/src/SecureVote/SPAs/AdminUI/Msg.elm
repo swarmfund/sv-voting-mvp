@@ -3,8 +3,7 @@ module SecureVote.SPAs.AdminUI.Msg exposing (..)
 import Element.Input exposing (SelectMsg)
 import SecureVote.Ballots.Types exposing (BallotSpecChoice, OptsChoice)
 import SecureVote.Crypto.Hashing exposing (HashAlg, HashMsg)
-import SecureVote.Eth.Models exposing (MinEthTx)
-import SecureVote.Eth.Types exposing (GetTxInfoContractWrite, GotTxInfoPayload, WriteViaMMDoc)
+import SecureVote.Eth.Types exposing (..)
 
 
 type Msg

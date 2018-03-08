@@ -6,7 +6,6 @@ import Json.Decode as Decode exposing (Decoder, Value, bool, decodeValue, int, s
 import Json.Decode.Pipeline exposing (decode, required)
 import Maybe exposing (withDefault)
 import Maybe.Extra exposing (combine)
-import SecureVote.Eth.Models exposing (CandidateEthTx, MinEthTx)
 import SecureVote.Eth.Types exposing (..)
 import SecureVote.Eth.Utils exposing (dropEthPrefix)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
@@ -57,22 +56,11 @@ type alias ConsDataParamReq =
     { ballot : String, useEnc : Bool, voterPubkey : String, votingContractAddr : String, abi : String }
 
 
-type alias PerformRead =
-    { addr : String
-    , method : String
-    , args : Value
-    }
+
+-- # Arbitrary Contract Reads and Writes
 
 
-port performContractRead : PerformRead -> Cmd msg
-
-
-type alias ReadResponse =
-    { success : Bool
-    , response : Value
-    , errMsg : String
-    , method : String
-    }
+port performContractRead : ReadContractDoc -> Cmd msg
 
 
 port contractReadResponse : (Value -> msg) -> Sub msg
@@ -81,25 +69,24 @@ port contractReadResponse : (Value -> msg) -> Sub msg
 onContractReadResponse : (ReadResponse -> msg) -> (String -> msg) -> Value -> msg
 onContractReadResponse msgGen errMsg val =
     let
-        _ =
-            Debug.log ("contract read got back err: " ++ toString val) True
-
         decoder =
             decode ReadResponse
                 |> required "success" Decode.bool
-                |> required "response" Decode.value
+                |> required "resp" Decode.value
                 |> required "errMsg" Decode.string
                 |> required "method" Decode.string
+                |> required "addr" Decode.string
     in
     case Decode.decodeValue decoder val of
         Ok secVal ->
-            if secVal.success then
-                msgGen secVal
-            else
-                errMsg secVal.errMsg
+            msgGen secVal
 
         Err err ->
-            errMsg err
+            errMsg <| Debug.log "contract read got back err: " err
+
+
+
+-- # ERC20 Operations
 
 
 type alias GetErc20BalanceReq =
@@ -331,4 +318,21 @@ handleGotTxInfo msgF =
 
 
 {- START DELEGATION SECTIONS -}
+
+
+port setGlobalDelegationImpl : { delegationABI : String, contractAddr : String, delegateAddr : String } -> Cmd msg
+
+
+port setTokenDelegationImpl : { delegationABI : String, contractAddr : String, delegateAddr : String, tokenContract : String } -> Cmd msg
+
+
+port gotDelegatePayloadImpl : (Value -> msg) -> Sub msg
+
+
+gotDelegatePayloadGen msg =
+    gotDelegatePayloadImpl <|
+        \val -> msg <| decodeValue string val
+
+
+
 {- END DELEGATION SECTIONS -}

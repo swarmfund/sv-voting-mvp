@@ -4,7 +4,7 @@ import Json.Decode as D exposing (Value, int)
 import Json.Decode.Pipeline exposing (decode, required)
 import RemoteData exposing (RemoteData(Failure, Success))
 import SecureVote.Ballots.Types exposing (BallotSCDetails)
-import SecureVote.Eth.Types exposing (BallotInfo, Erc20Abrv)
+import SecureVote.Eth.Types exposing (..)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 
@@ -17,15 +17,6 @@ handleResponse msg res =
 
         Err err ->
             MultiMsg [ LogErr err, FromWeb3 <| msg <| Failure err ]
-
-
-{-| D contract read msg |
--}
-decodeRead : ReadResponse -> Msg
-decodeRead { success, errMsg, response, method } =
-    case method of
-        _ ->
-            LogErr "Unknown method returned from web3"
 
 
 readOptsErr : String -> Msg
