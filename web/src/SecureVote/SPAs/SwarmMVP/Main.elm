@@ -42,6 +42,7 @@ subscriptions model =
         , localStorageErrSub lsFailHandler
         , contractReadResponse (onContractReadResponse (cReadHandler model) LogErr)
         , every (15 * second) (\_ -> CheckForPrevVotes)
+        , every (5 * second) (flip (/) 1000 >> round >> SetTime)
         ]
 
 

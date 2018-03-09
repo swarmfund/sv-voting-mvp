@@ -169,7 +169,7 @@ metamaskTxid =
         (\r ->
             case r of
                 Ok txid ->
-                    FromWeb3 <| GotMetaMaskTxid txid
+                    MultiMsg [ FromWeb3 <| GotMetaMaskTxid txid, MarkBallotTxInProg ]
 
                 Err err ->
                     errHelper "MetaMask returned an error: " err

@@ -9,7 +9,7 @@ import Material.Card as Card
 import Material.Color as Color
 import Material.Options as Options exposing (cs, css)
 import Maybe.Extra exposing ((?), isJust)
-import Monocle.Common exposing (dict)
+import Monocle.Common exposing ((=>), dict)
 import SecureVote.Ballots.Types exposing (BallotSpec(..))
 import SecureVote.Components.UI.Elevation exposing (elevation)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
@@ -17,16 +17,21 @@ import SecureVote.Components.UI.Loading exposing (loadingSpinner)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Crypto.Hashing exposing (hashToInt)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (getUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(OpeningSlideR))
 import SecureVote.Utils.Time exposing (readableTime)
+import Time
 import Tuple exposing (first, second)
 
 
 listVotesView : Model -> Html Msg
 listVotesView model =
     let
+        userAddr =
+            getUserErc20Addr model
+
         allBallots =
             Dict.toList model.specToDeets
                 |> List.map
@@ -43,7 +48,9 @@ listVotesView model =
                 |> Maybe.withDefault []
 
         haveVoted bHash =
-            (dict bHash).getOption model.haveVotedOn == Just True
+            userAddr
+                |> Maybe.andThen (\a -> (dict a => dict bHash).getOption model.haveVotedOn)
+                |> (==) (Just True)
 
         currentBallots =
             List.sortBy (.endTime << second) <| filter (second >> (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime)) allBallots
@@ -104,7 +111,16 @@ listVotesView model =
                             text "✅ You have voted on this."
 
                         Just False ->
-                            text "🗳 You have not voted on this yet."
+                            userAddr
+                                |> Maybe.andThen (\addr -> (dict addr => dict bHash).getOption model.pendingVotes)
+                                |> Maybe.map
+                                    (\t ->
+                                        if (toFloat model.now * Time.second) - t < 300 * Time.second then
+                                            text "⏳ Waiting for vote to be confirmed..."
+                                        else
+                                            text "⚠️ Waiting for more than 5 minutes for vote to confirm. Check tx or vote again."
+                                    )
+                                |> Maybe.withDefault (text "🗳 You have not voted on this yet.")
 
                         Nothing ->
                             span [] []
@@ -144,7 +160,7 @@ listVotesView model =
             Dict.get model.currDemoc model.democCounts
 
         foundNBallots =
-            ((dict model.currDemoc).getOption model.democIToSpec |> Maybe.map Dict.size) ? 0
+            (dict model.currDemoc).getOption model.democIToSpec |> Maybe.map Dict.size |> Maybe.withDefault 0
 
         gotNBallots =
             Dict.size model.specToDeets
@@ -156,7 +172,10 @@ listVotesView model =
             Dict.size model.ballotScDetails
 
         gotNPrevVoteDeets =
-            Dict.size model.haveVotedOn
+            userAddr
+                |> Maybe.andThen (\a -> (dict a).getOption model.haveVotedOn)
+                |> Maybe.map Dict.size
+                |> Maybe.withDefault 0
 
         doneLoadingBallots =
             isJust totalBallots && totalBallots == Just gotNBallots && BE.all (List.map ((==) gotNBallots) [ gotNAbrvs, gotNBallotScDetails, foundNBallots, gotNPrevVoteDeets ])

@@ -31,10 +31,11 @@ import SecureVote.SPAs.SwarmMVP.Routes exposing (defaultRoute)
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidFail, TxidInProgress, TxidSuccess))
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
 import SecureVote.Utils.Int exposing (maxInt)
-import SecureVote.Utils.Lenses exposing ((=|>))
+import SecureVote.Utils.Lenses exposing ((=|>), dictWDE)
 import SecureVote.Utils.Ports exposing (mkCarry)
 import SecureVote.Utils.Update exposing (doUpdate)
 import Task exposing (attempt)
+import Time
 import Tuple exposing (second)
 
 
@@ -108,7 +109,7 @@ update msg model =
                     Dict.get bHash model.specToDeets
 
                 contractAddr =
-                    (dict model.currDemoc => dict bHash =|> bpiVotingAddr).getOption model.democIssues ? "Unknown Contract Addr"
+                    (dictWDE model.currDemoc => dict bHash =|> bpiVotingAddr).getOption model.democIssues ? "Unknown Contract Addr"
 
                 ( m_, cmds_ ) =
                     update NoOp <| resetAllBallotFields { model | currentBallot = Just bHash } { contractAddr = contractAddr }
@@ -176,7 +177,7 @@ update msg model =
                 Ok { bHash, bSpec, cid } ->
                     let
                         startTimeFromSC =
-                            (dict model.currDemoc => dict bHash =|> bpiStartTime).getOption model.democIssues
+                            (dictWDE model.currDemoc => dict bHash =|> bpiStartTime).getOption model.democIssues
 
                         updatedBSpec =
                             case startTimeFromSC of
@@ -214,7 +215,9 @@ update msg model =
                     fatalFailedSpecUpdate e model
 
         MarkBallotVoted b bHash ->
-            { model | haveVotedOn = Dict.insert bHash b model.haveVotedOn } ! []
+            getUserErc20Addr model
+                |> Maybe.map (\addr -> { model | haveVotedOn = (dictWDE addr => dict bHash).set b model.haveVotedOn } ! [])
+                |> Maybe.withDefault ( model, Cmd.none )
 
         CheckForPrevVotes ->
             let
@@ -225,18 +228,36 @@ update msg model =
                                 Dict.toList ((dict model.currDemoc).getOption model.democIssues ? Dict.empty)
                                     |> List.map
                                         (\( bHash, bDetails ) ->
-                                            performContractRead
-                                                { addr = bpiVotingAddr.get bDetails
-                                                , abi = model.ballotBoxABI
-                                                , carry = mkCarry <| E.string bHash
-                                                , method = "voterToBallotID"
-                                                , args = [ E.string vAddr ]
-                                                }
+                                            if (dictWDE vAddr => dict bHash).getOption model.haveVotedOn /= Just True then
+                                                performContractRead
+                                                    { addr = bpiVotingAddr.get bDetails
+                                                    , abi = model.ballotBoxABI
+                                                    , carry = mkCarry <| E.string bHash
+                                                    , method = "voterToBallotID"
+                                                    , args = [ E.string vAddr ]
+                                                    }
+                                            else
+                                                Cmd.none
                                         )
                             )
                         |> Maybe.withDefault []
             in
             model ! cmds
+
+        MarkBallotTxInProg ->
+            ( model
+            , Task.perform
+                (\t ->
+                    model.currentBallot
+                        |> Maybe.andThen (\bHash -> Maybe.map (\addr -> { addr = addr, bHash = bHash }) (getUserErc20Addr model))
+                        |> Maybe.map (\addrBHash -> SetBallotProgTime addrBHash t)
+                        |> Maybe.withDefault NoOp
+                )
+                Time.now
+            )
+
+        SetBallotProgTime { addr, bHash } t ->
+            { model | pendingVotes = (dictWDE addr => dict bHash).set t model.pendingVotes } ! []
 
         MultiMsg msgs ->
             multiUpdate msgs model []

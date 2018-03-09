@@ -87,10 +87,16 @@ votingView model ( bHash, bSpec ) =
                 Just txid ->
                     div [ class "mv2 f5 w-100 overflow-x-hidden" ] [ text "Vote cast using MetaMask.", br [] [], text <| "TXID: " ++ txid ]
 
+        endBtnMsgs =
+            MultiMsg
+                [ MarkBallotTxInProg
+                , PageGoHome
+                ]
+
         endBtns model =
             div []
                 [ btn 987572349 model [ PriBtn, Attr (class "ma2"), Click (SetDialog "Verify Your Ballot" VerifyDialog), OpenDialog ] [ text "Verify Ballot" ]
-                , btn 843973394 model [ SecBtn, Attr (class "ma2"), Click PageGoHome ] [ text "Back to Start" ]
+                , btn 843973394 model [ SecBtn, Attr (class "ma2"), Click endBtnMsgs ] [ text "I'm Done Voting - Next Ballot" ]
                 ]
 
         ballotDetails =

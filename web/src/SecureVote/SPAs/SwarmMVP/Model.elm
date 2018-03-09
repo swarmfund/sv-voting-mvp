@@ -65,7 +65,8 @@ type alias Model =
     , democIToSpec : Dict String (Dict Int String) --^ map (democHash => (ballotId => prelimInfo))
     , democIssues : Dict String (Dict String BallotPrelimInfo) --^ map (democHash => (ballotId => prelimInfo))
     , specToDeets : Dict String BallotSpec --^ map (specHash => RemoteData BallotSpec) - can error gracefully
-    , haveVotedOn : Dict String Bool --^ (specHash => Have Voted On)
+    , haveVotedOn : Dict String (Dict String Bool) --^ (voterAddr => (specHash => Have Voted On))
+    , pendingVotes : Dict String (Dict String Float) --^ (voterAddr => (bHash => Bool))
     , failedSpec : Dict String String
     , fatalSpecFail : List String
     , currDemoc : String
@@ -183,6 +184,7 @@ initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, de
     , democIssues = Dict.empty
     , specToDeets = Dict.empty
     , haveVotedOn = Dict.empty
+    , pendingVotes = Dict.empty
     , failedSpec = Dict.empty
     , fatalSpecFail = []
     , currDemoc = democHash

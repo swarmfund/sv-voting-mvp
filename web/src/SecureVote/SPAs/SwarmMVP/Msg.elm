@@ -35,6 +35,8 @@ type Msg
     | SetBallot String
     | VoteWMetaMask
     | MarkBallotVoted Bool String
+    | MarkBallotTxInProg
+    | SetBallotProgTime { addr : String, bHash : String } Time
     | CheckForPrevVotes
       -- ** Eth related msgs
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)
