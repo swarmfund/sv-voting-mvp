@@ -1,8 +1,10 @@
 module SecureVote.Eth.Update exposing (..)
 
+import Maybe.Extra
 import SecureVote.Eth.Model exposing (..)
 import SecureVote.Eth.Msg exposing (..)
 import SecureVote.Eth.Types exposing (..)
+import SecureVote.Eth.Utils exposing (isValidEthAddress)
 import SecureVote.Eth.Web3 exposing (..)
 
 
@@ -28,7 +30,10 @@ ethUpdate lift msg model =
                     let
                         m_ =
                             model.eth
+
+                        mmAddr =
+                            Just a |> Maybe.Extra.filter isValidEthAddress
                     in
-                    { model | eth = { m_ | mmAddr = Just a } } ! []
+                    { model | eth = { m_ | mmAddr = mmAddr } } ! []
     in
     ( m, Cmd.map lift c )
