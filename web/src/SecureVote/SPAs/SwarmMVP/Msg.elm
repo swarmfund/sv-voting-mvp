@@ -34,7 +34,7 @@ type Msg
     | ConstructBallotPlaintext
     | SetBallot String
     | VoteWMetaMask
-    | MarkBallotVoted Bool String
+    | MarkBallotVoted Bool { voterM : Maybe String, bHash : String } --^ If voterM == Nothing it means it's the current address
     | MarkBallotTxInProg
     | SetBallotProgTime { addr : String, bHash : String } Time
     | CheckForPrevVotes

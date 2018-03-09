@@ -7,12 +7,14 @@ import web3Ports from '../src/SecureVote/Eth/Web3';
 let web3js;
 let mmWeb3;
 let mmDetected = false;
+let mmAcct = "";
 
 if (typeof web3 !== 'undefined') {
     console.log("Metamask detected...", web3.currentProvider);
     web3js = new Web3Legacy(web3.currentProvider);
     mmDetected = true;
     mmWeb3 = web3;
+    mmAcct = web3.eth.accounts[0];
 } else {
     web3js = new Web3Legacy();
     mmWeb3 = web3js;
@@ -24,5 +26,6 @@ export {
     web3js,
     mmWeb3,
     mmDetected,
+    mmAcct,
     web3Ports
 };

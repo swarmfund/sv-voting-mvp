@@ -143,6 +143,16 @@ onIncomingWeb3Error err =
 port constructDataParam : ConsDataParamReq -> Cmd msg
 
 
+
+-- # METAMASK
+
+
+port getMMAddress : () -> Cmd msg
+
+
+port gotMMAddress : (String -> msg) -> Sub msg
+
+
 port castMetaMaskVoteImpl : MinEthTx -> Cmd msg
 
 
@@ -319,7 +329,7 @@ handleGotTxInfo msgF =
 
 
 
-{- START DELEGATION SECTIONS -}
+-- # DELEGATION
 
 
 port setGlobalDelegationImpl : { delegationABI : String, contractAddr : String, delegateAddr : String } -> Cmd msg
@@ -334,7 +344,3 @@ port gotDelegatePayloadImpl : (Value -> msg) -> Sub msg
 gotDelegatePayloadGen msg =
     gotDelegatePayloadImpl <|
         \val -> msg <| decodeValue string val
-
-
-
-{- END DELEGATION SECTIONS -}

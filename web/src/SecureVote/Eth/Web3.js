@@ -467,6 +467,16 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         }
     }));
 
+    const getMMAddress = () => {
+        if (mmDetected) {
+            const addrs = mmWeb3.eth.accounts;
+            if (addrs.length > 0) {
+                app.ports.gotMMAddress.send(addrs[0]);
+            }
+        }
+    }
+    app.ports.getMMAddress.subscribe(getMMAddress);
+
     const sendMMTx = (tx) => {
         console.log("Sending tx to MetaMask:", tx);
         if (!mmDetected) {

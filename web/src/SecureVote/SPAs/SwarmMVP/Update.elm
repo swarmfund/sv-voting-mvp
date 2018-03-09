@@ -3,13 +3,14 @@ module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 import Dict exposing (fromList)
 import Dom.Scroll exposing (toTop)
 import Either exposing (Either(Right))
+import Json.Decode as D
 import Json.Encode as E
 import List.Extra exposing (zip)
 import Material
 import Material.Helpers as MHelp exposing (map1st, map2nd)
 import Material.Snackbar as Snackbar
 import Maybe exposing (andThen)
-import Maybe.Extra exposing ((?), isNothing)
+import Maybe.Extra exposing ((?), isJust, isNothing)
 import Monocle.Common exposing ((<|>), (=>), dict, maybe)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import SecureVote.Ballots.Lenses exposing (..)
@@ -17,9 +18,9 @@ import SecureVote.Ballots.SpecSource exposing (CidType(Sha256), getBallotSpec)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Update exposing (ethUpdate)
-import SecureVote.Eth.Utils exposing (keccak256OverString, toHex)
+import SecureVote.Eth.Utils exposing (isValidEthAddress, keccak256OverString, toHex)
 import SecureVote.Eth.Web3 exposing (..)
-import SecureVote.LocalStorage exposing (getLocalStorage, lsUpdate, setLocalStorage)
+import SecureVote.LocalStorage exposing (LsMsg(LsGeneral), getLocalStorage, lsUpdate, setLocalStorage)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (doBallotOptsMatchRSched, voteOptionsRSched)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
@@ -30,6 +31,8 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg
 import SecureVote.SPAs.SwarmMVP.Routes exposing (defaultRoute)
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidFail, TxidInProgress, TxidSuccess))
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
+import SecureVote.Utils.DecodeP exposing (dDictDict)
+import SecureVote.Utils.Encode exposing (encDictDict)
 import SecureVote.Utils.Int exposing (maxInt)
 import SecureVote.Utils.Lenses exposing ((=|>), dictWDE)
 import SecureVote.Utils.Ports exposing (mkCarry)
@@ -214,15 +217,23 @@ update msg model =
                 Err e ->
                     fatalFailedSpecUpdate e model
 
-        MarkBallotVoted b bHash ->
-            getUserErc20Addr model
-                |> Maybe.map (\addr -> { model | haveVotedOn = (dictWDE addr => dict bHash).set b model.haveVotedOn } ! [])
+        MarkBallotVoted b { voterM, bHash } ->
+            Maybe.Extra.or voterM (getUserErc20Addr model)
+                |> Maybe.map
+                    (\addr ->
+                        let
+                            m_ =
+                                { model | haveVotedOn = (dictWDE addr => dict bHash).set b model.haveVotedOn }
+                        in
+                        m_ ! [ setLocalStorage { key = lsBallotsVotedId, value = E.encode 0 <| encDictDict E.bool m_.haveVotedOn } ]
+                    )
                 |> Maybe.withDefault ( model, Cmd.none )
 
         CheckForPrevVotes ->
             let
                 cmds =
                     getUserErc20Addr model
+                        |> Maybe.Extra.filter isValidEthAddress
                         |> Maybe.map
                             (\vAddr ->
                                 Dict.toList ((dict model.currDemoc).getOption model.democIssues ? Dict.empty)
@@ -257,7 +268,11 @@ update msg model =
             )
 
         SetBallotProgTime { addr, bHash } t ->
-            { model | pendingVotes = (dictWDE addr => dict bHash).set t model.pendingVotes } ! []
+            let
+                m_ =
+                    { model | pendingVotes = (dictWDE addr => dict bHash).set t model.pendingVotes }
+            in
+            m_ ! [ setLocalStorage { key = lsPendingVotesId, value = E.encode 0 <| encDictDict E.float m_.pendingVotes } ]
 
         MultiMsg msgs ->
             multiUpdate msgs model []
@@ -291,10 +306,10 @@ update msg model =
             { model | auditMsgs = msg :: model.auditMsgs } ! []
 
         LS msg ->
-            doUpdate LS lsUpdate msg model.lsBucket (\b -> { model | lsBucket = b })
+            lsWatchers msg <| doUpdate LS lsUpdate msg model.lsBucket (\b -> { model | lsBucket = b })
 
         Web3 msg ->
-            doUpdate Web3 ethUpdate msg model.web3 (\w3 -> { model | web3 = w3 })
+            ethUpdate Web3 msg model
 
         VoteWMetaMask ->
             model ! [ castMetaMaskTx model.candidateTx ]
@@ -442,18 +457,11 @@ updateFromWeb3 msg model =
                         ballotPrelim =
                             BallotPrelimInfo bHash votingContract extraData startTime
 
-                        deepInsert kOuter k v outerD =
-                            let
-                                innerD =
-                                    Dict.get kOuter outerD ? Dict.empty
-                            in
-                            Dict.insert kOuter (Dict.insert k v innerD) outerD
-
                         di =
-                            deepInsert democHash bHash ballotPrelim model.democIssues
+                            (dictWDE democHash => dict bHash).set ballotPrelim model.democIssues
 
                         dIToSpec =
-                            deepInsert democHash i bHash model.democIToSpec
+                            (dictWDE democHash => dict i).set bHash model.democIToSpec
 
                         voterAddr =
                             Debug.log "userErc20Addr" <| getUserErc20Addr model
@@ -528,3 +536,44 @@ defaultOrB model default f =
         |> Maybe.andThen (\h -> (mBSpec h).getOption model)
         |> Maybe.map f
         |> Maybe.withDefault default
+
+
+lsWatchers : LsMsg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+lsWatchers msg ( m, c ) =
+    (case msg of
+        LsGeneral ( k, v ) ->
+            List.map
+                (\( lsId, mF ) ->
+                    if k == lsId then
+                        Just (mF v)
+                    else
+                        Nothing
+                )
+                [ ( lsBallotsVotedId
+                  , \v_ ->
+                        D.decodeString (dDictDict D.bool) v_
+                            |> Result.map (\d -> ( { m | haveVotedOn = d }, c ))
+                  )
+                , ( lsPendingVotesId
+                  , \v_ ->
+                        D.decodeString (dDictDict D.float) v_
+                            |> Result.map (\d -> ( { m | pendingVotes = d }, c ))
+                  )
+                ]
+                |> List.filter isJust
+                |> List.head
+                |> Maybe.Extra.join
+                |> (\rM ->
+                        case rM of
+                            Nothing ->
+                                Ok ( m, c )
+
+                            Just r ->
+                                r
+                   )
+
+        _ ->
+            Ok ( m, c )
+    )
+        |> Result.mapError (Debug.log "LocalStorage watchers error: ")
+        |> Result.withDefault ( m, c )

@@ -69,13 +69,25 @@ swmAddressV model =
 
                 Nothing ->
                     span [] []
+
+        mmAddrNotice =
+            case model.eth.mmAddr of
+                Just a ->
+                    [ text <| "MetaMask address: " ++ a ]
+
+                Nothing ->
+                    if model.eth.mmDetected then
+                        [ text "Please unlock MetaMask if you'd like to vote using that account." ]
+                    else
+                        []
     in
     fullPageSlide 384938493
         model
         "Your Ethereum Address"
         [ Options.styled span [ cs "dark-gray db pa2 mt3 f4" ] [ text <| "Please enter your Ethereum address holding your tokens below." ]
-        , Options.styled p [ cs "" ] [ strong [] [ text "Note: " ], text <| "Your address is used to confirm your token balance and show which ballots you've voted in.", strong [] [ text "This is an optional step." ] ]
+        , Options.styled p [ cs "" ] [ strong [] [ text "Note: " ], text <| "Your address is used to confirm your token balance and show which ballots you've voted in." ]
         , subhead "Your ballance will be shown as it was when the ballot was started."
+        , span [] mmAddrNotice
         , div [ class "center" ]
             [ div [ class "flex flex-column items-center mh2" ]
                 [ div [ class "w-100 flex flex-column items-start" ]
@@ -94,11 +106,7 @@ swmAddressV model =
                     ]
                 ]
             , div [ class "mv3" ] <|
-                [ btn 394893489
-                    model
-                    [ SecBtn, Attr (class "pa2"), Click (msgs True) ]
-                    [ text "Skip" ]
-                , btn 894823489
+                [ btn 894823489
                     model
                     [ PriBtn, Attr (class "pa2"), Click (msgs False), btnDisabled ]
                     [ text "Continue" ]

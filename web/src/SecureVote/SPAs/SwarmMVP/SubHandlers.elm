@@ -60,7 +60,7 @@ cReadHandler model r =
                                         in
                                         Web3 <| ReadContract { addr = r.addr, method = "ballotMap", abi = model.ballotBoxABI, args = [ r.response ], carry = newCarry }
                                     else
-                                        MarkBallotVoted True bHash
+                                        MarkBallotVoted True { voterM = Nothing, bHash = bHash }
                                 )
 
                     "ballotMap" ->
@@ -69,9 +69,9 @@ cReadHandler model r =
                             |> Result.map
                                 (\( ( bHash, i ), bltInfo ) ->
                                     if bltInfo.blockN == 0 then
-                                        MarkBallotVoted False bHash
+                                        MultiMsg [ MarkBallotVoted False { voterM = Just bltInfo.sender, bHash = bHash }, MarkBallotVoted False { voterM = Nothing, bHash = bHash } ]
                                     else
-                                        MarkBallotVoted True bHash
+                                        MultiMsg [ MarkBallotVoted True { voterM = Just bltInfo.sender, bHash = bHash }, MarkBallotVoted False { voterM = Nothing, bHash = bHash } ]
                                 )
 
                     _ ->

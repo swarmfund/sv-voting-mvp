@@ -6,11 +6,29 @@ import SecureVote.Eth.Types exposing (..)
 import SecureVote.Eth.Web3 exposing (..)
 
 
-ethUpdate : EthMsg -> EthMdl -> ( EthMdl, Cmd EthMsg )
-ethUpdate msg model =
-    case msg of
-        WriteViaMM doc ->
-            model ! [ performContractWriteMM doc ]
+type alias Mdl a =
+    { a | eth : EthMdl }
 
-        ReadContract doc ->
-            model ! [ performContractRead doc ]
+
+ethUpdate : (EthMsg -> m) -> EthMsg -> Mdl a -> ( Mdl a, Cmd m )
+ethUpdate lift msg model =
+    let
+        ( m, c ) =
+            case msg of
+                WriteViaMM doc ->
+                    model ! [ performContractWriteMM doc ]
+
+                ReadContract doc ->
+                    model ! [ performContractRead doc ]
+
+                RefreshMMAddress ->
+                    model ! [ getMMAddress () ]
+
+                SetMMAddress a ->
+                    let
+                        m_ =
+                            model.eth
+                    in
+                    { model | eth = { m_ | mmAddr = Just a } } ! []
+    in
+    ( m, Cmd.map lift c )

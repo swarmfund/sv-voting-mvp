@@ -5,6 +5,14 @@ lsAddrId =
     "voting.eth.address"
 
 
+lsBallotsVotedId =
+    "voting.ballotsVotedOn"
+
+
+lsPendingVotesId =
+    "voting.votesPending"
+
+
 userErc20AddrId : String
 userErc20AddrId =
     "ethAddress"
