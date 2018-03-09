@@ -2,6 +2,8 @@ module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 
 import Dict exposing (fromList)
 import Dom.Scroll exposing (toTop)
+import Either exposing (Either(Right))
+import Json.Encode as E
 import List.Extra exposing (zip)
 import Material
 import Material.Helpers as MHelp exposing (map1st, map2nd)
@@ -14,12 +16,15 @@ import SecureVote.Ballots.Lenses exposing (..)
 import SecureVote.Ballots.SpecSource exposing (CidType(Sha256), getBallotSpec)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
+import SecureVote.Eth.Update exposing (ethUpdate)
 import SecureVote.Eth.Utils exposing (keccak256OverString, toHex)
 import SecureVote.Eth.Web3 exposing (..)
+import SecureVote.LocalStorage exposing (getLocalStorage, lsUpdate, setLocalStorage)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
 import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (doBallotOptsMatchRSched, voteOptionsRSched)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, defaultDelegate, getDelegateAddress, getUserErc20Addr)
+import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getDelegateAddress, getUserErc20Addr, resetAllBallotFields)
 import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (defaultRoute)
@@ -27,6 +32,8 @@ import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidFail, TxidIn
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
 import SecureVote.Utils.Int exposing (maxInt)
 import SecureVote.Utils.Lenses exposing ((=|>))
+import SecureVote.Utils.Ports exposing (mkCarry)
+import SecureVote.Utils.Update exposing (doUpdate)
 import Task exposing (attempt)
 import Tuple exposing (second)
 
@@ -206,6 +213,31 @@ update msg model =
                 Err e ->
                     fatalFailedSpecUpdate e model
 
+        MarkBallotVoted b bHash ->
+            { model | haveVotedOn = Dict.insert bHash b model.haveVotedOn } ! []
+
+        CheckForPrevVotes ->
+            let
+                cmds =
+                    getUserErc20Addr model
+                        |> Maybe.map
+                            (\vAddr ->
+                                Dict.toList ((dict model.currDemoc).getOption model.democIssues ? Dict.empty)
+                                    |> List.map
+                                        (\( bHash, bDetails ) ->
+                                            performContractRead
+                                                { addr = bpiVotingAddr.get bDetails
+                                                , abi = model.ballotBoxABI
+                                                , carry = mkCarry <| E.string bHash
+                                                , method = "voterToBallotID"
+                                                , args = [ E.string vAddr ]
+                                                }
+                                        )
+                            )
+                        |> Maybe.withDefault []
+            in
+            model ! cmds
+
         MultiMsg msgs ->
             multiUpdate msgs model []
 
@@ -236,6 +268,12 @@ update msg model =
 
         FromAuditor msg ->
             { model | auditMsgs = msg :: model.auditMsgs } ! []
+
+        LS msg ->
+            doUpdate LS lsUpdate msg model.lsBucket (\b -> { model | lsBucket = b })
+
+        Web3 msg ->
+            doUpdate Web3 ethUpdate msg model.web3 (\w3 -> { model | web3 = w3 })
 
         VoteWMetaMask ->
             model ! [ castMetaMaskTx model.candidateTx ]
@@ -378,10 +416,10 @@ updateFromWeb3 msg model =
 
         GotBallotInfo r ->
             case r of
-                Success { democHash, i, specHash, extraData, votingContract, startTime } ->
+                Success { democHash, i, bHash, extraData, votingContract, startTime } ->
                     let
                         ballotPrelim =
-                            BallotPrelimInfo specHash votingContract extraData startTime
+                            BallotPrelimInfo bHash votingContract extraData startTime
 
                         deepInsert kOuter k v outerD =
                             let
@@ -391,12 +429,29 @@ updateFromWeb3 msg model =
                             Dict.insert kOuter (Dict.insert k v innerD) outerD
 
                         di =
-                            deepInsert democHash specHash ballotPrelim model.democIssues
+                            deepInsert democHash bHash ballotPrelim model.democIssues
 
                         dIToSpec =
-                            deepInsert democHash i specHash model.democIToSpec
+                            deepInsert democHash i bHash model.democIToSpec
+
+                        voterAddr =
+                            Debug.log "userErc20Addr" <| getUserErc20Addr model
+
+                        checkVotesCmd =
+                            case voterAddr of
+                                Nothing ->
+                                    Cmd.none
+
+                                Just vAddr ->
+                                    performContractRead
+                                        { addr = votingContract
+                                        , abi = model.ballotBoxABI
+                                        , carry = mkCarry <| E.string bHash
+                                        , method = "voterToBallotID"
+                                        , args = [ E.string vAddr ]
+                                        }
                     in
-                    { model | democIssues = di, democIToSpec = dIToSpec } ! [ getBallotSpec { specHash = specHash, cidType = Sha256 } ]
+                    { model | democIssues = di, democIToSpec = dIToSpec } ! [ getBallotSpec { bHash = bHash, cidType = Sha256 }, checkVotesCmd ]
 
                 _ ->
                     doUpdateErr "Got bad ballot info from blockchain. Please check your connection or reload the page" model

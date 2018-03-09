@@ -51,7 +51,12 @@ openingSlide model ( bHash, bSpec ) =
                         Just (OptsSimple RangeVotingPlusMinus3 _) ->
                             ( "a number of options. Each option may have a description explaining it in more detail."
                             , "you allocate each option a number from -3 to +3 (inclusive). It's important to choose a vote for each option. (This method of voting is called 'Range Voting'.)"
-                            , [ smallP [ text "If you'd like, ", a [ href "https://www.youtube.com/watch?v=afEwklJEzFc", target "_blank" ] [ text "here is a video" ], text " walking you through the voting process." ] ]
+                            , [ smallP
+                                    [ text "If you'd like, "
+                                    , a [ href "https://www.youtube.com/watch?v=afEwklJEzFc", target "_blank" ] [ text "here is a video" ]
+                                    , text " walking you through the voting process."
+                                    ]
+                              ]
                             )
 
                         Just OptsBinary ->
@@ -95,7 +100,7 @@ openingSlide model ( bHash, bSpec ) =
                 span [] []
             else
                 div [ class "mv3" ]
-                    [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmAddressR) ] [ text "Continue" ]
+                    [ btn 348739845 model [ PriBtn, Attr (class "ph2"), Click (PageGoForward SwmHowToVoteR) ] [ text "Continue" ]
                     ]
 
         auditComplete =

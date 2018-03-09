@@ -7,18 +7,36 @@ import Dict
 import Html exposing (Html, pre)
 import Html.Attributes exposing (class)
 import ParseInt exposing (parseIntRadix, toRadix)
+import RemoteData exposing (RemoteData(Loading))
 import Result.Extra exposing (isOk)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Hashing exposing (hashToInt)
+import SecureVote.Eth.Types exposing (nullCandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
+import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(SetBoolField, SetField))
+import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidNotMade))
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits, intsToRangeBallot3Bits)
 
 
-userErc20AddrId : String
-userErc20AddrId =
-    "ethAddress"
+resetAllBallotFields : Model -> { b | contractAddr : String } -> Model
+resetAllBallotFields model { contractAddr } =
+    { model
+        | ballotRange = Dict.empty
+        , ballotBits = Dict.empty
+        , ballotAllDone = False
+        , candidateTx = { nullCandidateEthTx | to = Just contractAddr, from = getUserErc20Addr model }
+        , encBytes = Nothing
+        , ballotPlaintext = Err "Ballot fields reset and ballotPlaintext not set yet."
+        , remoteHexPk = Nothing
+        , miniVotingAbi = "Error: Ballot parameters have been reset and ABI is not set yet."
+        , ballotVerificationPassed = Loading
+        , txidCheck = TxidNotMade
+        , ballotOpen = Loading
+        , auditMsgs = []
+        , metamaskTxid = Nothing
+    }
 
 
 getUserErc20Addr : Model -> Maybe String
@@ -29,11 +47,6 @@ getUserErc20Addr model =
 setUserErc20Addr : String -> Msg
 setUserErc20Addr =
     SetField userErc20AddrId
-
-
-txidCheckId : String
-txidCheckId =
-    "ballotTxid"
 
 
 getBallotTxid : Model -> Maybe String
@@ -72,16 +85,6 @@ getDelegateAddress model =
         |> Maybe.andThen (\b -> Dict.get (dlgtAddrField b) model.fields)
 
 
-defaultDelegate : String
-defaultDelegate =
-    "0x0000000000000000000000000000000000000000"
-
-
-ethNodeTemp : String
-ethNodeTemp =
-    "ethNodeUrl"
-
-
 getEthNodeTemp : Model -> Maybe String
 getEthNodeTemp model =
     Dict.get ethNodeTemp model.fields
@@ -92,38 +95,9 @@ setEthNodeTemp =
     SetField ethNodeTemp
 
 
-ballotRangeAbs : Int
-ballotRangeAbs =
-    3
-
-
 genVoteOptId : String -> Int -> Int
 genVoteOptId bHash i =
     hashToInt bHash + i
-
-
-
--- This describes the number of options a user can select, from -1*ballotRangeAbs to ballotRangeAbs
-
-
-ballotRangeSize : Int
-ballotRangeSize =
-    ballotRangeAbs * 2 + 1
-
-
-ballotMax : Int
-ballotMax =
-    ballotRangeAbs * 2
-
-
-ballotDisplayMax : Int
-ballotDisplayMax =
-    0 + ballotRangeAbs
-
-
-ballotDisplayMin : Int
-ballotDisplayMin =
-    0 - ballotRangeAbs
 
 
 ballotValToBytes : Int -> Result String RangeBallot3Bits

@@ -18,7 +18,8 @@ import SecureVote.Components.UI.VotingInstruments exposing (drawVotingInstrument
 import SecureVote.Eth.Utils exposing (rawTokenBalance18DpsToBalance)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml(DlogP, DlogTxt))
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, genVoteOptId, getUserErc20Addr)
+import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (genVoteOptId, getUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmSubmitR))
@@ -39,7 +40,7 @@ castVoteView model ( bHash, bSpec ) =
 
                 ifZeroOr addr b =
                     if eq b zero then
-                        "No tokens for " ++ addr ++ " in ERC20 contract at " ++ bErc20Addr.getOption bSpec ? "NO ERC20 ADDRESS PROVIDED"
+                        "0"
                     else
                         rawTokenBalance18DpsToBalance b
             in

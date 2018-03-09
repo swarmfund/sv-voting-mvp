@@ -18,7 +18,7 @@ import SecureVote.Components.UI.Typo exposing (headline, subhead)
 import SecureVote.Crypto.Hashing exposing (hashToInt)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(OpeningSlideR))
 import SecureVote.Utils.Time exposing (readableTime)
 import Tuple exposing (first, second)
@@ -42,8 +42,17 @@ listVotesView model =
                 |> Maybe.Extra.combine
                 |> Maybe.withDefault []
 
+        haveVoted bHash =
+            (dict bHash).getOption model.haveVotedOn == Just True
+
         currentBallots =
             List.sortBy (.endTime << second) <| filter (second >> (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime)) allBallots
+
+        currVotedIn =
+            List.filter (first >> haveVoted) currentBallots
+
+        currNotVotedIn =
+            List.filter (first >> haveVoted >> not) currentBallots
 
         futureBallots =
             List.sortBy (.startTime << second) <| filter (second >> (\{ startTime, endTime } -> startTime > model.now && endTime > model.now)) allBallots
@@ -57,31 +66,48 @@ listVotesView model =
             else
                 v
 
-        currBallotV =
-            drawIfNotEmpty currentBallots <|
-                [ subhead "Current Ballots"
+        currBallotNotVotedV =
+            drawIfNotEmpty currNotVotedIn <|
+                [ subhead "Ballots You Haven't Voted On"
                 ]
-                    ++ map drawBallotButton currentBallots
+                    ++ map (drawBallotButton { markVoted = Just False }) currNotVotedIn
+
+        currBallotVotedV =
+            drawIfNotEmpty currVotedIn <|
+                [ subhead "Ballots You've Voted On"
+                ]
+                    ++ map (drawBallotButton { markVoted = Just True }) currVotedIn
 
         futureBallotV =
             drawIfNotEmpty futureBallots <|
                 [ subhead "Upcoming Ballots"
                 ]
-                    ++ map drawBallotButton futureBallots
+                    ++ map (drawBallotButton { markVoted = Nothing }) futureBallots
 
         pastBallotV =
             drawIfNotEmpty pastBallots <|
                 [ subhead "Past Ballots"
                 ]
-                    ++ map drawBallotButton pastBallots
+                    ++ map (drawBallotButton { markVoted = Nothing }) pastBallots
 
-        drawBallotButton ( bHash, ballot ) =
+        drawBallotButton { markVoted } ( bHash, ballot ) =
             let
                 { ballotTitle, startTime, endTime, shortDesc } =
                     ballot
 
                 cardColor =
                     Color.color Color.Amber Color.S300
+
+                markWith =
+                    case markVoted of
+                        Just True ->
+                            text "✅ You have voted on this."
+
+                        Just False ->
+                            text "🗳 You have not voted on this yet."
+
+                        Nothing ->
+                            span [] []
 
                 voteTimeStatus =
                     case ( compare model.now startTime, compare model.now endTime ) of
@@ -97,14 +123,14 @@ listVotesView model =
             Card.view
                 ([ cs "ma3 ba b--light-silver"
                  , css "width" "auto"
-                 , Options.onClick <| MultiMsg [ SetBallot bHash, PageGoForward OpeningSlideR ]
+                 , Options.onClick <| MultiMsg [ SetBallot bHash, ToWeb3 <| GetErc20Balance bHash, PageGoForward OpeningSlideR ]
                  ]
                     ++ elevation (hashToInt bHash) model
                 )
                 [ Card.title [ cs "pb0 mb0 w-100" ]
                     [ div [ class "dt w-100" ]
                         [ Options.styled span [ cs "b w-70 dtc tl" ] [ text ballotTitle ]
-                        , Options.styled span [ cs "f6 dark-gray tr dtc" ] [ text voteTimeStatus ]
+                        , Options.styled span [ cs "f6 dark-gray tr dtc" ] [ text voteTimeStatus, Html.br [] [], markWith ]
                         ]
                     ]
                 , Card.text [ cs "tl dark-gray w-100" ]
@@ -129,11 +155,14 @@ listVotesView model =
         gotNBallotScDetails =
             Dict.size model.ballotScDetails
 
+        gotNPrevVoteDeets =
+            Dict.size model.haveVotedOn
+
         doneLoadingBallots =
-            isJust totalBallots && totalBallots == Just gotNBallots && BE.all (List.map ((==) gotNBallots) [ gotNAbrvs, gotNBallotScDetails, foundNBallots ])
+            isJust totalBallots && totalBallots == Just gotNBallots && BE.all (List.map ((==) gotNBallots) [ gotNAbrvs, gotNBallotScDetails, foundNBallots, gotNPrevVoteDeets ])
 
         allBallotsView =
-            currBallotV ++ futureBallotV ++ pastBallotV
+            currBallotNotVotedV ++ currBallotVotedV ++ futureBallotV ++ pastBallotV
 
         noBallotsView =
             [ div [ class "v-mid center mb7 mt6" ] [ subhead "No ballots yet. Why don't you create one?" ] ]
@@ -148,7 +177,7 @@ listVotesView model =
         model
         model.mainTitle
     <|
-        case ( totalBallots, ( foundNBallots, gotNBallots, gotNAbrvs, gotNBallotScDetails ), doneLoadingBallots ) of
+        case ( totalBallots, ( foundNBallots, gotNBallots, gotNAbrvs, gotNBallotScDetails, gotNPrevVoteDeets ), doneLoadingBallots ) of
             ( Nothing, _, _ ) ->
                 [ loadingBallots ]
 
@@ -165,7 +194,7 @@ loadingBallots =
         ]
 
 
-ballotsProgress n ( f, g, ga, gd ) =
+ballotsProgress n ( f, g, ga, gd, prevVs ) =
     let
         attrs =
             [ class "f4 mv2" ]
@@ -176,5 +205,6 @@ ballotsProgress n ( f, g, ga, gd ) =
         , div attrs [ text <| "Ballot Data " ++ toString g ++ " of " ++ toString n ++ " ballots." ]
         , div attrs [ text <| "ERC20 Details " ++ toString ga ++ " of " ++ toString n ++ " ballots." ]
         , div attrs [ text <| "Voting Details " ++ toString gd ++ " of " ++ toString n ++ " ballots." ]
+        , div attrs [ text <| "Checking Past Votes " ++ toString prevVs ++ " of " ++ toString n ++ " ballots." ]
         , loadingSpinner ""
         ]

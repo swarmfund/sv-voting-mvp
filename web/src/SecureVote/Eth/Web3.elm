@@ -10,6 +10,7 @@ import SecureVote.Eth.Types exposing (..)
 import SecureVote.Eth.Utils exposing (dropEthPrefix)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
+import SecureVote.Utils.Ports exposing (carryPackDecoder)
 
 
 port gotMetamaskImpl : (Value -> msg) -> Sub msg
@@ -76,6 +77,7 @@ onContractReadResponse msgGen errMsg val =
                 |> required "errMsg" Decode.string
                 |> required "method" Decode.string
                 |> required "addr" Decode.string
+                |> required "carry" carryPackDecoder
     in
     case Decode.decodeValue decoder val of
         Ok secVal ->

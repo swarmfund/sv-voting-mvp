@@ -382,17 +382,18 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         voteC.getEncPubkey(handleErrOr(app.ports.gotEncPubkey.send));
     }));
 
-    app.ports.performContractRead.subscribe(wrapIncoming(({abi, addr, method, args}) => {
+    app.ports.performContractRead.subscribe(wrapIncoming(({abi, addr, method, args, carry}) => {
+        carry.hops += 1
         console.log(`Reading ${addr}.${method}(${args})`);
         const c = web3js.eth.contract(JSON.parse(abi)).at(addr);
         mkPromise(c[method])(...args)
             .then(response => {
                 const resp = convertBigNums(response);
                 console.log(`Read ${addr}.${method}(${args}) w/ response ${resp}`);
-                app.ports.contractReadResponse.send({success: true, errMsg: "", method, resp, addr});
+                app.ports.contractReadResponse.send({success: true, errMsg: "", method, resp, addr, carry});
             }).catch(err => {
                 console.log(`Error reading ${addr}.${method}(${args}) => ${err.message}`);
-                app.ports.contractReadResponse.send({success: false, errMsg: err.message, method, resp: null, addr});
+                app.ports.contractReadResponse.send({success: false, errMsg: err.message, method, resp: null, addr, carry});
         })
     }));
 
@@ -491,7 +492,12 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                         // } else {
                         //     implNotifyErr("Metamask Error! " + err.toString());
                         // }
-                        implNotifyErr("Metamask Error! " + err.toString());
+                        const errStr = err.toString();
+                        if (errStr.search("validateSender") > 0 && errStr.search("getAccounts")) {
+                            implNotifyErr("Metamask: Account not found.");
+                        } else {
+                            implNotifyErr("Unknown Metamask Error: " + err.message);
+                        }
                     } else {
                         console.log("MetaMask returned: ", err, ret);
                         app.ports.metamaskTxidImpl.send(ret);

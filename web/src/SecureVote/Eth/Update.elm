@@ -6,8 +6,8 @@ import SecureVote.Eth.Types exposing (..)
 import SecureVote.Eth.Web3 exposing (..)
 
 
-update : Msg -> EthMdl -> ( EthMdl, Cmd Msg )
-update msg model =
+ethUpdate : EthMsg -> EthMdl -> ( EthMdl, Cmd EthMsg )
+ethUpdate msg model =
     case msg of
         WriteViaMM doc ->
             model ! [ performContractWriteMM doc ]
