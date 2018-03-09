@@ -90,6 +90,7 @@ votingView model ( bHash, bSpec ) =
         endBtnMsgs =
             MultiMsg
                 [ MarkBallotTxInProg
+                , CheckForPrevVotes
                 , PageGoHome
                 ]
 
