@@ -303,3 +303,16 @@ legacyAddress =
 isLegacyAddress : String -> Bool
 isLegacyAddress addr =
     String.toLower addr == String.toLower legacyAddress
+
+
+addressValidationForMdl : Maybe String -> ( Bool, String )
+addressValidationForMdl addr =
+    case addr of
+        Nothing ->
+            ( False, "Please paste in your Eth address" )
+
+        Just addr_ ->
+            if isValidEthAddress addr_ then
+                ( False, "Address valid!" )
+            else
+                ( True, "Invalid address" )

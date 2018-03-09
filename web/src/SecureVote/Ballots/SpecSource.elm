@@ -20,18 +20,18 @@ port gotSpecFromIpfs : (Value -> msg) -> Sub msg
 port gotFailedSpecFromIpfs : (Value -> msg) -> Sub msg
 
 
-getBallotSpec : { specHash : String, cidType : CidType } -> Cmd msg
-getBallotSpec { specHash, cidType } =
+getBallotSpec : { bHash : String, cidType : CidType } -> Cmd msg
+getBallotSpec { bHash, cidType } =
     let
         hashNoPrefix =
-            replace "0x" "" specHash
+            replace "0x" "" bHash
 
         b58Prefix =
             case cidType of
                 Sha256 ->
                     "1220"
     in
-    getSpecFromIpfs { id = specHash, cidHex = b58Prefix ++ hashNoPrefix }
+    getSpecFromIpfs { id = bHash, cidHex = b58Prefix ++ hashNoPrefix }
 
 
 type alias SpecFromIpfs =

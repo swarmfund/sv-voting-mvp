@@ -7,7 +7,8 @@ import Html.Events exposing (onClick)
 import Material.Options exposing (cs)
 import Material.Slider as Slider
 import Maybe.Extra exposing ((?))
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotDisplayMax, ballotDisplayMin, genVoteOptId, getUserErc20Addr)
+import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (genVoteOptId, getUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 

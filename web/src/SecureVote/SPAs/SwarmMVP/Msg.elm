@@ -7,7 +7,9 @@ import RemoteData exposing (RemoteData)
 import SecureVote.Ballots.SpecSource exposing (FailSpecFromIpfs, SpecFromIpfs)
 import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
+import SecureVote.Eth.Msg exposing (EthMsg)
 import SecureVote.Eth.Types exposing (..)
+import SecureVote.LocalStorage exposing (LsMsg)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute, Route)
 import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
@@ -32,6 +34,10 @@ type Msg
     | ConstructBallotPlaintext
     | SetBallot String
     | VoteWMetaMask
+    | MarkBallotVoted Bool { voterM : Maybe String, bHash : String } --^ If voterM == Nothing it means it's the current address
+    | MarkBallotTxInProg
+    | SetBallotProgTime { addr : String, bHash : String } Time
+    | CheckForPrevVotes
       -- ** Eth related msgs
     | SetCandidateTx (CandidateEthTx -> CandidateEthTx)
     | SetEthNode String
@@ -43,6 +49,8 @@ type Msg
     | FromCurve25519 FromCurve25519Msg
     | GotFullSpecFromIpfs (Result String SpecFromIpfs)
     | GotFailSpecFromIpfs (Result String FailSpecFromIpfs)
+    | LS LsMsg
+    | Web3 EthMsg
       -- ** Auditor msgs
     | FromAuditor AuditDoc
       -- ** Errors

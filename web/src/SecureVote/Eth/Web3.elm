@@ -10,6 +10,7 @@ import SecureVote.Eth.Types exposing (..)
 import SecureVote.Eth.Utils exposing (dropEthPrefix)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromWeb3Msg(..), Msg(..))
 import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
+import SecureVote.Utils.Ports exposing (carryPackDecoder)
 
 
 port gotMetamaskImpl : (Value -> msg) -> Sub msg
@@ -76,6 +77,7 @@ onContractReadResponse msgGen errMsg val =
                 |> required "errMsg" Decode.string
                 |> required "method" Decode.string
                 |> required "addr" Decode.string
+                |> required "carry" carryPackDecoder
     in
     case Decode.decodeValue decoder val of
         Ok secVal ->
@@ -141,6 +143,16 @@ onIncomingWeb3Error err =
 port constructDataParam : ConsDataParamReq -> Cmd msg
 
 
+
+-- # METAMASK
+
+
+port getMMAddress : () -> Cmd msg
+
+
+port gotMMAddress : (String -> msg) -> Sub msg
+
+
 port castMetaMaskVoteImpl : MinEthTx -> Cmd msg
 
 
@@ -167,7 +179,7 @@ metamaskTxid =
         (\r ->
             case r of
                 Ok txid ->
-                    FromWeb3 <| GotMetaMaskTxid txid
+                    MultiMsg [ FromWeb3 <| GotMetaMaskTxid txid, MarkBallotTxInProg ]
 
                 Err err ->
                     errHelper "MetaMask returned an error: " err
@@ -317,7 +329,7 @@ handleGotTxInfo msgF =
 
 
 
-{- START DELEGATION SECTIONS -}
+-- # DELEGATION
 
 
 port setGlobalDelegationImpl : { delegationABI : String, contractAddr : String, delegateAddr : String } -> Cmd msg
@@ -332,7 +344,3 @@ port gotDelegatePayloadImpl : (Value -> msg) -> Sub msg
 gotDelegatePayloadGen msg =
     gotDelegatePayloadImpl <|
         \val -> msg <| decodeValue string val
-
-
-
-{- END DELEGATION SECTIONS -}

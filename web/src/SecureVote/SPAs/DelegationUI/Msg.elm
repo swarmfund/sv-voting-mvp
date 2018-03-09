@@ -21,4 +21,4 @@ type Msg
     | ViewDlgtResp (RemoteData String DelegationResp)
     | MMsg (List Msg)
       -- Web3 calls
-    | Web3 EthMsg.Msg
+    | Web3 EthMsg.EthMsg

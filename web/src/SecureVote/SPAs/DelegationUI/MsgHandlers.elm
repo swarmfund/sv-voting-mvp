@@ -9,6 +9,7 @@ import SecureVote.Eth.Types exposing (ReadResponse)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model)
 import SecureVote.SPAs.DelegationUI.Msg exposing (..)
 import SecureVote.SPAs.DelegationUI.Types exposing (..)
+import SecureVote.Utils.DecodeP exposing (strInt)
 
 
 errHelper : String -> a -> Msg
@@ -63,14 +64,11 @@ handleDelegateReadResp r =
         reqIx i dec decoder =
             custom (index i dec) decoder
 
-        myInt =
-            string |> andThen (decodeString int >> Result.Extra.unpack fail succeed)
-
         d =
             decode DelegationResp
-                |> reqIx 0 myInt
-                |> reqIx 1 myInt
-                |> reqIx 2 myInt
+                |> reqIx 0 strInt
+                |> reqIx 1 strInt
+                |> reqIx 2 strInt
                 |> reqIx 3 string
                 |> reqIx 4 string
                 |> reqIx 5 string

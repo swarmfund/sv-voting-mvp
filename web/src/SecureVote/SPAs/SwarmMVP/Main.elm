@@ -3,10 +3,14 @@ module SecureVote.SPAs.SwarmMVP.Main exposing (..)
 import Html exposing (Html)
 import SecureVote.Ballots.SpecSource exposing (gotFailedSpecFromIpfsHandler, gotSpecFromIpfsHandler)
 import SecureVote.Crypto.Curve25519 exposing (..)
+import SecureVote.Eth.Msg exposing (EthMsg(RefreshMMAddress, SetMMAddress))
 import SecureVote.Eth.Web3 exposing (..)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (setEthNodeTemp)
+import SecureVote.LocalStorage exposing (..)
+import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (..)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model, initModel)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..))
+import SecureVote.SPAs.SwarmMVP.SubHandlers exposing (..)
 import SecureVote.SPAs.SwarmMVP.Types exposing (Flags)
 import SecureVote.SPAs.SwarmMVP.Update exposing (update)
 import SecureVote.SPAs.SwarmMVP.Views.RootV exposing (rootView)
@@ -35,6 +39,13 @@ subscriptions model =
         , gotFailedSpecFromIpfsHandler GotFailSpecFromIpfs
         , gotErc20AbrvHandler
         , ballotInfoExtraHandler
+        , localStorageSub lsGetHandler
+        , localStorageErrSub lsFailHandler
+        , contractReadResponse (onContractReadResponse (cReadHandler model) LogErr)
+        , every (15 * second) (\_ -> CheckForPrevVotes)
+        , every (5 * second) (flip (/) 1000 >> round >> SetTime)
+        , every (1 * second) (\_ -> Web3 RefreshMMAddress)
+        , gotMMAddress (Web3 << SetMMAddress)
         ]
 
 
@@ -50,8 +61,19 @@ initCmds initModel { democHash, indexABI, indexAddr, ballotBoxABI } extraCmds =
             , indexAddr = indexAddr
             , ballotBoxABI = ballotBoxABI
             }
+        , getMMAddress ()
+        , getLsOnLoad
         ]
             ++ extraCmds
+
+
+getLsOnLoad =
+    Cmd.batch <|
+        List.map getLocalStorage
+            [ lsAddrId
+            , lsBallotsVotedId
+            , lsPendingVotesId
+            ]
 
 
 processedInitModelCmd : Flags -> ( Model, Cmd Msg )

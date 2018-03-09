@@ -25,4 +25,5 @@ type alias Flags =
     , ballotBoxABI : String --^ BallotBox ABI
     , delegationABI : String
     , delegationAddr : String
+    , mmDetected : Bool
     }

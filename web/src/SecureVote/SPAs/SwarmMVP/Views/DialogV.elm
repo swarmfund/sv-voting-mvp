@@ -13,10 +13,11 @@ import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.RenderAudit exposing (renderAuditLog)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
-import SecureVote.Eth.Utils exposing (isValidTxid)
+import SecureVote.Eth.Utils exposing (addressValidationForMdl, isValidEthAddress, isValidTxid)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRender)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (codeSection, codepointToBinary, defaultDelegate, genVoteOptId, getBallotTxid, getDelegateAddress, getEthNodeTemp, setBallotTxid, setEthNodeTemp, toStrDropQts)
+import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (..)
 import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(CheckTxid, SetProvider))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(ListAllVotesR))
@@ -42,8 +43,24 @@ settingsDialogV model =
                 , ToWeb3 SetProvider
                 ]
 
+        setAddrMsgs =
+            setUserErc20Addr <| getTempUserErc20Addr model ? ""
+
         btnDisabled =
             if model.ethNode == getEthNodeTemp model ? "" then
+                Disabled
+            else
+                BtnNop
+
+        ( addrErr, addrErrMsg ) =
+            addressValidationForMdl <| getTempUserErc20Addr model
+
+        erc20BtnDisabled =
+            if
+                getTempUserErc20Addr model
+                    |> Maybe.Extra.filter isValidEthAddress
+                    |> \a -> a == Nothing || a == getUserErc20Addr model
+            then
                 Disabled
             else
                 BtnNop
@@ -66,6 +83,20 @@ settingsDialogV model =
             , btn 456467568 model [ PriBtn, Click <| setEthNodeMsgs, btnDisabled ] [ text "Update" ]
             ]
         , div [] [ text "Note: Ethereum nodes require ", em [] [ text "full" ], text " historical access for auditing past ballots. Auditing results will fail if they're not syncing in archive mode." ]
+        , div []
+            [ Options.styled span [ menu, cs "" ] [ text "Your Eth Address" ]
+            , Textf.render Mdl
+                [ 389839434 ]
+                model.mdl
+                [ Options.onInput <| setTempUserErc20Addr
+                , Textf.value <| getTempUserErc20Addr model ? ""
+                , Textf.error addrErrMsg |> Options.when addrErr
+                , cs "mh4"
+                , css "min-width" "300px"
+                ]
+                []
+            , btn 3849783495 model [ PriBtn, Click <| setAddrMsgs, erc20BtnDisabled ] [ text "Update" ]
+            ]
         ]
 
 

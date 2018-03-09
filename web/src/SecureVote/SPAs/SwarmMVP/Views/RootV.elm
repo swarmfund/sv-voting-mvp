@@ -21,9 +21,10 @@ import SecureVote.SPAs.SwarmMVP.Views.VotingV exposing (votingView)
 rootView : Model -> Html Msg
 rootView model =
     slideHost model
-        ( ListAllVotesR, listVotesView model )
         [ ( SwmAddressR, swmAddressV model )
-        , ( SwmHowToVoteR, howToVoteView model )
+        , ( ListAllVotesR, listVotesView model )
+        ]
+        [ ( SwmHowToVoteR, howToVoteView model )
         , ( SwmVoteR, castVoteView model )
         , ( SwmSubmitR, votingView model )
         , ( OpeningSlideR, openingSlide model )
@@ -34,8 +35,8 @@ rootView model =
         ]
 
 
-slideHost : Model -> ( Route, Html Msg ) -> List ( Route, ( String, BallotSpec ) -> Html Msg ) -> List (Html Msg) -> Html Msg
-slideHost model ( rootRoute, rootSlide ) slideParis extraHtml =
+slideHost : Model -> List ( Route, Html Msg ) -> List ( Route, ( String, BallotSpec ) -> Html Msg ) -> List (Html Msg) -> Html Msg
+slideHost model earlySlideParis ballotSlideParis extraHtml =
     let
         currSlide =
             model.route
@@ -77,6 +78,9 @@ slideHost model ( rootRoute, rootSlide ) slideParis extraHtml =
             div [ attribute "data-sv-slide" <| toString route, class "" ]
                 [ inner ]
 
+        drawSlideNoBallot ( route, slide ) =
+            drawSlideWrap route (drawParticularSlide route slide)
+
         drawSlide model ( route, slide ) =
             let
                 bHash =
@@ -95,6 +99,6 @@ slideHost model ( rootRoute, rootSlide ) slideParis extraHtml =
                         div [] []
 
         slides =
-            [ drawSlideWrap rootRoute (drawParticularSlide rootRoute rootSlide) ] ++ List.map (drawSlide model) slideParis
+            List.map drawSlideNoBallot earlySlideParis ++ List.map (drawSlide model) ballotSlideParis
     in
     div [ class "w-100", id "sv-main" ] (slides ++ extraHtml)

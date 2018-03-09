@@ -11,19 +11,21 @@ import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
-import SecureVote.Eth.Utils exposing (isValidEthAddress, setCandTxFrom)
+import SecureVote.Eth.Utils exposing (addressValidationForMdl, isValidEthAddress, setCandTxFrom)
+import SecureVote.LocalStorage exposing (LsMsg(SetLocalStorage))
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (getUserErc20Addr, setUserErc20Addr, userErc20AddrId)
+import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (getUserErc20Addr, setUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(SwmHowToVoteR))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
 
 
-swmAddressV : Model -> ( String, BallotSpec ) -> Html Msg
-swmAddressV model ( bHash, bSpec ) =
+swmAddressV : Model -> Html Msg
+swmAddressV model =
     let
         ( addrErr, addrErrMsg ) =
-            validAddress model
+            addressValidationForMdl <| getUserErc20Addr model
 
         btnDisabled =
             if addrErr || (isNothing <| getUserErc20Addr model) then
@@ -32,22 +34,26 @@ swmAddressV model ( bHash, bSpec ) =
                 BtnNop
 
         msgs isSkip =
+            let
+                userAddr =
+                    getUserErc20Addr model ? ""
+            in
             MultiMsg <|
                 (if isSkip then
                     [ SetCandidateTx (setCandTxFrom "") ]
                  else
-                    [ SetCandidateTx (setCandTxFrom <| getUserErc20Addr model ? "")
-                    , ToWeb3 <| GetErc20Balance bHash
+                    [ SetCandidateTx (setCandTxFrom userAddr)
+                    , LS <| SetLocalStorage ( lsAddrId, userAddr )
+                    , CheckForPrevVotes
                     ]
                 )
-                    ++ [ PageGoForward SwmHowToVoteR ]
+                    ++ [ PageGoForward ListAllVotesR ]
 
         devMsgs =
             MultiMsg <|
-                [ PageGoForward SwmHowToVoteR
+                [ PageGoForward ListAllVotesR
                 , setUserErc20Addr "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
                 , SetCandidateTx <| setCandTxFrom "0x71c1c1a30f07017f3278333c996ca4e4d71f2092"
-                , ToWeb3 <| GetErc20Balance bHash
                 ]
 
         devBtn =
@@ -56,15 +62,32 @@ swmAddressV model ( bHash, bSpec ) =
             else
                 []
 
-        erc20Abrv =
-            (mErc20Abrv bHash).get model
+        rememberedAddr =
+            case Dict.get lsAddrId model.lsBucket of
+                Just addr ->
+                    div [ class "mh2" ] [ text <| "Last address used: " ++ addr ]
+
+                Nothing ->
+                    span [] []
+
+        mmAddrNotice =
+            case model.eth.mmAddr of
+                Just a ->
+                    [ text <| "MetaMask address: " ++ a ]
+
+                Nothing ->
+                    if model.eth.mmDetected then
+                        [ text "Please unlock MetaMask if you'd like to vote using that account." ]
+                    else
+                        []
     in
     fullPageSlide 384938493
         model
-        ("Your " ++ erc20Abrv ++ " Address")
-        [ Options.styled span [ cs "dark-gray db pa2 mt3 f4" ] [ text <| "Please enter your Ethereum address holding " ++ erc20Abrv ++ " tokens below" ]
-        , Options.styled p [ cs "" ] [ strong [] [ text "Note: " ], text <| "Your address is only used to confirm your " ++ erc20Abrv ++ " token balance. ", strong [] [ text "This is an optional step." ] ]
-        , subhead <| "Your ballance will be shown as it was in block " ++ Maybe.map (toString << .startingBlockEst) (Dict.get bHash model.ballotScDetails) ? "Cannot find ballot starting block estimate"
+        "Your Ethereum Address"
+        [ Options.styled span [ cs "dark-gray db pa2 mt3 f4" ] [ text <| "Please enter your Ethereum address holding your tokens below." ]
+        , Options.styled p [ cs "" ] [ strong [] [ text "Note: " ], text <| "Your address is used to confirm your token balance and show which ballots you've voted in." ]
+        , subhead "Your ballance will be shown as it was when the ballot was started."
+        , span [] mmAddrNotice
         , div [ class "center" ]
             [ div [ class "flex flex-column items-center mh2" ]
                 [ div [ class "w-100 flex flex-column items-start" ]
@@ -83,32 +106,12 @@ swmAddressV model ( bHash, bSpec ) =
                     ]
                 ]
             , div [ class "mv3" ] <|
-                [ btn 394893489
-                    model
-                    [ SecBtn, Attr (class "pa2"), Click (msgs True) ]
-                    [ text "Skip" ]
-                , btn 894823489
+                [ btn 894823489
                     model
                     [ PriBtn, Attr (class "pa2"), Click (msgs False), btnDisabled ]
                     [ text "Continue" ]
                 ]
                     ++ devBtn
+            , rememberedAddr
             ]
         ]
-
-
-validAddress : Model -> ( Bool, String )
-validAddress model =
-    let
-        swmAddress =
-            getUserErc20Addr model
-    in
-    case swmAddress of
-        Nothing ->
-            ( False, "Please paste in your Eth address" )
-
-        Just addr ->
-            if isValidEthAddress addr then
-                ( False, "Address valid!" )
-            else
-                ( True, "Invalid address" )

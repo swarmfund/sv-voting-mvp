@@ -1,5 +1,6 @@
 module SecureVote.Utils.Lenses exposing (..)
 
+import Dict exposing (Dict)
 import Monocle.Lens exposing (Lens)
 import Monocle.Optional exposing (Optional)
 
@@ -24,3 +25,10 @@ import Monocle.Optional exposing (Optional)
                     a
     in
     Optional g s
+
+
+dictWDE : comparable -> Optional (Dict comparable (Dict k v)) (Dict k v)
+dictWDE key =
+    Optional
+        (Dict.get key >> Maybe.withDefault Dict.empty >> Just)
+        (Dict.insert key)

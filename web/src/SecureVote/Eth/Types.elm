@@ -2,6 +2,7 @@ module SecureVote.Eth.Types exposing (..)
 
 import Decimal exposing (Decimal)
 import Json.Encode exposing (Value)
+import SecureVote.Utils.Ports exposing (CarryPack)
 
 
 type alias EthAddress =
@@ -24,19 +25,19 @@ type alias BallotResult =
 
 
 type alias BallotInfo =
-    { democHash : String, i : Int, specHash : String, extraData : String, votingContract : String, startTime : Int }
+    { democHash : String, i : Int, bHash : String, extraData : String, votingContract : String, startTime : Int }
 
 
 type alias WriteViaMMDoc =
-    { abi : String, addr : String, method : String, args : Value }
+    { abi : String, addr : String, method : String, args : List Value }
 
 
 type alias ReadContractDoc =
-    { abi : String, addr : String, method : String, args : Value }
+    { abi : String, addr : String, method : String, args : List Value, carry : CarryPack }
 
 
 type alias ReadResponse =
-    { success : Bool, response : Value, errMsg : String, method : String, addr : String }
+    { success : Bool, response : Value, errMsg : String, method : String, addr : String, carry : CarryPack }
 
 
 type alias Erc20Abrv =

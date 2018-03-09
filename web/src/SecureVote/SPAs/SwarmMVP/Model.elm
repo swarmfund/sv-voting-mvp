@@ -12,6 +12,7 @@ import Monocle.Optional exposing (Optional)
 import RemoteData exposing (RemoteData(..))
 import SecureVote.Ballots.Types exposing (BallotSCDetails, BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (Curve25519KeyPair)
+import SecureVote.Eth.Model exposing (EthMdl, initEthMdl)
 import SecureVote.Eth.Nodes exposing (ethNodes)
 import SecureVote.Eth.Types exposing (..)
 import SecureVote.SPAs.SwarmMVP.Ballot exposing (allBallots, initBallot)
@@ -64,6 +65,8 @@ type alias Model =
     , democIToSpec : Dict String (Dict Int String) --^ map (democHash => (ballotId => prelimInfo))
     , democIssues : Dict String (Dict String BallotPrelimInfo) --^ map (democHash => (ballotId => prelimInfo))
     , specToDeets : Dict String BallotSpec --^ map (specHash => RemoteData BallotSpec) - can error gracefully
+    , haveVotedOn : Dict String (Dict String Bool) --^ (voterAddr => (specHash => Have Voted On))
+    , pendingVotes : Dict String (Dict String Float) --^ (voterAddr => (bHash => Bool))
     , failedSpec : Dict String String
     , fatalSpecFail : List String
     , currDemoc : String
@@ -74,6 +77,8 @@ type alias Model =
     , ballotScDetails : Dict String BallotSCDetails --^ map (bHash => BallotSCDetails)
     , delegationABI : String
     , delegationAddr : String
+    , lsBucket : Dict String String
+    , eth : EthMdl
     }
 
 
@@ -130,7 +135,7 @@ bpiVotingAddr =
 
 
 initModel : Flags -> Model
-initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, delegationAddr } =
+initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, delegationAddr, mmDetected } =
     let
         ethNode_ =
             if dev then
@@ -150,7 +155,7 @@ initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, de
     , ballotAllDone = False
     , currentBallot = Nothing
     , allBallots = Dict.empty
-    , route = ListAllVotesR
+    , route = SwmAddressR
     , history = []
     , lastRoute = Nothing
     , lastPageDirection = PageForward
@@ -178,6 +183,8 @@ initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, de
     , democIToSpec = Dict.empty
     , democIssues = Dict.empty
     , specToDeets = Dict.empty
+    , haveVotedOn = Dict.empty
+    , pendingVotes = Dict.empty
     , failedSpec = Dict.empty
     , fatalSpecFail = []
     , currDemoc = democHash
@@ -188,28 +195,11 @@ initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, de
     , ballotScDetails = Dict.empty
     , delegationABI = delegationABI
     , delegationAddr = delegationAddr
+    , lsBucket = Dict.empty
+    , eth = initEthMdl { mmDetected = mmDetected }
     }
 
 
 type LastPageDirection
     = PageForward
     | PageBack
-
-
-resetAllBallotFields : Model -> { b | contractAddr : String } -> Model
-resetAllBallotFields model { contractAddr } =
-    { model
-        | ballotRange = Dict.empty
-        , ballotBits = Dict.empty
-        , ballotAllDone = False
-        , candidateTx = { nullCandidateEthTx | to = Just contractAddr }
-        , encBytes = Nothing
-        , ballotPlaintext = Err "Ballot fields reset and ballotPlaintext not set yet."
-        , remoteHexPk = Nothing
-        , miniVotingAbi = "Error: Ballot parameters have been reset and ABI is not set yet."
-        , ballotVerificationPassed = Loading
-        , txidCheck = TxidNotMade
-        , ballotOpen = Loading
-        , auditMsgs = []
-        , metamaskTxid = Nothing
-    }
