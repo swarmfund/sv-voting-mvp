@@ -95,8 +95,7 @@ if [ $REPOSITORY_URL ]; then
     # do build
     echo "Building now..."
     time do_webpack "$@"
-    WEBPACK_RET=$?
-    check_error $WEBPACK_RET
+    check_error $?
     echo "Build Complete"
 
 
@@ -117,5 +116,6 @@ if [ $REPOSITORY_URL ]; then
 else
 
     do_webpack
+    check_error $?
 
 fi

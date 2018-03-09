@@ -6,6 +6,7 @@ const {web3js, mmDetected, mmWeb3, web3Ports} = require('./js/web3Stuff');
 
 window.addEventListener('load', function () {
     const flags = getFlags();
+    flags.mmDetected = mmDetected;
 
     const Elm = require('./src/SecureVote/SPAs/DelegationUI/Main.elm');
     const app = Elm.SecureVote.SPAs.DelegationUI.Main.fullscreen(flags);

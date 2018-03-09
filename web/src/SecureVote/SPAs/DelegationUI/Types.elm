@@ -2,7 +2,13 @@ module SecureVote.SPAs.DelegationUI.Types exposing (..)
 
 
 type alias Flags =
-    { mainTitle : String, dev : Bool, democHash : String, delegationABI : String, delegationAddr : String }
+    { mainTitle : String
+    , dev : Bool
+    , democHash : String
+    , delegationABI : String
+    , delegationAddr : String
+    , mmDetected : Bool
+    }
 
 
 type alias DelegationTx =

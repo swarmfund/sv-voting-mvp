@@ -24,12 +24,12 @@ type alias Model =
     , delegationABI : String
     , delegationAddr : String
     , viewDlgtResp : RemoteData String DelegationResp
-    , web3 : EthMdl
+    , eth : EthMdl
     }
 
 
 initModel : Flags -> Model
-initModel { mainTitle, dev, delegationABI, delegationAddr } =
+initModel { mainTitle, dev, delegationABI, delegationAddr, mmDetected } =
     { strFields = Dict.empty
     , boolFields = Dict.empty
     , tokenConAddr = genAutoComplete
@@ -41,7 +41,7 @@ initModel { mainTitle, dev, delegationABI, delegationAddr } =
     , delegationABI = delegationABI
     , delegationAddr = delegationAddr
     , viewDlgtResp = NotAsked
-    , web3 = initEthMdl
+    , eth = initEthMdl { mmDetected = mmDetected }
     }
 
 
