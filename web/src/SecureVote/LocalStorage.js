@@ -3,7 +3,7 @@
 
 const initLsPorts = (app, {dev}) => {
     const setLS = ({key, value}) => {
-        console.log("Setting LS:", key, value);
+        console.log("Setting LS:", key, value.slice(0,100));
         const r = localStorage.setItem(key, value);
     }
 

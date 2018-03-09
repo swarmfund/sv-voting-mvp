@@ -11,7 +11,7 @@ import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
-import SecureVote.Eth.Utils exposing (isValidEthAddress, setCandTxFrom)
+import SecureVote.Eth.Utils exposing (addressValidationForMdl, isValidEthAddress, setCandTxFrom)
 import SecureVote.LocalStorage exposing (LsMsg(SetLocalStorage))
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
@@ -25,7 +25,7 @@ swmAddressV : Model -> Html Msg
 swmAddressV model =
     let
         ( addrErr, addrErrMsg ) =
-            validAddress model
+            addressValidationForMdl <| getUserErc20Addr model
 
         btnDisabled =
             if addrErr || (isNothing <| getUserErc20Addr model) then
@@ -115,20 +115,3 @@ swmAddressV model =
             , rememberedAddr
             ]
         ]
-
-
-validAddress : Model -> ( Bool, String )
-validAddress model =
-    let
-        swmAddress =
-            getUserErc20Addr model
-    in
-    case swmAddress of
-        Nothing ->
-            ( False, "Please paste in your Eth address" )
-
-        Just addr ->
-            if isValidEthAddress addr then
-                ( False, "Address valid!" )
-            else
-                ( True, "Invalid address" )

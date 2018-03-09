@@ -104,6 +104,7 @@ votingView model ( bHash, bSpec ) =
                 [ subhead "Ballot Transaction:"
                 , div [ class "mw7 center" ] [ pre [ class "tl" ] [ text <| candTxText model.candidateTx ] ]
                 , ballotClosedWarning
+                , span [] [ text "Tip: you can change your address in the settings." ]
                 , voteBtnsOrTxid model
                 , span [ class "" ] [ subhead <| "Results available " ++ formatTsAsDate endTime ]
                 , endBtns model

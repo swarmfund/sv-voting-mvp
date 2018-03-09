@@ -18,6 +18,11 @@ userErc20AddrId =
     "ethAddress"
 
 
+userTempErc20AddrId : String
+userTempErc20AddrId =
+    "eth.address.temp"
+
+
 txidCheckId : String
 txidCheckId =
     "ballotTxid"

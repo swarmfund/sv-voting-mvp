@@ -15,7 +15,7 @@ import SecureVote.Eth.Types exposing (nullCandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(SetBoolField, SetField))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidNotMade))
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits, intsToRangeBallot3Bits)
 
@@ -45,8 +45,17 @@ getUserErc20Addr model =
 
 
 setUserErc20Addr : String -> Msg
-setUserErc20Addr =
-    SetField userErc20AddrId
+setUserErc20Addr s =
+    MultiMsg [ SetField userErc20AddrId s, SetCandidateTx (\tx -> { tx | from = Just s }) ]
+
+
+getTempUserErc20Addr model =
+    Dict.get userTempErc20AddrId model.fields
+
+
+setTempUserErc20Addr : String -> Msg
+setTempUserErc20Addr =
+    SetField userTempErc20AddrId
 
 
 getBallotTxid : Model -> Maybe String
