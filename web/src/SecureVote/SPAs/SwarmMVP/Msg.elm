@@ -61,8 +61,7 @@ type Msg
 
 
 type ToWeb3Msg
-    = SetProvider
-    | GetErc20Balance String --^ string is bHash
+    = GetErc20Balance String --^ string is bHash
     | CheckTxid String
 
 

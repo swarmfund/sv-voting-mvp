@@ -6,6 +6,7 @@ import Json.Decode exposing (Value)
 import Json.Encode exposing (object)
 import RemoteData exposing (RemoteData(NotAsked))
 import SecureVote.Eth.Model exposing (EthMdl, initEthMdl)
+import SecureVote.Eth.Nodes exposing (ethNodes)
 import SecureVote.SPAs.DelegationUI.Components.Input exposing (genAutoComplete, genDropSelect)
 import SecureVote.SPAs.DelegationUI.Msg exposing (Msg)
 import SecureVote.SPAs.DelegationUI.Types exposing (..)
@@ -30,6 +31,13 @@ type alias Model =
 
 initModel : Flags -> Model
 initModel { mainTitle, dev, delegationABI, delegationAddr, mmDetected } =
+    let
+        ethNode_ =
+            if dev then
+                ethNodes.kovan
+            else
+                ethNodes.mainnet
+    in
     { strFields = Dict.empty
     , boolFields = Dict.empty
     , tokenConAddr = genAutoComplete
@@ -41,7 +49,7 @@ initModel { mainTitle, dev, delegationABI, delegationAddr, mmDetected } =
     , delegationABI = delegationABI
     , delegationAddr = delegationAddr
     , viewDlgtResp = NotAsked
-    , eth = initEthMdl { mmDetected = mmDetected }
+    , eth = initEthMdl { mmDetected = mmDetected, ethNode = ethNode_ }
     }
 
 

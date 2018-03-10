@@ -35,5 +35,12 @@ ethUpdate lift msg model =
                             Just a |> Maybe.Extra.filter isValidEthAddress
                     in
                     { model | eth = { m_ | mmAddr = mmAddr } } ! []
+
+                SetEthProvider p ->
+                    let
+                        m_ =
+                            model.eth
+                    in
+                    { model | eth = { m_ | ethNode = p } } ! [ setWeb3Provider p ]
     in
     ( m, Cmd.map lift c )

@@ -52,7 +52,7 @@ subscriptions model =
 initCmds : Model -> Flags -> List (Cmd Msg) -> Cmd Msg
 initCmds initModel { democHash, indexABI, indexAddr, ballotBoxABI } extraCmds =
     Cmd.batch <|
-        [ setWeb3Provider initModel.ethNode
+        [ setWeb3Provider initModel.eth.ethNode
         , perform (SetTime << round << (\t -> t / 1000)) Time.now
         , genKeyPair True
         , getDemocHashes

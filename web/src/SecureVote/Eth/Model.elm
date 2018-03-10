@@ -4,7 +4,7 @@ import SecureVote.Eth.Types exposing (..)
 
 
 type alias EthFlags =
-    { mmDetected : Bool }
+    { mmDetected : Bool, ethNode : String }
 
 
 type alias EthMdl =
@@ -12,13 +12,15 @@ type alias EthMdl =
     , pastTxs : List TxidLog
     , mmAddr : Maybe String
     , mmDetected : Bool
+    , ethNode : String
     }
 
 
 initEthMdl : EthFlags -> EthMdl
-initEthMdl { mmDetected } =
+initEthMdl { mmDetected, ethNode } =
     { pendingTxs = []
     , pastTxs = []
     , mmAddr = Nothing
     , mmDetected = mmDetected
+    , ethNode = ethNode
     }

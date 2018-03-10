@@ -13,13 +13,14 @@ import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Components.UI.Btn as Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.RenderAudit exposing (renderAuditLog)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
+import SecureVote.Eth.Msg exposing (EthMsg(SetEthProvider))
 import SecureVote.Eth.Utils exposing (addressValidationForMdl, isValidEthAddress, isValidTxid)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.DialogTypes exposing (DialogHtml, dialogHtmlRender)
 import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (..)
 import SecureVote.SPAs.SwarmMVP.Model exposing (..)
-import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(CheckTxid, SetProvider))
+import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(ListAllVotesR))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(..))
 import SecureVote.SPAs.SwarmMVP.Views.HowToVoteV exposing (combinedHowToVoteCopy)
@@ -40,14 +41,14 @@ settingsDialogV model =
         setEthNodeMsgs =
             MultiMsg
                 [ SetEthNode <| getEthNodeTemp model ? ""
-                , ToWeb3 SetProvider
+                , Web3 <| SetEthProvider <| getEthNodeTemp model ? ""
                 ]
 
         setAddrMsgs =
             setUserErc20Addr <| getTempUserErc20Addr model ? ""
 
         btnDisabled =
-            if model.ethNode == getEthNodeTemp model ? "" then
+            if model.eth.ethNode == getEthNodeTemp model ? "" then
                 Disabled
             else
                 BtnNop

@@ -1,7 +1,7 @@
 module SecureVote.SPAs.DelegationUI.Main exposing (..)
 
 import Html
-import SecureVote.Eth.Web3 exposing (contractReadResponse, gotDelegatePayloadGen, metamaskTxidGen, onContractReadResponse)
+import SecureVote.Eth.Web3 exposing (contractReadResponse, gotDelegatePayloadGen, metamaskTxidGen, onContractReadResponse, setWeb3Provider)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model, initModel)
 import SecureVote.SPAs.DelegationUI.Msg exposing (Msg(LogErr))
 import SecureVote.SPAs.DelegationUI.MsgHandlers exposing (handleContractRead, handleDelegationPayload)
@@ -12,7 +12,11 @@ import SecureVote.SPAs.DelegationUI.Views.RootV exposing (rootV)
 
 initF : Flags -> ( Model, Cmd Msg )
 initF f =
-    initModel f ! []
+    let
+        m =
+            initModel f
+    in
+    m ! [ setWeb3Provider m.eth.ethNode ]
 
 
 subscriptions model =

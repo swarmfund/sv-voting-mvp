@@ -196,7 +196,7 @@ initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, de
     , delegationABI = delegationABI
     , delegationAddr = delegationAddr
     , lsBucket = Dict.empty
-    , eth = initEthMdl { mmDetected = mmDetected }
+    , eth = initEthMdl { mmDetected = mmDetected, ethNode = ethNode_ }
     }
 
 
