@@ -14,7 +14,7 @@ import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(..), Route(..))
-import SecureVote.SPas.SwarmMVP.Views.Common exposing (addProgressToCardBody)
+import SecureVote.SPAs.SwarmMVP.Views.Common exposing (addProgressToCardBody)
 
 
 -- TODO Refactor out SetElevation into SecureVote components (ala elm-mdl)
