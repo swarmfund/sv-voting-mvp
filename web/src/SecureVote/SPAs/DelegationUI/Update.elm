@@ -2,18 +2,17 @@ module SecureVote.SPAs.DelegationUI.Update exposing (..)
 
 import Dict
 import Element.Input exposing (dropMenu, menu, select, selected, updateSelection)
+import Json.Encode as E
 import Maybe.Extra exposing ((?))
-import RemoteData exposing (RemoteData(Success))
-import SecureVote.Ballots.Types exposing (emptyBSpec01)
-import SecureVote.Eth.Msg as EthMsg
+import RemoteData exposing (RemoteData(Failure, Success))
 import SecureVote.Eth.Update as EthUpdate exposing (ethUpdate)
-import SecureVote.Eth.Web3 exposing (setGlobalDelegationImpl, setTokenDelegationImpl)
-import SecureVote.SPAs.DelegationUI.Components.Input exposing (genDropSelect)
+import SecureVote.Eth.Web3 exposing (performContractRead, setGlobalDelegationImpl, setTokenDelegationImpl)
 import SecureVote.SPAs.DelegationUI.Helpers exposing (..)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model, Web3Model, initWeb3Model)
 import SecureVote.SPAs.DelegationUI.Msg exposing (..)
 import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType(..))
 import SecureVote.Tokens.Types exposing (tcChoiceToAddr)
+import SecureVote.Utils.Ports exposing (mkCarry)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -93,6 +92,12 @@ update msg model =
         ViewDlgtResp r ->
             { model | viewDlgtResp = r } ! []
 
+        CheckDlgtsForVoter voterTokenPairs ->
+            { model | votersForDlgt = [] } ! [ checkVoterDlgtPairs model voterTokenPairs ]
+
+        GotDlgtVoterCheck { delegatee, tokenAddr } ->
+            { model | votersForDlgt = ( delegatee, tokenAddr ) :: model.votersForDlgt } ! []
+
         MMsg msgs ->
             case msgs of
                 [] ->
@@ -113,3 +118,19 @@ update msg model =
 
         Web3 ethMsg ->
             ethUpdate Web3 ethMsg model
+
+
+checkVoterDlgtPairs : Model -> List ( String, String ) -> Cmd Msg
+checkVoterDlgtPairs model ps =
+    Cmd.batch <|
+        List.map
+            (\( v, t ) ->
+                performContractRead
+                    { carry = mkCarry (E.string ethCheckDelegationId)
+                    , addr = model.delegationAddr
+                    , abi = model.delegationABI
+                    , args = viewDelegationArgs ( v, t )
+                    , method = "resolveDelegation"
+                    }
+            )
+            ps

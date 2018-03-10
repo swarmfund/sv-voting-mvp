@@ -25,6 +25,7 @@ type alias Model =
     , delegationABI : String
     , delegationAddr : String
     , viewDlgtResp : RemoteData String DelegationResp
+    , votersForDlgt : List ( String, String )
     , eth : EthMdl
     }
 
@@ -49,6 +50,7 @@ initModel { mainTitle, dev, delegationABI, delegationAddr, mmDetected } =
     , delegationABI = delegationABI
     , delegationAddr = delegationAddr
     , viewDlgtResp = NotAsked
+    , votersForDlgt = []
     , eth = initEthMdl { mmDetected = mmDetected, ethNode = ethNode_ }
     }
 

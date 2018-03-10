@@ -32,24 +32,16 @@ setDelegationArgs model =
     argList
 
 
-viewDelegationArgs : Model -> List E.Value
-viewDelegationArgs model =
-    let
-        dlgtType =
-            getStrField model getDlgtTypeId ? "none"
-
-        tokenAddr =
-            tcChoiceToAddr (selected model.tokenConAddr)
-
-        tokenStr =
-            if dlgtType == "global" then
-                zeroAddr
-            else
-                tokenAddr
-    in
-    [ E.string <| getStrField model getDelegationVoterAddrId ? "Error: no voter address when checking delegation"
-    , E.string tokenStr
+viewDelegationArgs : ( String, String ) -> List E.Value
+viewDelegationArgs ( voterAddr, tokenAddr ) =
+    [ E.string voterAddr
+    , E.string tokenAddr
     ]
+
+
+viewDelegatorsArgs : String -> List E.Value
+viewDelegatorsArgs dlgtAddr =
+    [ E.string <| dlgtAddr ]
 
 
 getStrField : Model -> String -> Maybe String
@@ -83,6 +75,10 @@ getDelegationTokenAddrId =
     "getDelegationTokenAddrId"
 
 
+getVotersForDlgtId =
+    "getVotersForDlgtId"
+
+
 setDlgtCollapseId =
     "clpsSetDelegate"
 
@@ -95,5 +91,13 @@ viewDlgtCollapsedId =
     "viewDlgtCollapsedId"
 
 
+viewVotersForDlgtCollapsedId =
+    "viewVotersForDlgtCollapsedId"
+
+
 getDlgtTypeId =
     "getDlgtTypeId"
+
+
+ethCheckDelegationId =
+    "ethCheckDelegationId"

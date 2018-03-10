@@ -3,9 +3,11 @@ module SecureVote.SPAs.DelegationUI.MsgHandlers exposing (..)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Json.Encode as E
+import List.Extra
 import RemoteData exposing (RemoteData(..))
 import Result.Extra
 import SecureVote.Eth.Types exposing (ReadResponse)
+import SecureVote.SPAs.DelegationUI.Helpers exposing (ethCheckDelegationId)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model)
 import SecureVote.SPAs.DelegationUI.Msg exposing (..)
 import SecureVote.SPAs.DelegationUI.Types exposing (..)
@@ -64,7 +66,7 @@ handleDelegateReadResp r =
         reqIx i dec decoder =
             custom (index i dec) decoder
 
-        d =
+        decDelegationResp =
             decode DelegationResp
                 |> reqIx 0 strInt
                 |> reqIx 1 strInt
@@ -72,11 +74,43 @@ handleDelegateReadResp r =
                 |> reqIx 3 string
                 |> reqIx 4 string
                 |> reqIx 5 string
+
+        decDelegatorsOfResp =
+            decode (\a b -> List.Extra.zip a b)
+                -- type of DelegatorsResp
+                |> reqIx 0 (list string)
+                |> reqIx 1 (list string)
+
+        resToRemData =
+            Result.Extra.unpack Failure Success
+
+        reportGotDelegator =
+            msgOrErr GotDlgtVoterCheck
+
+        msgOrErr msg r =
+            case r of
+                Success r ->
+                    msg r
+
+                Failure err ->
+                    LogErr err
+
+                _ ->
+                    Nop
     in
     if r.success then
         case r.method of
             "resolveDelegation" ->
-                ViewDlgtResp <| Result.Extra.unpack Failure Success <| decodeValue d r.response
+                decodeValue decDelegationResp r.response
+                    |> resToRemData
+                    |> (if Ok ethCheckDelegationId == decodeValue string r.carry.payload then
+                            reportGotDelegator
+                        else
+                            ViewDlgtResp
+                       )
+
+            "findPossibleDelegatorsOf" ->
+                msgOrErr CheckDlgtsForVoter <| resToRemData <| decodeValue decDelegatorsOfResp r.response
 
             _ ->
                 let
