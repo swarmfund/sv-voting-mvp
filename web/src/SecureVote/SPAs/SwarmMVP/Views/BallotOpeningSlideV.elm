@@ -115,21 +115,24 @@ openingSlide model ( bHash, bSpec ) =
             else
                 "This vote is open to all " ++ (mErc20Abrv bHash).get model ++ " token holders."
     in
-    fullPageSlide 9483579329
+    fullPageSlide
         model
-        (bTitle.getOption bSpec ? "NO BALLOT TITLE")
-        [ Options.styled div [ cs "black pa2 mv3 f4" ] [ text subtitleText ]
-        , div
-            [ style [ ( "max-width", "700px" ) ], class "center" ]
-          <|
-            [ if ballotOver then
-                resultsParas
-              else
-                introParagraphs
-            , ballotIntegrity ( bHash, bSpec ) model
-            , continueBtn
+        { id = 9483579329
+        , title = bTitle.getOption bSpec ? "NO BALLOT TITLE"
+        , inner =
+            [ Options.styled div [ cs "black pa2 mv3 f4" ] [ text subtitleText ]
+            , div
+                [ style [ ( "max-width", "700px" ) ], class "center" ]
+              <|
+                [ if ballotOver then
+                    resultsParas
+                  else
+                    introParagraphs
+                , ballotIntegrity ( bHash, bSpec ) model
+                , continueBtn
+                ]
             ]
-        ]
+        }
 
 
 ballotIntegrity : ( String, BallotSpec ) -> Model -> Html Msg

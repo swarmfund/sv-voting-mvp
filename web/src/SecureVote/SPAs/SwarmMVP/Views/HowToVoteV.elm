@@ -66,9 +66,12 @@ combinedHowToVoteCopy bHash model =
 
 howToVoteView : Model -> ( String, BallotSpec ) -> Html Msg
 howToVoteView model ( bHash, currBallot ) =
-    fullPageSlide 3453456456
+    fullPageSlide
         model
-        "How To Vote"
-        [ div [ class "mw7 center tl" ] <| combinedHowToVoteCopy bHash model
-        , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmVoteR) ] [ text "Continue" ]
-        ]
+        { id = 3453456456
+        , title = "How To Vote"
+        , inner =
+            [ div [ class "mw7 center tl" ] <| combinedHowToVoteCopy bHash model
+            , btn 5475855442 model [ PriBtn, Attr (class "mv3"), Click (PageGoForward SwmVoteR) ] [ text "Continue" ]
+            ]
+        }

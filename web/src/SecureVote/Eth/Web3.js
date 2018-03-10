@@ -434,7 +434,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                 } catch (err) {
                     console.log('checkTxid decoding error broke with: ', err.toString());
                 }
-                ret = {data: getTx.input, confirmed: getTx.blockNumber !== null, gas: getTxgasUsed || 0, logMsg};
+                ret = {data: getTx.input, confirmed: getTx.blockNumber !== null, gas: getTxR.gasUsed || 0, logMsg};
             }
             app.ports.gotTxidCheckStatus.send(ret);
         }).catch(err => {

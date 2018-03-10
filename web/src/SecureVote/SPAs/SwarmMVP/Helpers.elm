@@ -6,6 +6,8 @@ import Date.Extra.Format exposing (format, isoString)
 import Dict
 import Html exposing (Html, pre)
 import Html.Attributes exposing (class)
+import Maybe exposing (andThen)
+import Monocle.Common exposing (dict)
 import ParseInt exposing (parseIntRadix, toRadix)
 import RemoteData exposing (RemoteData(Loading))
 import Result.Extra exposing (isOk)
@@ -39,6 +41,22 @@ resetAllBallotFields model { contractAddr } =
     }
 
 
+getNBallotsVotedOn : Model -> Int
+getNBallotsVotedOn model =
+    getUserErc20Addr model
+        |> Maybe.andThen (\a -> (dict a).getOption model.haveVotedOn)
+        |> Maybe.map (Dict.filter (\k v -> v))
+        |> Maybe.map Dict.size
+        |> Maybe.withDefault 0
+
+
+getNBallots : Model -> Int
+getNBallots model =
+    (dict model.currDemoc).getOption model.democIssues
+        |> Maybe.map Dict.size
+        |> Maybe.withDefault 0
+
+
 getUserErc20Addr : Model -> Maybe String
 getUserErc20Addr model =
     Dict.get userErc20AddrId model.fields
@@ -46,7 +64,11 @@ getUserErc20Addr model =
 
 setUserErc20Addr : String -> Msg
 setUserErc20Addr s =
-    MultiMsg [ SetField userErc20AddrId s, SetCandidateTx (\tx -> { tx | from = Just s }) ]
+    let
+        s_ =
+            String.toLower s
+    in
+    MultiMsg [ SetField userErc20AddrId s_, SetCandidateTx (\tx -> { tx | from = Just s }) ]
 
 
 getTempUserErc20Addr model =

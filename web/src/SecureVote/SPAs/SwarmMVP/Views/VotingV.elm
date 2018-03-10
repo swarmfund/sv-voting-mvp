@@ -117,15 +117,18 @@ votingView model ( bHash, bSpec ) =
             else
                 loadingSpinner "Waiting for ballot encryption..."
     in
-    fullPageSlide 923844759
+    fullPageSlide
         model
-        "Cast Your Vote"
-        [ div [ class "ba dib pa2 ma1", style [ ( "min-width", "50%" ) ] ]
-            [ subhead "Your Vote Summary:"
-            , displayVoteSummary
+        { id = 923844759
+        , title = "Cast Your Vote"
+        , inner =
+            [ div [ class "ba dib pa2 ma1", style [ ( "min-width", "50%" ) ] ]
+                [ subhead "Your Vote Summary:"
+                , displayVoteSummary
+                ]
+            , ballotDetailsSection
             ]
-        , ballotDetailsSection
-        ]
+        }
 
 
 candTxText : CandidateEthTx -> String

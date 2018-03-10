@@ -69,9 +69,13 @@ cReadHandler model r =
                             |> Result.map
                                 (\( ( bHash, i ), bltInfo ) ->
                                     if bltInfo.blockN == 0 then
-                                        MultiMsg [ MarkBallotVoted False { voterM = Just bltInfo.sender, bHash = bHash }, MarkBallotVoted False { voterM = Nothing, bHash = bHash } ]
+                                        MultiMsg [ MarkBallotVoted False { voterM = Nothing, bHash = bHash } ]
                                     else
-                                        MultiMsg [ MarkBallotVoted True { voterM = Just bltInfo.sender, bHash = bHash }, MarkBallotVoted False { voterM = Nothing, bHash = bHash } ]
+                                        {- This is a bit hacky - we get an address back from the SC, so we'll set that in the State, however we need to presume that it
+                                           _could_ be someone else since we're using index 0 for the ballots. So we set _our_ vote to false _first_, then update with whoever
+                                           the sender was for ballot #0. If we do it in the reverse order then we'll always set our voted status to false
+                                        -}
+                                        MultiMsg [ MarkBallotVoted False { voterM = Nothing, bHash = bHash }, MarkBallotVoted True { voterM = Just bltInfo.sender, bHash = bHash } ]
                                 )
 
                     _ ->

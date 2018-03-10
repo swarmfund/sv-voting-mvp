@@ -192,19 +192,21 @@ listVotesView model =
             else
                 allBallotsView
     in
-    fullPageSlide 3409830456
+    fullPageSlide
         model
-        model.mainTitle
-    <|
-        case ( totalBallots, ( foundNBallots, gotNBallots, gotNAbrvs, gotNBallotScDetails, gotNPrevVoteDeets ), doneLoadingBallots ) of
-            ( Nothing, _, _ ) ->
-                [ loadingBallots ]
+        { id = 3409830456
+        , title = model.mainTitle
+        , inner =
+            case ( totalBallots, ( foundNBallots, gotNBallots, gotNAbrvs, gotNBallotScDetails, gotNPrevVoteDeets ), doneLoadingBallots ) of
+                ( Nothing, _, _ ) ->
+                    [ loadingBallots ]
 
-            ( Just n, ns, False ) ->
-                [ ballotsProgress n ns ]
+                ( Just n, ns, False ) ->
+                    [ ballotsProgress n ns ]
 
-            _ ->
-                viewBallotsOrEmpty
+                _ ->
+                    viewBallotsOrEmpty
+        }
 
 
 loadingBallots =

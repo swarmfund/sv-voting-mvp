@@ -1,5 +1,6 @@
-module SecureVote.SPAs.SwarmMVP.Views.RootV exposing (..)
+module SecureVote.SPAs.SwarmMVP.Views.RootV exposing (rootView)
 
+import Dict
 import Html exposing (Attribute, Html, div, h1, h2, h3, img, p, span, text)
 import Html.Attributes exposing (attribute, class, id, src, style)
 import Material.Snackbar as Snackbar
@@ -7,6 +8,7 @@ import Maybe.Extra exposing ((?))
 import Monocle.Common exposing (dict)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Components.UI.Dialog exposing (dialog)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (getNBallots, getNBallotsVotedOn, getUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (LastPageDirection(PageForward), Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))

@@ -13,14 +13,15 @@ import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.Typo exposing (headline)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(..))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(..), Route(..))
+import SecureVote.SPas.SwarmMVP.Views.Common exposing (addProgressToCardBody)
 
 
 -- TODO Refactor out SetElevation into SecureVote components (ala elm-mdl)
 
 
-fullPageSlide : Int -> Model -> String -> List (Html Msg) -> Html Msg
-fullPageSlide id model title innerHtmls =
+fullPageSlide : Model -> { id : Int, title : String, inner : List (Html Msg) } -> Html Msg
+fullPageSlide model { id, title, inner } =
     let
         backOpts =
             [ Icon, Attr (class "sv-button-large"), Click PageGoBack ]
@@ -35,6 +36,12 @@ fullPageSlide id model title innerHtmls =
 
         infoOpts =
             [ Icon, Attr (class "sv-button-large"), OpenDialog, Click (SetDialog "Info" InfoDialog) ]
+
+        innerExtra =
+            if List.member model.route [ ListAllVotesR, SwmAddressR ] then
+                []
+            else
+                addProgressToCardBody model
     in
     div [ class "flex flex-column h-100" ]
         [ div [ class "db w-100", style [ ( "height", "63px" ), ( "min-height", "63px" ) ] ] []
@@ -70,9 +77,10 @@ fullPageSlide id model title innerHtmls =
                             , hr [ class "mb0" ] []
                             , div [ class "overflow-y-scroll flex-auto ph3 ph4-ns" ] <|
                                 [ div [ class "pt3" ] [] ]
-                                    ++ innerHtmls
+                                    ++ inner
                                     ++ [ div [ class "mb4" ] [] ]
                             ]
+                                ++ innerExtra
                         ]
                     , div [ style [ ( "flex-grow", "9999" ) ] ] []
                     ]
