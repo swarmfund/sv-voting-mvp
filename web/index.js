@@ -22,7 +22,7 @@ window.addEventListener('load', function() {
     flags.mmAcct = mmAcct;
     flags.mmDetected = mmDetected;
     console.log(flags);
-    console.log("Environment variables are: ", R.map(function(v){ if(v){ return v.slice ? v.slice(0,80) : v} else { return v }}, flags));
+    console.log("Environment variables are: ", R.map(function(v){ if(v){ return v.slice ? v.slice(0,80) : v } else { return v }}, flags));
 
     if (!flags.dev) {
         require('./js/vendor/birds.js');
