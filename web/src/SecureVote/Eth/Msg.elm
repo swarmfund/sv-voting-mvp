@@ -8,3 +8,4 @@ type EthMsg
     | ReadContract ReadContractDoc
     | RefreshMMAddress
     | SetMMAddress String
+    | SetEthProvider String

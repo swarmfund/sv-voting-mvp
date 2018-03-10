@@ -370,10 +370,6 @@ multiUpdate msgs model cmds =
 updateToWeb3 : ToWeb3Msg -> Model -> ( Model, Cmd Msg )
 updateToWeb3 web3msg model =
     case web3msg of
-        SetProvider ->
-            model
-                ! [ setWeb3Provider model.ethNode ]
-
         GetErc20Balance bHash ->
             let
                 addr =

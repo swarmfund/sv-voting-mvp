@@ -36,7 +36,7 @@ handleContractRead model r =
         respHs =
             [ ( model.delegationAddr, handleDelegateReadResp ) ]
 
-        default =
+        default _ =
             LogErr (Debug.log "DelegateUI: Unknown contract read response: " <| toString r)
     in
     case List.head <| List.filter (\( addr_, h ) -> Debug.log ("filtering: " ++ addr_ ++ "," ++ r.addr) <| addr_ == r.addr) respHs of
@@ -44,7 +44,7 @@ handleContractRead model r =
             Debug.log "calling handler" <| h r
 
         Nothing ->
-            default
+            default ()
 
 
 encodeDlgtResp : DelegationResp -> Value
