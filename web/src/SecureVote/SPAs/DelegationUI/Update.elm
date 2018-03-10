@@ -6,7 +6,7 @@ import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(Success))
 import SecureVote.Ballots.Types exposing (emptyBSpec01)
 import SecureVote.Eth.Msg as EthMsg
-import SecureVote.Eth.Update as EthUpdate
+import SecureVote.Eth.Update as EthUpdate exposing (ethUpdate)
 import SecureVote.Eth.Web3 exposing (setGlobalDelegationImpl, setTokenDelegationImpl)
 import SecureVote.SPAs.DelegationUI.Components.Input exposing (genDropSelect)
 import SecureVote.SPAs.DelegationUI.Helpers exposing (..)
@@ -112,8 +112,4 @@ update msg model =
             { model | errors = err :: model.errors } ! []
 
         Web3 ethMsg ->
-            let
-                ( web3Mdl, cmd ) =
-                    EthUpdate.update ethMsg model.web3
-            in
-            { model | web3 = web3Mdl } ! [ Cmd.map Web3 cmd ]
+            ethUpdate Web3 ethMsg model

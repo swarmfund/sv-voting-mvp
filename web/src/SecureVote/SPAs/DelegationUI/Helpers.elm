@@ -10,7 +10,7 @@ import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType(..))
 import SecureVote.Tokens.Types exposing (tcChoiceToAddr)
 
 
-setDelegationArgs : Model -> E.Value
+setDelegationArgs : Model -> List E.Value
 setDelegationArgs model =
     let
         dlgtArg =
@@ -29,10 +29,10 @@ setDelegationArgs model =
                 _ ->
                     [ E.string "Error: No Delegation Type Selected!" ]
     in
-    E.list argList
+    argList
 
 
-viewDelegationArgs : Model -> E.Value
+viewDelegationArgs : Model -> List E.Value
 viewDelegationArgs model =
     let
         dlgtType =
@@ -47,10 +47,9 @@ viewDelegationArgs model =
             else
                 tokenAddr
     in
-    E.list
-        [ E.string <| getStrField model getDelegationVoterAddrId ? "Error: no voter address when checking delegation"
-        , E.string tokenStr
-        ]
+    [ E.string <| getStrField model getDelegationVoterAddrId ? "Error: no voter address when checking delegation"
+    , E.string tokenStr
+    ]
 
 
 getStrField : Model -> String -> Maybe String

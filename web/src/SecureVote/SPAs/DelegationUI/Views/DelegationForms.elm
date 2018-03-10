@@ -22,6 +22,7 @@ import SecureVote.SPAs.DelegationUI.MsgHandlers exposing (encodeDlgtResp)
 import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType(..))
 import SecureVote.SPAs.DelegationUI.Views.Styles exposing (DelegationStyles(..), UiElem)
 import SecureVote.Tokens.Types exposing (TokenContract(..), tcChoiceToAddr, tcChoiceToStr)
+import SecureVote.Utils.Ports exposing (mkCarry)
 
 
 mkChoice c =
@@ -198,6 +199,7 @@ viewDlgtBtn model =
             , addr = model.delegationAddr
             , args = viewDelegationArgs model
             , method = "resolveDelegation"
+            , carry = mkCarry E.null
             }
     in
     button (CS Field) [ padding 10, onClick (MMsg [ ViewDlgtResp Loading, Web3 <| ReadContract toRead ]) ] (text "Show Delegations")

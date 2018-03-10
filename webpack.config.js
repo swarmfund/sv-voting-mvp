@@ -190,6 +190,7 @@ const genConfig = () => {
                 // For SPAs: serve index.html in place of 404 responses
                 historyApiFallback: true,
                 watchOptions: {
+                    poll: 500,
                     ignored: [/node_modules/, /bower_components/]
                 }
             }
@@ -231,7 +232,7 @@ const genConfig = () => {
                 ]
             },
             resolve: {
-                extensions: [".purs", ".js", ".json", ".ts"]
+                extensions: [".purs", ".js", ".json", ".ts", ".elm"]
             },
             bail: true
         });

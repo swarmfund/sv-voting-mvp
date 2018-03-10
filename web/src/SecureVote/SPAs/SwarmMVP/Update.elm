@@ -418,7 +418,9 @@ updateFromWeb3 msg model =
                         if gas < 80000 then
                             let
                                 errMsg =
-                                    "Warning: Gas low! "
+                                    "Warning: Gas low! ("
+                                        ++ toString gas
+                                        ++ ") "
                                         ++ (if String.length logMsg > 0 then
                                                 "Voting contract returned error: " ++ logMsg
                                             else

@@ -234,19 +234,18 @@ addBinaryOpts model =
                                  uint64 startTime, uint64 endTime, bool useEncryption, bool testing)
         -}
         args =
-            E.list
-                [ E.string democHash
-                , E.string hash
-                , E.string "0x00"
-                , E.list
-                    [ E.int <| convTime startTimeId
-                    , E.int <| convTime endTimeId
-                    ]
-                , E.list
-                    [ E.bool <| isJust <| getStrField model encPkId
-                    , E.bool False
-                    ]
+            [ E.string democHash
+            , E.string hash
+            , E.string "0x00"
+            , E.list
+                [ E.int <| convTime startTimeId
+                , E.int <| convTime endTimeId
                 ]
+            , E.list
+                [ E.bool <| isJust <| getStrField model encPkId
+                , E.bool False
+                ]
+            ]
 
         ballotToWrite =
             { abi = indexABI, addr = indexAddr, method = "deployBallot", args = args }

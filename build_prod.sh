@@ -35,18 +35,18 @@ if [ $REPOSITORY_URL ]; then
     echo "DETECTED CI OR NETLIFY"
     echo ""
 
-    # prep for netlify cache stuff
-    echo "Restoring .cache at $CACHE_DIR/.cache: \n`ls $CACHE_DIR/.cache`\n"
-    cp -a $CACHE_DIR/.cache .cache || true
-
-    # get cached elm stuff
-    mkdir -p .cache
-    cp -a .cache/elm-stuff elm-stuff || true
-
-    # print cache directory
-    echo "Cache Directory before build:\n"
-    ls -al .cache
-    echo ""
+    # # prep for netlify cache stuff
+    # echo "Restoring .cache at $CACHE_DIR/.cache: \n`ls $CACHE_DIR/.cache`\n"
+    # cp -a $CACHE_DIR/.cache .cache || true
+    #
+    # # get cached elm stuff
+    # mkdir -p .cache
+    # cp -a .cache/elm-stuff elm-stuff || true
+    #
+    # # print cache directory
+    # echo "Cache Directory before build:\n"
+    # ls -al .cache
+    # echo ""
 
     if [ ! -e $HOME/bin/sysconfcpus ]; then
         echo "Trying to get a version of sysconfcpus..."
@@ -75,9 +75,9 @@ if [ $REPOSITORY_URL ]; then
     # yarn run elm-make web/src/SecureVote/SPAs/SwarmMVP/Main.elm  --output temp-32489734985.html 2>&1 # compile elm
     # check_error $?
 
-    echo "Manually installing elm - yarn seems to miss it..."
-    npm install elm
-    echo "Elm installed"
+    # echo "Manually installing elm - yarn seems to miss it..."
+    # npm install elm
+    # echo "Elm installed"
 
 #    ls node_modules/elm/
 #    ls node_modules/elm/Elm-Platform/
@@ -95,27 +95,27 @@ if [ $REPOSITORY_URL ]; then
     # do build
     echo "Building now..."
     time do_webpack "$@"
-    WEBPACK_RET=$?
-    check_error $WEBPACK_RET
+    check_error $?
     echo "Build Complete"
 
 
-    # save in cache
-    echo "Caching elm stuff"
-    rm -rf .cache/elm-stuff || true
-    cp -a elm-stuff .cache/elm-stuff
-
-    # print cache directory
-    echo "Cache Directory after build: (ls -al .cache)\n"
-    ls -al .cache
-    echo ""
-
-    # save netlify cache
-    cp -a .cache $CACHE_DIR/.cache
-    echo "Saved .cache to $CACHE_DIR/.cache: \n`ls $CACHE_DIR/.cache`\n"
+    # # save in cache
+    # echo "Caching elm stuff"
+    # rm -rf .cache/elm-stuff || true
+    # cp -a elm-stuff .cache/elm-stuff
+    #
+    # # print cache directory
+    # echo "Cache Directory after build: (ls -al .cache)\n"
+    # ls -al .cache
+    # echo ""
+    #
+    # # save netlify cache
+    # cp -a .cache $CACHE_DIR/.cache
+    # echo "Saved .cache to $CACHE_DIR/.cache: \n`ls $CACHE_DIR/.cache`\n"
 
 else
 
     do_webpack
+    check_error $?
 
 fi

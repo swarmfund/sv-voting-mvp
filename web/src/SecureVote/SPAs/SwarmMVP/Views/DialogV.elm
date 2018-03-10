@@ -59,7 +59,7 @@ settingsDialogV model =
             if
                 getTempUserErc20Addr model
                     |> Maybe.Extra.filter isValidEthAddress
-                    |> \a -> a == Nothing || a == getUserErc20Addr model
+                    |> (\a -> a == Nothing || a == getUserErc20Addr model)
             then
                 Disabled
             else

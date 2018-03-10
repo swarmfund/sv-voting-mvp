@@ -114,12 +114,13 @@ castVoteView model ( bHash, bSpec ) =
             else
                 Disabled
     in
-    fullPageSlide 123413553
-        model
-        "Choose Your Vote"
-    <|
-        balanceV
-            ++ [ descriptionReminder
-               , div [ class "mw7 center black" ] optionList
-               , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs, contEnabled ] [ text "Continue" ]
-               ]
+    fullPageSlide model
+        { id = 123413553
+        , title = "Choose Your Vote"
+        , inner =
+            balanceV
+                ++ [ descriptionReminder
+                   , div [ class "mw7 center black" ] optionList
+                   , btn 894823489 model [ PriBtn, Attr (class "ma3"), Click progressMsgs, contEnabled ] [ text "Continue" ]
+                   ]
+        }
