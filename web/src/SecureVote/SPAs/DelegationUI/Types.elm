@@ -39,4 +39,4 @@ type alias DelegationResp =
 
 
 type alias DelegatorsResp =
-    List ( String, String )
+    List { voterAddr : String, tokenAddr : String }

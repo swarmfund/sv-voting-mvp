@@ -34,7 +34,7 @@ lsFailHandler r =
             LogErr <| "LocalStorage deserialisation error: " ++ str
 
 
-cReadHandler : Model -> ReadResponse -> Msg
+cReadHandler : Model -> ReadResponseWCarry -> Msg
 cReadHandler model r =
     let
         rAndThenPack rSecond rFirst =

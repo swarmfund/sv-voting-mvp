@@ -3,9 +3,10 @@ module SecureVote.Eth.Update exposing (..)
 import Maybe.Extra
 import SecureVote.Eth.Model exposing (..)
 import SecureVote.Eth.Msg exposing (..)
-import SecureVote.Eth.Types exposing (..)
+import SecureVote.Eth.Tasks exposing (ethTasksInit)
 import SecureVote.Eth.Utils exposing (isValidEthAddress)
 import SecureVote.Eth.Web3 exposing (..)
+import Task
 
 
 type alias Mdl a =
@@ -17,6 +18,9 @@ ethUpdate lift msg model =
     let
         ( m, c ) =
             case msg of
+                EthNop ->
+                    model ! []
+
                 WriteViaMM doc ->
                     model ! [ performContractWriteMM doc ]
 
@@ -41,6 +45,9 @@ ethUpdate lift msg model =
                         m_ =
                             model.eth
                     in
-                    { model | eth = { m_ | ethNode = p } } ! [ setWeb3Provider p ]
+                    { model | eth = { m_ | ethNode = p } } ! [ initWeb3WProvider p ]
+
+                GotWeb3 v ->
+                    model ! [ Task.perform (\_ -> EthNop) (ethTasksInit v) ]
     in
     ( m, Cmd.map lift c )

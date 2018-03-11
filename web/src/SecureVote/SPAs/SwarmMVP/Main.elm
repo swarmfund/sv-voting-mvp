@@ -4,6 +4,7 @@ import Html exposing (Html)
 import SecureVote.Ballots.SpecSource exposing (gotFailedSpecFromIpfsHandler, gotSpecFromIpfsHandler)
 import SecureVote.Crypto.Curve25519 exposing (..)
 import SecureVote.Eth.Msg exposing (EthMsg(RefreshMMAddress, SetMMAddress))
+import SecureVote.Eth.Subscriptions exposing (ethGenericSubs)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.LocalStorage exposing (..)
 import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
@@ -46,13 +47,14 @@ subscriptions model =
         , every (5 * second) (flip (/) 1000 >> round >> SetTime)
         , every (1 * second) (\_ -> Web3 RefreshMMAddress)
         , gotMMAddress (Web3 << SetMMAddress)
+        , ethGenericSubs Web3
         ]
 
 
 initCmds : Model -> Flags -> List (Cmd Msg) -> Cmd Msg
 initCmds initModel { democHash, indexABI, indexAddr, ballotBoxABI } extraCmds =
     Cmd.batch <|
-        [ setWeb3Provider initModel.eth.ethNode
+        [ initWeb3WProvider initModel.eth.ethNode
         , perform (SetTime << round << (\t -> t / 1000)) Time.now
         , genKeyPair True
         , getDemocHashes

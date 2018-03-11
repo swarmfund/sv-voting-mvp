@@ -4,6 +4,7 @@ import Element.Input exposing (SelectMsg)
 import RemoteData exposing (RemoteData)
 import SecureVote.Eth.Msg as EthMsg
 import SecureVote.SPAs.DelegationUI.Types exposing (DelegationResp, DelegationType, DelegatorsResp)
+import SecureVote.SmartContracts.Delegation exposing (VotersByToken)
 import SecureVote.Tokens.Types exposing (TokenContract)
 
 
@@ -18,8 +19,8 @@ type Msg
     | ReceivedPayload String
     | LogErr String
     | ViewDlgtResp (RemoteData String DelegationResp)
-    | GotDlgtVoterCheck DelegationResp
-    | CheckDlgtsForVoter (List ( String, String ))
+    | GetVotersForDlgt String
+    | GotVotersForDlgt VotersByToken
     | MMsg (List Msg)
       -- Web3 calls
     | Web3 EthMsg.EthMsg

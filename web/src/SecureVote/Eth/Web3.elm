@@ -13,6 +13,12 @@ import SecureVote.SPAs.SwarmMVP.Types exposing (GotTxidResp)
 import SecureVote.Utils.Ports exposing (carryPackDecoder)
 
 
+port getWeb3 : () -> Cmd msg
+
+
+port gotWeb3 : (Value -> msg) -> Sub msg
+
+
 port gotMetamaskImpl : (Value -> msg) -> Sub msg
 
 
@@ -61,17 +67,17 @@ type alias ConsDataParamReq =
 -- # Arbitrary Contract Reads and Writes
 
 
-port performContractRead : ReadContractDoc -> Cmd msg
+port performContractRead : ReadContractWCarryDoc -> Cmd msg
 
 
 port contractReadResponse : (Value -> msg) -> Sub msg
 
 
-onContractReadResponse : (ReadResponse -> msg) -> (String -> msg) -> Value -> msg
+onContractReadResponse : (ReadResponseWCarry -> msg) -> (String -> msg) -> Value -> msg
 onContractReadResponse msgGen errMsg val =
     let
         decoder =
-            decode ReadResponse
+            decode ReadResponseWCarry
                 |> required "success" Decode.bool
                 |> required "resp" Decode.value
                 |> required "errMsg" Decode.string
@@ -115,7 +121,7 @@ onIncomingErc20Balance encodedBalance =
             LogErr <| "Got bad balance back from Web3 " ++ toString encodedBalance
 
 
-port setWeb3Provider : String -> Cmd msg
+port initWeb3WProvider : String -> Cmd msg
 
 
 port gotWeb3Error : (Value -> msg) -> Sub msg

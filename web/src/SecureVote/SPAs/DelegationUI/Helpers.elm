@@ -10,40 +10,6 @@ import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType(..))
 import SecureVote.Tokens.Types exposing (tcChoiceToAddr)
 
 
-setDelegationArgs : Model -> List E.Value
-setDelegationArgs model =
-    let
-        dlgtArg =
-            E.string <| getStrField model setDelegateAddrId ? "Error: no delegate selected"
-
-        argList =
-            case model.delType of
-                Just Token ->
-                    [ E.string <| tcChoiceToAddr (selected model.tokenConAddr)
-                    , dlgtArg
-                    ]
-
-                Just Global ->
-                    [ dlgtArg ]
-
-                _ ->
-                    [ E.string "Error: No Delegation Type Selected!" ]
-    in
-    argList
-
-
-viewDelegationArgs : ( String, String ) -> List E.Value
-viewDelegationArgs ( voterAddr, tokenAddr ) =
-    [ E.string voterAddr
-    , E.string tokenAddr
-    ]
-
-
-viewDelegatorsArgs : String -> List E.Value
-viewDelegatorsArgs dlgtAddr =
-    [ E.string <| dlgtAddr ]
-
-
 getStrField : Model -> String -> Maybe String
 getStrField m k =
     Dict.get k m.strFields
