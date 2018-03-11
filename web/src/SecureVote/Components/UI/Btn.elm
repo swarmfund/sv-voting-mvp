@@ -1,10 +1,14 @@
 module SecureVote.Components.UI.Btn exposing (..)
 
+import Element as E exposing (Element, button)
+import Element.Attributes exposing (padding)
+import Element.Events exposing (onClick)
 import Html exposing (Attribute, Html, div, h1, h2, h3, p, span, text)
 import Html.Attributes exposing (class, style, target)
 import Material.Button as Button
 import Material.Dialog as Dialog
 import Material.Options as Options exposing (cs, css)
+import SecureVote.Components.UI.CommonStyles exposing (CommonStyle(..), Variations, cmnPad)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(Mdl))
 
@@ -78,3 +82,14 @@ btn id model props inner =
     div attrs
         [ Button.render Mdl [ id ] model.mdl opts inner
         ]
+
+
+type alias ButtonOpts msg =
+    { text : String
+    , onClick : msg
+    }
+
+
+cmnBtn : (CommonStyle -> s) -> ButtonOpts msg -> Element s Variations msg
+cmnBtn w opts =
+    button (w Field) [ padding cmnPad, onClick opts.onClick ] (E.text opts.text)

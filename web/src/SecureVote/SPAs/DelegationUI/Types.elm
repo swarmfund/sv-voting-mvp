@@ -32,3 +32,11 @@ type alias DelegationResp =
     , delegator : String
     , tokenAddr : String
     }
+
+
+
+{- pairs are (voter, tokenContract); global delecation has 0x00 addr for tokenContract -}
+
+
+type alias DelegatorsResp =
+    List { voterAddr : String, tokenAddr : String }

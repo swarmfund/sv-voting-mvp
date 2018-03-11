@@ -1,16 +1,18 @@
 module SecureVote.SPAs.DelegationUI.Views.DelegationForms exposing (..)
 
+import Dict
 import Element exposing (..)
 import Element.Attributes exposing (..)
 import Element.Events exposing (onClick)
-import Element.Input as I
+import Element.Input as I exposing (selected)
 import Json.Encode as E
 import Maybe.Extra exposing ((?))
 import RemoteData exposing (RemoteData(..))
+import SecureVote.Components.UI.Btn exposing (cmnBtn)
 import SecureVote.Components.UI.Code exposing (codeWScroll)
 import SecureVote.Components.UI.CommonStyles exposing (CommonStyle(..), Variations(Disabled), cmnPad, cmnSpacing)
 import SecureVote.Components.UI.StatusMsgs exposing (warning)
-import SecureVote.Components.UI.Typo exposing (subtitle)
+import SecureVote.Components.UI.Typo exposing (subhead, subtitle)
 import SecureVote.Eth.Msg exposing (EthMsg(..))
 import SecureVote.Eth.Types exposing (zeroAddr)
 import SecureVote.Eth.Utils exposing (isValidEthAddress)
@@ -21,6 +23,7 @@ import SecureVote.SPAs.DelegationUI.Msg exposing (Msg(..))
 import SecureVote.SPAs.DelegationUI.MsgHandlers exposing (encodeDlgtResp)
 import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType(..))
 import SecureVote.SPAs.DelegationUI.Views.Styles exposing (DelegationStyles(..), UiElem)
+import SecureVote.SmartContracts.Delegation exposing (setDelegationArgs, viewDelegationArgs, viewDelegatorsArgs)
 import SecureVote.Tokens.Types exposing (TokenContract(..), tcChoiceToAddr, tcChoiceToStr)
 import SecureVote.Utils.Ports exposing (mkCarry)
 
@@ -129,14 +132,17 @@ selectTokenInvalid model =
 setDelegationBtns : Model -> UiElem
 setDelegationBtns model =
     let
-        method =
+        ( method, tokenAddr ) =
             if model.delType == Just Token then
-                "setTokenDelegation"
+                ( "setTokenDelegation", Just <| tcChoiceToAddr (selected model.tokenConAddr) )
             else
-                "setGlobalDelegation"
+                ( "setGlobalDelegation", Nothing )
+
+        dlgtAddr =
+            getStrField model setDelegateAddrId ? "Error: no delegate selected"
 
         args =
-            setDelegationArgs model
+            setDelegationArgs { tokenAddr = tokenAddr, dlgtAddr = dlgtAddr }
 
         toWrite =
             { method = method
@@ -154,21 +160,12 @@ setDelegationBtns model =
         ]
 
 
+tokenAddrInput model =
+    when (getStrField model getDlgtTypeId == Just "token") (tokenSelector model)
+
+
 viewDlgtFields : Model -> UiElem
 viewDlgtFields model =
-    let
-        tokenAddrInput =
-            if getStrField model getDlgtTypeId == Just "token" then
-                --                textInput CS
-                --                    { onChange = SetStrField getDelegationTokenAddrId
-                --                    , value = getStrField model getDelegationTokenAddrId ? ""
-                --                    , label = I.labelAbove (text "Token Address (ERC20)")
-                --                    , options = []
-                --                    }
-                tokenSelector model
-            else
-                empty
-    in
     column DNoS
         [ spacing cmnSpacing ]
         [ textInput CS
@@ -187,22 +184,37 @@ viewDlgtFields model =
                 , I.choice "token" (text "Token")
                 ]
             }
-        , tokenAddrInput
+        , tokenAddrInput model
         , viewDlgtBtn model
         ]
 
 
 viewDlgtBtn model =
     let
+        voterAddr =
+            getStrField model getDelegationVoterAddrId ? "Error: no voter address when checking delegation"
+
+        dlgtType =
+            getStrField model getDlgtTypeId ? "none"
+
+        tokenAddrPre =
+            tcChoiceToAddr (I.selected model.tokenConAddr)
+
+        tokenAddr =
+            if dlgtType == "global" then
+                zeroAddr
+            else
+                tokenAddrPre
+
         toRead =
             { abi = model.delegationABI
             , addr = model.delegationAddr
-            , args = viewDelegationArgs model
+            , args = viewDelegationArgs ( voterAddr, tokenAddr )
             , method = "resolveDelegation"
             , carry = mkCarry E.null
             }
     in
-    button (CS Field) [ padding 10, onClick (MMsg [ ViewDlgtResp Loading, Web3 <| ReadContract toRead ]) ] (text "Show Delegations")
+    cmnBtn CS { onClick = MMsg [ ViewDlgtResp Loading, Web3 <| ReadContract toRead ], text = "Show Delegations" }
 
 
 viewDelegateResp model =
@@ -230,3 +242,39 @@ viewDelegateResp model =
                 , codeWScroll CS <| E.encode 4 << encodeDlgtResp <| resp
                 , text <| dlgtText resp
                 ]
+
+
+viewVotersFields model =
+    let
+        dlgtAddr =
+            getStrField model getVotersForDlgtId ? ""
+
+        toRead =
+            { abi = model.delegationABI
+            , addr = model.delegationAddr
+            , args = viewDelegatorsArgs dlgtAddr
+            , method = "findPossibleDelegatorsOf"
+            , carry = mkCarry (E.string ethCheckDelegationId)
+            }
+    in
+    column DNoS
+        [ spacing cmnSpacing ]
+        [ textInput CS
+            { onChange = SetStrField getVotersForDlgtId
+            , value = dlgtAddr
+            , label = I.labelAbove (text "Delegate's Address")
+            , options = []
+            }
+        , cmnBtn CS
+            { onClick = MMsg [ GetVotersForDlgt dlgtAddr ]
+            , text = "Show Voters"
+            }
+        ]
+
+
+viewVotersForDlgtResp model =
+    column DNoS [ spacing cmnSpacing ] <|
+        List.map (\( t, vs ) -> column DNoS [] <| [ subtitle CS <| "Delegations for token: " ++ t ] ++ List.map text vs)
+            << Dict.toList
+        <|
+            model.votersForDlgtByToken

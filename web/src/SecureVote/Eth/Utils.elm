@@ -316,3 +316,8 @@ addressValidationForMdl addr =
                 ( False, "Address valid!" )
             else
                 ( True, "Invalid address" )
+
+
+ethAddrEq : String -> String -> Bool
+ethAddrEq a b =
+    String.toLower a == String.toLower b

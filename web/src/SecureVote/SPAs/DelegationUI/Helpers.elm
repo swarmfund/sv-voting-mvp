@@ -10,48 +10,6 @@ import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType(..))
 import SecureVote.Tokens.Types exposing (tcChoiceToAddr)
 
 
-setDelegationArgs : Model -> List E.Value
-setDelegationArgs model =
-    let
-        dlgtArg =
-            E.string <| getStrField model setDelegateAddrId ? "Error: no delegate selected"
-
-        argList =
-            case model.delType of
-                Just Token ->
-                    [ E.string <| tcChoiceToAddr (selected model.tokenConAddr)
-                    , dlgtArg
-                    ]
-
-                Just Global ->
-                    [ dlgtArg ]
-
-                _ ->
-                    [ E.string "Error: No Delegation Type Selected!" ]
-    in
-    argList
-
-
-viewDelegationArgs : Model -> List E.Value
-viewDelegationArgs model =
-    let
-        dlgtType =
-            getStrField model getDlgtTypeId ? "none"
-
-        tokenAddr =
-            tcChoiceToAddr (selected model.tokenConAddr)
-
-        tokenStr =
-            if dlgtType == "global" then
-                zeroAddr
-            else
-                tokenAddr
-    in
-    [ E.string <| getStrField model getDelegationVoterAddrId ? "Error: no voter address when checking delegation"
-    , E.string tokenStr
-    ]
-
-
 getStrField : Model -> String -> Maybe String
 getStrField m k =
     Dict.get k m.strFields
@@ -83,6 +41,10 @@ getDelegationTokenAddrId =
     "getDelegationTokenAddrId"
 
 
+getVotersForDlgtId =
+    "getVotersForDlgtId"
+
+
 setDlgtCollapseId =
     "clpsSetDelegate"
 
@@ -95,5 +57,13 @@ viewDlgtCollapsedId =
     "viewDlgtCollapsedId"
 
 
+viewVotersForDlgtCollapsedId =
+    "viewVotersForDlgtCollapsedId"
+
+
 getDlgtTypeId =
     "getDlgtTypeId"
+
+
+ethCheckDelegationId =
+    "ethCheckDelegationId"

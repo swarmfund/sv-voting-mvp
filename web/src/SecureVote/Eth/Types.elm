@@ -33,10 +33,18 @@ type alias WriteViaMMDoc =
 
 
 type alias ReadContractDoc =
+    { abi : String, addr : String, method : String, args : Value }
+
+
+type alias ReadContractWCarryDoc =
     { abi : String, addr : String, method : String, args : List Value, carry : CarryPack }
 
 
 type alias ReadResponse =
+    { response : Value, method : String, addr : String }
+
+
+type alias ReadResponseWCarry =
     { success : Bool, response : Value, errMsg : String, method : String, addr : String, carry : CarryPack }
 
 

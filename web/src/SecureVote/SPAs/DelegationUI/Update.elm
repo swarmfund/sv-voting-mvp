@@ -1,19 +1,22 @@
 module SecureVote.SPAs.DelegationUI.Update exposing (..)
 
+-- import SecureVote.Eth.Tasks exposing (getVotersForDlgtTask)
+
 import Dict
 import Element.Input exposing (dropMenu, menu, select, selected, updateSelection)
+import Json.Encode as E
 import Maybe.Extra exposing ((?))
-import RemoteData exposing (RemoteData(Success))
-import SecureVote.Ballots.Types exposing (emptyBSpec01)
-import SecureVote.Eth.Msg as EthMsg
 import SecureVote.Eth.Update as EthUpdate exposing (ethUpdate)
-import SecureVote.Eth.Web3 exposing (setGlobalDelegationImpl, setTokenDelegationImpl)
-import SecureVote.SPAs.DelegationUI.Components.Input exposing (genDropSelect)
+import SecureVote.Eth.Web3 exposing (performContractRead, setGlobalDelegationImpl, setTokenDelegationImpl)
 import SecureVote.SPAs.DelegationUI.Helpers exposing (..)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model, Web3Model, initWeb3Model)
 import SecureVote.SPAs.DelegationUI.Msg exposing (..)
 import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType(..))
+import SecureVote.SmartContracts.Delegation exposing (getVotersForDlgtTask, viewDelegationArgs)
 import SecureVote.Tokens.Types exposing (tcChoiceToAddr)
+import SecureVote.Utils.Msgs exposing (msgOrErr)
+import SecureVote.Utils.Ports exposing (mkCarry)
+import Task
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -93,6 +96,15 @@ update msg model =
         ViewDlgtResp r ->
             { model | viewDlgtResp = r } ! []
 
+        GetVotersForDlgt delegatee ->
+            { model | votersForDlgtByToken = Dict.singleton "Loading..." [] }
+                ! [ Task.attempt (msgOrErr GotVotersForDlgt LogErr) <|
+                        getVotersForDlgtTask { scAddr = model.delegationAddr, abi = model.delegationABI, dlgtAddr = delegatee }
+                  ]
+
+        GotVotersForDlgt d ->
+            { model | votersForDlgtByToken = d } ! []
+
         MMsg msgs ->
             case msgs of
                 [] ->
@@ -109,7 +121,23 @@ update msg model =
                     m__ ! [ cmds_, cmds__ ]
 
         LogErr err ->
-            { model | errors = err :: model.errors } ! []
+            { model | errors = Debug.log "Update: got err => " err :: model.errors } ! []
 
         Web3 ethMsg ->
             ethUpdate Web3 ethMsg model
+
+
+checkVoterDlgtPairs : Model -> List ( String, String ) -> Cmd Msg
+checkVoterDlgtPairs model ps =
+    Cmd.batch <|
+        List.map
+            (\( v, t ) ->
+                performContractRead
+                    { carry = mkCarry (E.string ethCheckDelegationId)
+                    , addr = model.delegationAddr
+                    , abi = model.delegationABI
+                    , args = viewDelegationArgs ( v, t )
+                    , method = "resolveDelegation"
+                    }
+            )
+            ps

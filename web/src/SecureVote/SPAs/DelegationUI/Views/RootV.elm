@@ -7,6 +7,7 @@ import Html exposing (Html)
 import SecureVote.Components.UI.Collapsible exposing (collapsible)
 import SecureVote.Components.UI.CommonStyles exposing (cmnSpacing)
 import SecureVote.Components.UI.Typo exposing (pageTitle, subtitle, title)
+import SecureVote.SPAs.AdminUI.Helpers exposing (getBoolField)
 import SecureVote.SPAs.DelegationUI.Helpers exposing (..)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model)
 import SecureVote.SPAs.DelegationUI.Msg exposing (Msg(..))
@@ -40,10 +41,17 @@ rootV model =
                     , startOpen = False
                     }
                 , collapsible CS
-                    { header = "View Delegation"
+                    { header = "Voter -> Delegate"
                     , onCollapse = ToggleBoolField viewDlgtCollapsedId
                     , isCollapsed = getBoolFieldWD model viewDlgtCollapsedId
                     , body = [ viewDlgtFields model, viewDelegateResp model ]
                     , startOpen = True
+                    }
+                , collapsible CS
+                    { header = "Delegate -> Voters"
+                    , onCollapse = ToggleBoolField viewVotersForDlgtCollapsedId
+                    , isCollapsed = getBoolFieldWD model viewVotersForDlgtCollapsedId
+                    , body = [ viewVotersFields model, viewVotersForDlgtResp model ]
+                    , startOpen = False
                     }
                 ]
