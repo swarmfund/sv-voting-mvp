@@ -35,7 +35,7 @@ gotMetamask =
         )
 
 
-port checkTxid : String -> Cmd msg
+port checkTxid : { txid : String, abi : String } -> Cmd msg
 
 
 port gotTxidCheckStatus : (Value -> msg) -> Sub msg
