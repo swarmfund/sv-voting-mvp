@@ -2,17 +2,12 @@ module SecureVote.SPAs.SwarmMVP.Views.HowToVoteV exposing (..)
 
 import Html exposing (Html, div, li, p, span, text, ul)
 import Html.Attributes exposing (class, style)
-import Material.Card as Card
-import Material.Color as Color
-import Material.Options as Options exposing (cs)
-import Material.Typography as Typo exposing (display2)
 import Maybe.Extra exposing ((?))
 import SecureVote.Ballots.Lenses exposing (bShortDesc)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Components.UI.Btn exposing (BtnProps(..), btn)
 import SecureVote.Components.UI.FullPageSlide exposing (fullPageSlide)
 import SecureVote.Components.UI.Typo exposing (headline, subhead)
-import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(PageGoForward))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(..))
@@ -27,8 +22,22 @@ combinedHowToVoteCopy bHash model =
             , "When the voting has finished, all votes are weighted and summed, and the option with the highest weighted score wins."
             ]
 
-        submitVoteCopy =
-            [ "Once you have finished selecting values for your vote options, your ballot will be encrypted. "
+        binaryVotingCopy =
+            [ text "Each ballot allows you to choose 'Yes' or 'No' indicating whether you agree or disagree with the resolution."
+            , text "Each vote (for 'yes' or 'no') corresponds to the numbers 1 or -1 respsectivley."
+            , div [] [ text "When we count these votes, that number will be multiplied by your balance ", Html.strong [] [ text "as it was at the start of the ballot." ] ]
+            , text "If the total sum of all votes (after resolving delegations) is greater than 0 then the resolution passes."
+            ]
+
+        submitVoteCopy useEnc =
+            let
+                encOrConstruct =
+                    if useEnc then
+                        "encrypted"
+                    else
+                        "constructed"
+            in
+            [ "Once you have finished selecting values for your vote options, your ballot will be " ++ encOrConstruct ++ "."
             , "You will then be presented with instructions to submit your vote either via MyEtherWallet, MetaMask, or another wallet, and to validate the integrity of your ballot if you wish."
             ]
 
@@ -52,14 +61,20 @@ combinedHowToVoteCopy bHash model =
                 , ul [] <| List.map (\copy -> li [] [ text copy ]) rangeVotingCopy
                 ]
 
+        binaryVotingSection =
+            div []
+                [ subhead "How to Vote"
+                , ul [] <| List.map (li [] << List.singleton) binaryVotingCopy
+                ]
+
         submitVoteSection =
             div []
                 [ subhead "How Can I Submit My Vote?"
-                , text <| String.concat submitVoteCopy
+                , text <| String.concat (submitVoteCopy False)
                 ]
     in
     [ ballotExplanationSection
-    , rangeVotingSection
+    , binaryVotingSection
     , submitVoteSection
     ]
 
