@@ -2,7 +2,7 @@
 require('./css/securevote-swarm.css');
 require('./css/vendor/tachyons.min.css');
 require('./css/vendor/material.amber-light_blue.min.css');
-const R = require('ramda');
+const map = require('ramda/src/map');
 
 // current build issue with netlify - ignore for now
 // import AuditWeb from "../pureSrc/SecureVote/Democs/SwarmMVP/AuditWeb.purs";
@@ -22,7 +22,7 @@ window.addEventListener('load', function() {
     flags.mmAcct = mmAcct;
     flags.mmDetected = mmDetected;
     console.log(flags);
-    console.log("Environment variables are: ", R.map(function(v){ if(v){ return v.slice ? v.slice(0,80) : v } else { return v }}, flags));
+    console.log("Environment variables are: ", map(function(v){ if(v){ return v.slice ? v.slice(0,80) : v } else { return v }}, flags));
 
     if (!flags.dev) {
         require('./js/vendor/birds.js');

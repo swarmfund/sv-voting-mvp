@@ -5,6 +5,11 @@ const merge = require('webpack-merge');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const ShakePlugin = require('webpack-common-shake').Plugin;
+const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
+
 
 
 const NPM_CMD = process.env.npm_lifecycle_event;
@@ -128,6 +133,7 @@ const uiInjection = (env, config) => {
     const [entryFileName, extras] = {
         'dev-admin-ui': ['admin', {}],
         'development': ['index', buildAuditWeb({})],
+        'dev-bundle-analyzer': ['index', buildAuditWeb({})],
         'dev-delegation-ui': ['delegation', {}],
         'prod-admin-ui': ['admin', {}],
         'prod-ui': ['index', buildAuditWeb({})],
@@ -154,7 +160,7 @@ const uiInjection = (env, config) => {
 
 
 const genConfig = () => {
-    if (TARGET === 'development' || TARGET === 'dev-admin-ui' || TARGET === 'dev-delegation-ui') {
+    if (TARGET === 'development' || TARGET === 'dev-admin-ui' || TARGET === 'dev-delegation-ui' || TARGET === 'dev-bundle-analyzer') {
         console.log('Building for dev...');
         const toExport = merge(common, {
             // mode: "development",  // webpack v4
@@ -195,6 +201,9 @@ const genConfig = () => {
                 }
             }
         });
+        if (TARGET === 'dev-bundle-analyzer') {
+            toExport.plugins = toExport.plugins.concat([new BundleAnalyzerPlugin(), new UglifyJSPlugin(), new ShakePlugin()])
+        }
         return uiInjection(TARGET, toExport)
     }
 
@@ -210,7 +219,9 @@ const genConfig = () => {
                     verbose: true,
                     dry: false
                 }),
-                CopyWebpackPluginConfig
+                CopyWebpackPluginConfig,
+                new UglifyJSPlugin(),
+                // new ShakePlugin()
             ],
             module: {
                 rules: [

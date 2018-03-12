@@ -4,14 +4,15 @@ import abiDecoder from "abi-decoder";
 
 const {implNotifyErrF, wrapIncomingF} = require('../../../js/portHelpers');
 
-import {create, env} from 'sanctuary';
-const S = create({checkTypes: true, env});
 // const toPairs = require('ramda/src/toPairs');
 const filter = require('ramda/src/filter');
 const zip = require('ramda/src/zip');
 const uniq = require('ramda/src/uniq');
 const map = require('ramda/src/map');
+const range = require('ramda/src/range');
 const isNil = require('ramda/src/isNil');
+const concat = require('ramda/src/concat');
+const equals = require('ramda/src/equals');
 
 const AsyncPar = require('async-parallel');
 import {BigNumber} from 'bignumber.js';
@@ -115,7 +116,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
             const n = nBI.toNumber();
             console.log("getDemocHashes got", n, "total ballots");
             app.ports.democNBallots.send({democHash, n});
-            S.map(i => {
+            map(i => {
                 index.getNthBallot(democHash, i, handleErrOr((info) => {
                     console.log("getNthBallot: ", info);
                     const [specHash, extraData, votingContract, startTs] = info;
@@ -131,7 +132,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                         app.ports.ballotInfoExtra.send({bHash: specHash, startingBlockEst});
                     }))
                 }));
-            }, S.range(0, n));
+            }, range(0, n));
         })
     }));
 
@@ -243,7 +244,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                 response: []
             })
         } else {
-            const bOpts = S.map(([a, b]) => ([a.toNumber(), b.toNumber()]), ballotOpts);
+            const bOpts = map(([a, b]) => ([a.toNumber(), b.toNumber()]), ballotOpts);
             app.ports.contractReadResponse.send({
                 success: true,
                 errMsg: "",
@@ -255,11 +256,11 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
 
     const implRecieveBallotOptsCB = oTitles => (err, ballotOpts) => {
-        const hashes_ = S.map(web3js.sha3, oTitles);
+        const hashes_ = map(web3js.sha3, oTitles);
         const padding = new Array(5-hashes_.length);
         // hash of empty string
         padding.fill("0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
-        const hashes = S.concat(hashes_, padding);
+        const hashes = concat(hashes_, padding);
         console.log('implRecieveBallotOptsCB got:', err, ballotOpts, "with titles", oTitles, "and calculated hashes", hashes);
         if (err) {
             app.ports.contractReadResponse.send({
@@ -273,7 +274,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                 success: true,
                 errMsg: "",
                 method: "getBallotOptions",
-                response: {isGood: S.equals(hashes, ballotOpts), hashes: ballotOpts}
+                response: {isGood: equals(hashes, ballotOpts), hashes: ballotOpts}
             })
         }
     };
@@ -413,11 +414,9 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         sendMMTx(tx);
     }));
 
-    app.ports.checkTxid.subscribe(wrapIncoming((txid) => {
-        const p = new Promise((resolve, reject) => {
-            web3js.eth.getTransaction(txid, promiseCb(resolve, reject));
-        })
-        p.then(([getTx]) => {
+    app.ports.checkTxid.subscribe(wrapIncoming(({txid, abi}) => {
+        mkPromise(web3js.eth.getTransaction)(txid)
+            .then(([getTx]) => {
             return new Promise((resolve, reject) => {
                 web3js.eth.getTransactionReceipt(txid, promiseCb(resolve, reject, [getTx]));
             })
@@ -429,7 +428,8 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
             } else {
                 let logMsg = "";
                 try {
-                    const logs = abiDecoder.decodeLogs(getTxlogs);
+                    abiDecoder.addABI(JSON.parse(abi));
+                    const logs = abiDecoder.decodeLogs(getTxR.logs);
                     console.log(logs);
                     logMsg = logs[0].events[0].value;
                 } catch (err) {

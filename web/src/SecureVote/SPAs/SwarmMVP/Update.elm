@@ -2,10 +2,8 @@ module SecureVote.SPAs.SwarmMVP.Update exposing (..)
 
 import Dict exposing (fromList)
 import Dom.Scroll exposing (toTop)
-import Either exposing (Either(Right))
 import Json.Decode as D
 import Json.Encode as E
-import List.Extra exposing (zip)
 import Material
 import Material.Helpers as MHelp exposing (map1st, map2nd)
 import Material.Snackbar as Snackbar
@@ -21,15 +19,12 @@ import SecureVote.Eth.Update exposing (ethUpdate)
 import SecureVote.Eth.Utils exposing (isValidEthAddress, keccak256OverString, toHex)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.LocalStorage exposing (LsMsg(LsGeneral), getLocalStorage, lsUpdate, setLocalStorage)
-import SecureVote.SPAs.SwarmMVP.Ballot exposing (doBallotOptsMatch)
-import SecureVote.SPAs.SwarmMVP.Ballots.ReleaseSchedule exposing (doBallotOptsMatchRSched, voteOptionsRSched)
-import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getDelegateAddress, getUserErc20Addr, resetAllBallotFields)
 import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (defaultRoute)
-import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidFail, TxidInProgress, TxidSuccess))
+import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(..))
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
 import SecureVote.Utils.DecodeP exposing (dDictDict)
 import SecureVote.Utils.Encode exposing (encDictDict)
@@ -37,6 +32,7 @@ import SecureVote.Utils.Int exposing (maxInt)
 import SecureVote.Utils.Lenses exposing ((=|>), dictWDE)
 import SecureVote.Utils.Ports exposing (mkCarry)
 import SecureVote.Utils.Update exposing (doUpdate)
+import String exposing (padRight)
 import Task exposing (attempt)
 import Time
 import Tuple exposing (second)
@@ -156,13 +152,16 @@ update msg model =
                 voteAddr =
                     mBHashBSpecPair model |> Maybe.andThen (\( bHash, _ ) -> (mVotingAddr bHash).getOption model)
 
+                padNonEnc =
+                    padRight 66 '0'
+
                 ( msg, encCmds ) =
                     case ( skM, remotePkM, plainBytesM, plainHexBytes, voteAddr ) of
                         ( Just sk, Just pk, Ok bs, _, _ ) ->
                             ( NoOp, [ encryptBytes { hexSk = sk, hexRemotePk = pk, bytesToSign = bs } ] )
 
                         ( _, Nothing, _, Just bs, Just voteAddr_ ) ->
-                            ( NoOp, [ constructDataParam { ballot = bs, useEnc = False, voterPubkey = "", votingContractAddr = voteAddr_, abi = model.ballotBoxABI } ] )
+                            ( NoOp, [ constructDataParam { ballot = padNonEnc bs, useEnc = False, voterPubkey = "", votingContractAddr = voteAddr_, abi = model.ballotBoxABI } ] )
 
                         ( _, _, Err s, _, _ ) ->
                             ( LogErr <| "Something went wrong generating BallotPlaintext: " ++ s, [] )
@@ -382,7 +381,7 @@ updateToWeb3 web3msg model =
             model ! defaultOrB model [] (\b -> Maybe.map (\erc20Addr -> [ getErc20Balance <| GetErc20BalanceReq erc20Addr addr blockN model.delegationABI model.delegationAddr ]) (bErc20Addr.getOption b) ? [])
 
         CheckTxid txid ->
-            { model | txidCheck = TxidInProgress } ! [ checkTxid txid ]
+            { model | txidCheck = TxidInProgress } ! [ checkTxid { txid = txid, abi = model.ballotBoxABI } ]
 
 
 doUpdateErr : String -> Model -> ( Model, Cmd Msg )
