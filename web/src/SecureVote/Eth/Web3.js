@@ -21,6 +21,7 @@ import {BigNumber} from 'bignumber.js';
 const mkPromise = f => (...args) => {
     return new Promise((resolve, reject) => {
         f(...args, (err, resp) => {
+            console.log(`promiseCB ${err} / ${resp}`);
             err ? reject(err) : resolve(resp);
         })
     })
@@ -415,10 +416,12 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     }));
 
     app.ports.checkTxid.subscribe(wrapIncoming(({txid, abi}) => {
+        console.log(`Checking TXID ${txid}`)
         mkPromise(web3js.eth.getTransaction)(txid)
-            .then(([getTx]) => {
-            return new Promise((resolve, reject) => {
-                web3js.eth.getTransactionReceipt(txid, promiseCb(resolve, reject, [getTx]));
+            .then(getTx => {
+                console.log(`Found tx ${txid}`)
+                return new Promise((resolve, reject) => {
+                    web3js.eth.getTransactionReceipt(txid, promiseCb(resolve, reject, [getTx]));
             })
         }).then(([getTxR, getTx]) => {
             console.log("checkTxid got tx and txR of:", getTx, getTxR);
@@ -439,7 +442,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
             }
             app.ports.gotTxidCheckStatus.send(ret);
         }).catch(err => {
-            implNotifyErr(err.toString());
+            implNotifyErr("CheckTXID: " + err.message);
         });
     }));
 
