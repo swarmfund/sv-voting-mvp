@@ -32,7 +32,6 @@ import SecureVote.Utils.Int exposing (maxInt)
 import SecureVote.Utils.Lenses exposing ((=|>), dictWDE)
 import SecureVote.Utils.Ports exposing (mkCarry)
 import SecureVote.Utils.Update exposing (doUpdate)
-import String exposing (padRight)
 import Task exposing (attempt)
 import Time
 import Tuple exposing (second)
@@ -152,16 +151,13 @@ update msg model =
                 voteAddr =
                     mBHashBSpecPair model |> Maybe.andThen (\( bHash, _ ) -> (mVotingAddr bHash).getOption model)
 
-                padNonEnc =
-                    padRight 66 '0'
-
                 ( msg, encCmds ) =
                     case ( skM, remotePkM, plainBytesM, plainHexBytes, voteAddr ) of
                         ( Just sk, Just pk, Ok bs, _, _ ) ->
                             ( NoOp, [ encryptBytes { hexSk = sk, hexRemotePk = pk, bytesToSign = bs } ] )
 
                         ( _, Nothing, _, Just bs, Just voteAddr_ ) ->
-                            ( NoOp, [ constructDataParam { ballot = padNonEnc bs, useEnc = False, voterPubkey = "", votingContractAddr = voteAddr_, abi = model.ballotBoxABI } ] )
+                            ( NoOp, [ constructDataParam { ballot = bs, useEnc = False, voterPubkey = "", votingContractAddr = voteAddr_, abi = model.ballotBoxABI } ] )
 
                         ( _, _, Err s, _, _ ) ->
                             ( LogErr <| "Something went wrong generating BallotPlaintext: " ++ s, [] )
