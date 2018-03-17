@@ -1,0 +1,10 @@
+module SecureVote.Utils.Task exposing (..)
+
+import Json.Encode as Encode
+import Native.Task.Extra
+import Task exposing (..)
+
+
+parallel : List (Task x a) -> Task x (List a)
+parallel =
+    Native.Task.Extra.parallel << Encode.list << List.map Native.Task.Extra.encodeTask
