@@ -21,6 +21,7 @@ type Msg
     | ViewDlgtResp (RemoteData String DelegationResp)
     | GetVotersForDlgt String
     | GotVotersForDlgt VotersByToken
+    | GotDlgtAllVotersForContract String (List String)
     | MMsg (List Msg)
       -- Web3 calls
     | Web3 EthMsg.EthMsg

@@ -10,11 +10,12 @@ import Material.Snackbar as Snackbar
 import Maybe exposing (andThen)
 import Maybe.Extra exposing ((?), isJust, isNothing)
 import Monocle.Common exposing ((<|>), (=>), dict, maybe)
-import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
+import RemoteData exposing (RemoteData(..))
 import SecureVote.Ballots.Lenses exposing (..)
 import SecureVote.Ballots.SpecSource exposing (CidType(Sha256), getBallotSpec)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
+import SecureVote.Eth.Types exposing (zeroAddr)
 import SecureVote.Eth.Update exposing (ethUpdate)
 import SecureVote.Eth.Utils exposing (isValidEthAddress, keccak256OverString, toHex)
 import SecureVote.Eth.Web3 exposing (..)
@@ -26,10 +27,12 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg
 import SecureVote.SPAs.SwarmMVP.Routes exposing (defaultRoute)
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(..))
 import SecureVote.SPAs.SwarmMVP.VotingCrypto.RangeVoting exposing (constructBallot, orderedBallotBits)
+import SecureVote.SmartContracts.Delegation exposing (getFullDelegatedBalance)
 import SecureVote.Utils.DecodeP exposing (dDictDict)
 import SecureVote.Utils.Encode exposing (encDictDict)
 import SecureVote.Utils.Int exposing (maxInt)
 import SecureVote.Utils.Lenses exposing ((=|>), dictWDE)
+import SecureVote.Utils.Msgs exposing (msgOrErr)
 import SecureVote.Utils.Ports exposing (mkCarry)
 import SecureVote.Utils.Update exposing (doUpdate)
 import Task exposing (attempt)
@@ -369,12 +372,28 @@ updateToWeb3 web3msg model =
             let
                 addr =
                     -- probs okay because it will return 0
-                    getUserErc20Addr model ? "0x00"
+                    getUserErc20Addr model ? zeroAddr
 
                 blockN =
                     Maybe.map (toString << .startingBlockEst) (Dict.get bHash model.ballotScDetails) ? "latest"
+
+                cmd b =
+                    case bErc20Addr.getOption b of
+                        Just erc20Addr ->
+                            getFullDelegatedBalance
+                                { erc20Addr = erc20Addr
+                                , delegationAddr = model.delegationAddr
+                                , delegationAbi = model.delegationABI
+                                , dlgtAddr = addr
+                                , atBlock = blockN
+                                }
+                                |> Task.attempt (msgOrErr (FromWeb3 << GotBalance) LogErr)
+                                |> List.singleton
+
+                        Nothing ->
+                            []
             in
-            model ! defaultOrB model [] (\b -> Maybe.map (\erc20Addr -> [ getErc20Balance <| GetErc20BalanceReq erc20Addr addr blockN model.delegationABI model.delegationAddr ]) (bErc20Addr.getOption b) ? [])
+            { model | erc20Balance = Nothing } ! defaultOrB model [] cmd
 
         CheckTxid txid ->
             { model | txidCheck = TxidInProgress } ! [ checkTxid { txid = txid, abi = model.ballotBoxABI } ]

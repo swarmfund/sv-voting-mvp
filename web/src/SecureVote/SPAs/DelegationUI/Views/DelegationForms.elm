@@ -273,8 +273,24 @@ viewVotersFields model =
 
 
 viewVotersForDlgtResp model =
+    let
+        directDelegations =
+            List.map (\( t, vs ) -> column DNoS [ spacing 5 ] <| [ subtitle CS <| "Delegations for token: " ++ t ] ++ List.map text vs)
+                << Dict.toList
+            <|
+                model.votersForDlgtByToken
+
+        recDelegations =
+            case model.votersForDlgtRecursive of
+                Nothing ->
+                    []
+
+                Just ( tkn, vs ) ->
+                    [ column DNoS [ spacing 5 ] <|
+                        [ subtitle CS <| "All Delegations (including delegates of delegates) for " ++ tkn ]
+                            ++ List.map text vs
+                    ]
+    in
     column DNoS [ spacing cmnSpacing ] <|
-        List.map (\( t, vs ) -> column DNoS [] <| [ subtitle CS <| "Delegations for token: " ++ t ] ++ List.map text vs)
-            << Dict.toList
-        <|
-            model.votersForDlgtByToken
+        directDelegations
+            ++ recDelegations

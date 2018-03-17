@@ -26,6 +26,7 @@ type alias Model =
     , delegationAddr : String
     , viewDlgtResp : RemoteData String DelegationResp
     , votersForDlgtByToken : Dict String (List String)
+    , votersForDlgtRecursive : Maybe ( String, List String )
     , eth : EthMdl
     }
 
@@ -51,6 +52,7 @@ initModel { mainTitle, dev, delegationABI, delegationAddr, mmDetected } =
     , delegationAddr = delegationAddr
     , viewDlgtResp = NotAsked
     , votersForDlgtByToken = Dict.empty
+    , votersForDlgtRecursive = Nothing
     , eth = initEthMdl { mmDetected = mmDetected, ethNode = ethNode_ }
     }
 
