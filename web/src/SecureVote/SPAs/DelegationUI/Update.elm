@@ -12,8 +12,8 @@ import SecureVote.SPAs.DelegationUI.Helpers exposing (..)
 import SecureVote.SPAs.DelegationUI.Model exposing (Model, Web3Model, initWeb3Model)
 import SecureVote.SPAs.DelegationUI.Msg exposing (..)
 import SecureVote.SPAs.DelegationUI.Types exposing (DelegationType(..))
-import SecureVote.SmartContracts.Delegation exposing (getVotersForDlgtTask, viewDelegationArgs)
-import SecureVote.Tokens.Types exposing (tcChoiceToAddr)
+import SecureVote.SmartContracts.Delegation exposing (getVotersForDlgtRecursive, getVotersForDlgtTask, viewDelegationArgs)
+import SecureVote.Tokens.Types exposing (tcChoiceToAddr, tcChoiceToAddrM)
 import SecureVote.Utils.Msgs exposing (msgOrErr)
 import SecureVote.Utils.Ports exposing (mkCarry)
 import Task
@@ -97,13 +97,35 @@ update msg model =
             { model | viewDlgtResp = r } ! []
 
         GetVotersForDlgt delegatee ->
-            { model | votersForDlgtByToken = Dict.singleton "Loading..." [] }
-                ! [ Task.attempt (msgOrErr GotVotersForDlgt LogErr) <|
+            let
+                cmdExtra =
+                    case tcChoiceToAddrM <| selected model.tokenConAddr of
+                        Just addr ->
+                            [ getVotersForDlgtRecursive
+                                { scAddr = model.delegationAddr
+                                , abi = model.delegationABI
+                                , dlgtAddr = delegatee
+                                , tknAddr = addr
+                                , carryVtrs = []
+                                }
+                                |> Task.attempt (msgOrErr (GotDlgtAllVotersForContract addr) LogErr)
+                            ]
+
+                        _ ->
+                            []
+            in
+            { model | votersForDlgtByToken = Dict.singleton "Loading..." [], votersForDlgtRecursive = Nothing }
+                ! ([ Task.attempt (msgOrErr GotVotersForDlgt LogErr) <|
                         getVotersForDlgtTask { scAddr = model.delegationAddr, abi = model.delegationABI, dlgtAddr = delegatee }
-                  ]
+                   ]
+                    ++ cmdExtra
+                  )
 
         GotVotersForDlgt d ->
             { model | votersForDlgtByToken = d } ! []
+
+        GotDlgtAllVotersForContract addr vs ->
+            { model | votersForDlgtRecursive = Just ( addr, vs ) } ! []
 
         MMsg msgs ->
             case msgs of
