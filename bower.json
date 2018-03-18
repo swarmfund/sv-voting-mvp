@@ -1,5 +1,5 @@
 {
-  "name": "admin",
+  "name": "sv-light-auditor",
   "ignore": [
     "**/.*",
     "node_modules",
@@ -43,10 +43,14 @@
     "purescript-argonaut-core": "^3.1.1",
     "purescript-sized-vectors": "^2.2.0",
     "purescript-web3": "^0.16.0",
-    "purescript-web3-generator": "^0.16.1"
+    "purescript-web3-generator": "^0.16.1",
+    "purescript-ipfs-api": "https://github.com/secure-vote/purescript-ipfs-api.git#548295c49ddfd577bb2f7b79e814880b27479a0e"
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0",
     "purescript-spec": "^2.0.0"
+  },
+  "resolutions": {
+    "purescript-ipfs-api": "548295c49ddfd577bb2f7b79e814880b27479a0e"
   }
 }
