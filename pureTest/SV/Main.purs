@@ -14,6 +14,7 @@ import Test.SV.EthTests (ethTests)
 import Test.SV.HexBinTests (hexBinTests, intBitTests)
 import Test.SV.SpecProperties (specProperties)
 import Test.SV.UtilTests (utilTests)
+import Test.SV.SvLight.GetBallots (getBallotTests)
 import Test.Spec (describe)
 import Test.Spec.QuickCheck (QCRunnerEffects)
 import Test.Spec.Reporter.Console (consoleReporter)
@@ -26,6 +27,7 @@ main = run' { slow: 120000, timeout: Just 180000 } [consoleReporter] do
     describe "BitString tests" intBitTests
     describe "Encryption Tests" encTests
     describe "Eth Tests" ethTests
-    describe "A complete ballot test" completeBallotTest
-    describe "Ballot Spec Tests" specProperties
+    -- describe "A complete ballot test" completeBallotTest
+    describe "Old Ballot Spec Tests" specProperties
     describe "Util tests" utilTests
+    describe "Get new ballots" getBallotTests

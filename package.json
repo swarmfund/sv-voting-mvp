@@ -105,6 +105,7 @@
     "purs-test": "pulp -w test --src-path pureSrc --test-path pureTest -o outputTest",
     "purs-test-no-watch": "pulp test --src-path pureSrc --test-path pureTest -o outputTest",
     "audit-web": "webpack --progress",
+    "purs-gen-contracts": "./makeWeb3ContractsForPurs.sh",
     "----- FULL SYSTEM / HELPER COMMANDS": "",
     "dry-run": "run-p _sc_testrpc_deploy",
     "node": "node",
