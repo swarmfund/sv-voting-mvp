@@ -2,7 +2,7 @@
 -- | SVLightBallotBox
 --------------------------------------------------------------------------------
 
-module SecureVote/Contracts.SVLightBallotBox where
+module SecureVote.Contracts.SVLightBallotBox where
 
 import Prelude 
 
@@ -22,242 +22,242 @@ import Network.Ethereum.Web3.Solidity.Size (type (:&))
 import Network.Ethereum.Web3.Types (Address, CallError, ChainCursor, HexString, NoPay, TransactionOptions, Web3, defaultFilter, mkHexString)
 import Partial.Unsafe (unsafePartial)
 --------------------------------------------------------------------------------
--- | NVotesCastFn
+-- | CnVotesCastFn
 --------------------------------------------------------------------------------
 
 
-type NVotesCastFn = Tagged (SProxy "nVotesCast()") (Tuple0 )
+type CnVotesCastFn = Tagged (SProxy "nVotesCast()") (Tuple0 )
 
-nVotesCast :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
-nVotesCast x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: NVotesCastFn)
-
---------------------------------------------------------------------------------
--- | DeprecatedFn
---------------------------------------------------------------------------------
-
-
-type DeprecatedFn = Tagged (SProxy "deprecated()") (Tuple0 )
-
-deprecated :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Boolean)
-deprecated x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: DeprecatedFn)
+cnVotesCast :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
+cnVotesCast x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CnVotesCastFn)
 
 --------------------------------------------------------------------------------
--- | SetOwnerFn
+-- | CdeprecatedFn
 --------------------------------------------------------------------------------
 
 
-type SetOwnerFn = Tagged (SProxy "setOwner(address)") (Tuple1 Address)
+type CdeprecatedFn = Tagged (SProxy "deprecated()") (Tuple0 )
 
-setOwner :: forall e. TransactionOptions NoPay -> { newOwner :: Address } -> Web3 e HexString
-setOwner x0 r = uncurryFields  r $ setOwner' x0
+cdeprecated :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Boolean)
+cdeprecated x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CdeprecatedFn)
+
+--------------------------------------------------------------------------------
+-- | CsetOwnerFn
+--------------------------------------------------------------------------------
+
+
+type CsetOwnerFn = Tagged (SProxy "setOwner(address)") (Tuple1 Address)
+
+csetOwner :: forall e. TransactionOptions NoPay -> { newOwner :: Address } -> Web3 e HexString
+csetOwner x0 r = uncurryFields  r $ csetOwner' x0
    where
-    setOwner' :: TransactionOptions NoPay -> Tagged (SProxy "newOwner") Address -> Web3 e HexString
-    setOwner' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: SetOwnerFn)
+    csetOwner' :: TransactionOptions NoPay -> Tagged (SProxy "newOwner") Address -> Web3 e HexString
+    csetOwner' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: CsetOwnerFn)
 
 --------------------------------------------------------------------------------
--- | CreationBlockFn
---------------------------------------------------------------------------------
-
-
-type CreationBlockFn = Tagged (SProxy "creationBlock()") (Tuple0 )
-
-creationBlock :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D6 :& D4)))
-creationBlock x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CreationBlockFn)
-
---------------------------------------------------------------------------------
--- | BallotEncryptionSeckeyFn
+-- | CcreationBlockFn
 --------------------------------------------------------------------------------
 
 
-type BallotEncryptionSeckeyFn = Tagged (SProxy "ballotEncryptionSeckey()") (Tuple0 )
+type CcreationBlockFn = Tagged (SProxy "creationBlock()") (Tuple0 )
 
-ballotEncryptionSeckey :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (BytesN (D3 :& D2)))
-ballotEncryptionSeckey x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: BallotEncryptionSeckeyFn)
-
---------------------------------------------------------------------------------
--- | EndTimeFn
---------------------------------------------------------------------------------
-
-
-type EndTimeFn = Tagged (SProxy "endTime()") (Tuple0 )
-
-endTime :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D6 :& D4)))
-endTime x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: EndTimeFn)
+ccreationBlock :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D6 :& D4)))
+ccreationBlock x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CcreationBlockFn)
 
 --------------------------------------------------------------------------------
--- | StartingBlockAroundFn
+-- | CballotEncryptionSeckeyFn
 --------------------------------------------------------------------------------
 
 
-type StartingBlockAroundFn = Tagged (SProxy "startingBlockAround()") (Tuple0 )
+type CballotEncryptionSeckeyFn = Tagged (SProxy "ballotEncryptionSeckey()") (Tuple0 )
 
-startingBlockAround :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D6 :& D4)))
-startingBlockAround x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: StartingBlockAroundFn)
-
---------------------------------------------------------------------------------
--- | GetEncSeckeyFn
---------------------------------------------------------------------------------
-
-
-type GetEncSeckeyFn = Tagged (SProxy "getEncSeckey()") (Tuple0 )
-
-getEncSeckey :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (BytesN (D3 :& D2)))
-getEncSeckey x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: GetEncSeckeyFn)
+cballotEncryptionSeckey :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (BytesN (D3 :& D2)))
+cballotEncryptionSeckey x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CballotEncryptionSeckeyFn)
 
 --------------------------------------------------------------------------------
--- | VoterToBallotIDFn
+-- | CendTimeFn
 --------------------------------------------------------------------------------
 
 
-type VoterToBallotIDFn = Tagged (SProxy "voterToBallotID(address)") (Tuple1 Address)
+type CendTimeFn = Tagged (SProxy "endTime()") (Tuple0 )
 
-voterToBallotID :: forall e. TransactionOptions NoPay -> ChainCursor -> Address -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
-voterToBallotID x0 cm x2 = map unTuple1 <$> call x0 cm ((tagged $ Tuple1 x2) :: VoterToBallotIDFn)
-
---------------------------------------------------------------------------------
--- | UseEncryptionFn
---------------------------------------------------------------------------------
-
-
-type UseEncryptionFn = Tagged (SProxy "useEncryption()") (Tuple0 )
-
-useEncryption :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Boolean)
-useEncryption x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: UseEncryptionFn)
+cendTime :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D6 :& D4)))
+cendTime x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CendTimeFn)
 
 --------------------------------------------------------------------------------
--- | StartTimeFn
+-- | CstartingBlockAroundFn
 --------------------------------------------------------------------------------
 
 
-type StartTimeFn = Tagged (SProxy "startTime()") (Tuple0 )
+type CstartingBlockAroundFn = Tagged (SProxy "startingBlockAround()") (Tuple0 )
 
-startTime :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D6 :& D4)))
-startTime x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: StartTimeFn)
-
---------------------------------------------------------------------------------
--- | SpecHashFn
---------------------------------------------------------------------------------
-
-
-type SpecHashFn = Tagged (SProxy "specHash()") (Tuple0 )
-
-specHash :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (BytesN (D3 :& D2)))
-specHash x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: SpecHashFn)
+cstartingBlockAround :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D6 :& D4)))
+cstartingBlockAround x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CstartingBlockAroundFn)
 
 --------------------------------------------------------------------------------
--- | OwnerFn
+-- | CgetEncSeckeyFn
 --------------------------------------------------------------------------------
 
 
-type OwnerFn = Tagged (SProxy "owner()") (Tuple0 )
+type CgetEncSeckeyFn = Tagged (SProxy "getEncSeckey()") (Tuple0 )
 
-owner :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Address)
-owner x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: OwnerFn)
-
---------------------------------------------------------------------------------
--- | SetDeprecatedFn
---------------------------------------------------------------------------------
-
-
-type SetDeprecatedFn = Tagged (SProxy "setDeprecated()") (Tuple0 )
-
-setDeprecated :: forall e. TransactionOptions NoPay -> Web3 e HexString
-setDeprecated x0 = sendTx x0 ((tagged $ Tuple0 ) :: SetDeprecatedFn)
+cgetEncSeckey :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (BytesN (D3 :& D2)))
+cgetEncSeckey x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CgetEncSeckeyFn)
 
 --------------------------------------------------------------------------------
--- | BallotMapFn
+-- | CvoterToBallotIDFn
 --------------------------------------------------------------------------------
 
 
-type BallotMapFn = Tagged (SProxy "ballotMap(uint256)") (Tuple1 (UIntN (D2 :& D5 :& D6)))
+type CvoterToBallotIDFn = Tagged (SProxy "voterToBallotID(address)") (Tuple1 Address)
 
-ballotMap :: forall e. TransactionOptions NoPay -> ChainCursor -> (UIntN (D2 :& D5 :& D6)) -> Web3 e (Either CallError (Tuple3 (BytesN (D3 :& D2)) Address (UIntN (D3 :& D2))))
-ballotMap x0 cm x2 = call x0 cm ((tagged $ Tuple1 x2) :: BallotMapFn)
-
---------------------------------------------------------------------------------
--- | AssociatedPubkeysFn
---------------------------------------------------------------------------------
-
-
-type AssociatedPubkeysFn = Tagged (SProxy "associatedPubkeys(uint256)") (Tuple1 (UIntN (D2 :& D5 :& D6)))
-
-associatedPubkeys :: forall e. TransactionOptions NoPay -> ChainCursor -> (UIntN (D2 :& D5 :& D6)) -> Web3 e (Either CallError (BytesN (D3 :& D2)))
-associatedPubkeys x0 cm x2 = map unTuple1 <$> call x0 cm ((tagged $ Tuple1 x2) :: AssociatedPubkeysFn)
+cvoterToBallotID :: forall e. TransactionOptions NoPay -> ChainCursor -> Address -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
+cvoterToBallotID x0 cm x2 = map unTuple1 <$> call x0 cm ((tagged $ Tuple1 x2) :: CvoterToBallotIDFn)
 
 --------------------------------------------------------------------------------
--- | SubmitBallotWithPkFn
+-- | CuseEncryptionFn
 --------------------------------------------------------------------------------
 
 
-type SubmitBallotWithPkFn = Tagged (SProxy "submitBallotWithPk(bytes32,bytes32)") (Tuple2 (BytesN (D3 :& D2)) (BytesN (D3 :& D2)))
+type CuseEncryptionFn = Tagged (SProxy "useEncryption()") (Tuple0 )
 
-submitBallotWithPk :: forall e. TransactionOptions NoPay -> { encryptedBallot :: (BytesN (D3 :& D2)), senderPubkey :: (BytesN (D3 :& D2)) } -> Web3 e HexString
-submitBallotWithPk x0 r = uncurryFields  r $ submitBallotWithPk' x0
+cuseEncryption :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Boolean)
+cuseEncryption x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CuseEncryptionFn)
+
+--------------------------------------------------------------------------------
+-- | CstartTimeFn
+--------------------------------------------------------------------------------
+
+
+type CstartTimeFn = Tagged (SProxy "startTime()") (Tuple0 )
+
+cstartTime :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D6 :& D4)))
+cstartTime x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CstartTimeFn)
+
+--------------------------------------------------------------------------------
+-- | CspecHashFn
+--------------------------------------------------------------------------------
+
+
+type CspecHashFn = Tagged (SProxy "specHash()") (Tuple0 )
+
+cspecHash :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (BytesN (D3 :& D2)))
+cspecHash x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CspecHashFn)
+
+--------------------------------------------------------------------------------
+-- | CownerFn
+--------------------------------------------------------------------------------
+
+
+type CownerFn = Tagged (SProxy "owner()") (Tuple0 )
+
+cowner :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Address)
+cowner x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CownerFn)
+
+--------------------------------------------------------------------------------
+-- | CsetDeprecatedFn
+--------------------------------------------------------------------------------
+
+
+type CsetDeprecatedFn = Tagged (SProxy "setDeprecated()") (Tuple0 )
+
+csetDeprecated :: forall e. TransactionOptions NoPay -> Web3 e HexString
+csetDeprecated x0 = sendTx x0 ((tagged $ Tuple0 ) :: CsetDeprecatedFn)
+
+--------------------------------------------------------------------------------
+-- | CballotMapFn
+--------------------------------------------------------------------------------
+
+
+type CballotMapFn = Tagged (SProxy "ballotMap(uint256)") (Tuple1 (UIntN (D2 :& D5 :& D6)))
+
+cballotMap :: forall e. TransactionOptions NoPay -> ChainCursor -> (UIntN (D2 :& D5 :& D6)) -> Web3 e (Either CallError (Tuple3 (BytesN (D3 :& D2)) Address (UIntN (D3 :& D2))))
+cballotMap x0 cm x2 = call x0 cm ((tagged $ Tuple1 x2) :: CballotMapFn)
+
+--------------------------------------------------------------------------------
+-- | CassociatedPubkeysFn
+--------------------------------------------------------------------------------
+
+
+type CassociatedPubkeysFn = Tagged (SProxy "associatedPubkeys(uint256)") (Tuple1 (UIntN (D2 :& D5 :& D6)))
+
+cassociatedPubkeys :: forall e. TransactionOptions NoPay -> ChainCursor -> (UIntN (D2 :& D5 :& D6)) -> Web3 e (Either CallError (BytesN (D3 :& D2)))
+cassociatedPubkeys x0 cm x2 = map unTuple1 <$> call x0 cm ((tagged $ Tuple1 x2) :: CassociatedPubkeysFn)
+
+--------------------------------------------------------------------------------
+-- | CsubmitBallotWithPkFn
+--------------------------------------------------------------------------------
+
+
+type CsubmitBallotWithPkFn = Tagged (SProxy "submitBallotWithPk(bytes32,bytes32)") (Tuple2 (BytesN (D3 :& D2)) (BytesN (D3 :& D2)))
+
+csubmitBallotWithPk :: forall e. TransactionOptions NoPay -> { encryptedBallot :: (BytesN (D3 :& D2)), senderPubkey :: (BytesN (D3 :& D2)) } -> Web3 e HexString
+csubmitBallotWithPk x0 r = uncurryFields  r $ csubmitBallotWithPk' x0
    where
-    submitBallotWithPk' :: TransactionOptions NoPay -> Tagged (SProxy "encryptedBallot") (BytesN (D3 :& D2)) -> Tagged (SProxy "senderPubkey") (BytesN (D3 :& D2)) -> Web3 e HexString
-    submitBallotWithPk' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: SubmitBallotWithPkFn)
+    csubmitBallotWithPk' :: TransactionOptions NoPay -> Tagged (SProxy "encryptedBallot") (BytesN (D3 :& D2)) -> Tagged (SProxy "senderPubkey") (BytesN (D3 :& D2)) -> Web3 e HexString
+    csubmitBallotWithPk' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: CsubmitBallotWithPkFn)
 
 --------------------------------------------------------------------------------
--- | RevealSeckeyFn
+-- | CrevealSeckeyFn
 --------------------------------------------------------------------------------
 
 
-type RevealSeckeyFn = Tagged (SProxy "revealSeckey(bytes32)") (Tuple1 (BytesN (D3 :& D2)))
+type CrevealSeckeyFn = Tagged (SProxy "revealSeckey(bytes32)") (Tuple1 (BytesN (D3 :& D2)))
 
-revealSeckey :: forall e. TransactionOptions NoPay -> { _secKey :: (BytesN (D3 :& D2)) } -> Web3 e HexString
-revealSeckey x0 r = uncurryFields  r $ revealSeckey' x0
+crevealSeckey :: forall e. TransactionOptions NoPay -> { _secKey :: (BytesN (D3 :& D2)) } -> Web3 e HexString
+crevealSeckey x0 r = uncurryFields  r $ crevealSeckey' x0
    where
-    revealSeckey' :: TransactionOptions NoPay -> Tagged (SProxy "_secKey") (BytesN (D3 :& D2)) -> Web3 e HexString
-    revealSeckey' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: RevealSeckeyFn)
+    crevealSeckey' :: TransactionOptions NoPay -> Tagged (SProxy "_secKey") (BytesN (D3 :& D2)) -> Web3 e HexString
+    crevealSeckey' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: CrevealSeckeyFn)
 
 --------------------------------------------------------------------------------
--- | TestModeFn
---------------------------------------------------------------------------------
-
-
-type TestModeFn = Tagged (SProxy "testMode()") (Tuple0 )
-
-testMode :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Boolean)
-testMode x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: TestModeFn)
-
---------------------------------------------------------------------------------
--- | SubmitBallotNoPkFn
+-- | CtestModeFn
 --------------------------------------------------------------------------------
 
 
-type SubmitBallotNoPkFn = Tagged (SProxy "submitBallotNoPk(bytes32)") (Tuple1 (BytesN (D3 :& D2)))
+type CtestModeFn = Tagged (SProxy "testMode()") (Tuple0 )
 
-submitBallotNoPk :: forall e. TransactionOptions NoPay -> { ballot :: (BytesN (D3 :& D2)) } -> Web3 e HexString
-submitBallotNoPk x0 r = uncurryFields  r $ submitBallotNoPk' x0
+ctestMode :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Boolean)
+ctestMode x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CtestModeFn)
+
+--------------------------------------------------------------------------------
+-- | CsubmitBallotNoPkFn
+--------------------------------------------------------------------------------
+
+
+type CsubmitBallotNoPkFn = Tagged (SProxy "submitBallotNoPk(bytes32)") (Tuple1 (BytesN (D3 :& D2)))
+
+csubmitBallotNoPk :: forall e. TransactionOptions NoPay -> { ballot :: (BytesN (D3 :& D2)) } -> Web3 e HexString
+csubmitBallotNoPk x0 r = uncurryFields  r $ csubmitBallotNoPk' x0
    where
-    submitBallotNoPk' :: TransactionOptions NoPay -> Tagged (SProxy "ballot") (BytesN (D3 :& D2)) -> Web3 e HexString
-    submitBallotNoPk' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: SubmitBallotNoPkFn)
+    csubmitBallotNoPk' :: TransactionOptions NoPay -> Tagged (SProxy "ballot") (BytesN (D3 :& D2)) -> Web3 e HexString
+    csubmitBallotNoPk' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: CsubmitBallotNoPkFn)
 
 --------------------------------------------------------------------------------
--- | SetEndTimeFn
+-- | CsetEndTimeFn
 --------------------------------------------------------------------------------
 
 
-type SetEndTimeFn = Tagged (SProxy "setEndTime(uint64)") (Tuple1 (UIntN (D6 :& D4)))
+type CsetEndTimeFn = Tagged (SProxy "setEndTime(uint64)") (Tuple1 (UIntN (D6 :& D4)))
 
-setEndTime :: forall e. TransactionOptions NoPay -> { newEndTime :: (UIntN (D6 :& D4)) } -> Web3 e HexString
-setEndTime x0 r = uncurryFields  r $ setEndTime' x0
+csetEndTime :: forall e. TransactionOptions NoPay -> { newEndTime :: (UIntN (D6 :& D4)) } -> Web3 e HexString
+csetEndTime x0 r = uncurryFields  r $ csetEndTime' x0
    where
-    setEndTime' :: TransactionOptions NoPay -> Tagged (SProxy "newEndTime") (UIntN (D6 :& D4)) -> Web3 e HexString
-    setEndTime' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: SetEndTimeFn)
+    csetEndTime' :: TransactionOptions NoPay -> Tagged (SProxy "newEndTime") (UIntN (D6 :& D4)) -> Web3 e HexString
+    csetEndTime' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: CsetEndTimeFn)
 
 --------------------------------------------------------------------------------
--- | ConstructorFn
+-- | CconstructorFn
 --------------------------------------------------------------------------------
 
 
-type ConstructorFn = Tagged (SProxy "constructor(bytes32,uint64[2],bool[2])") (Tuple3 (BytesN (D3 :& D2)) (Vector (S (S (Z))) (UIntN (D6 :& D4))) (Vector (S (S (Z))) Boolean))
+type CconstructorFn = Tagged (SProxy "constructor(bytes32,uint64[2],bool[2])") (Tuple3 (BytesN (D3 :& D2)) (Vector (S (S (Z))) (UIntN (D6 :& D4))) (Vector (S (S (Z))) Boolean))
 
-constructor :: forall e. TransactionOptions NoPay -> { _specHash :: (BytesN (D3 :& D2)), openPeriod :: (Vector (S (S (Z))) (UIntN (D6 :& D4))), flags :: (Vector (S (S (Z))) Boolean) } -> Web3 e HexString
-constructor x0 r = uncurryFields  r $ constructor' x0
+cconstructor :: forall e. TransactionOptions NoPay -> { _specHash :: (BytesN (D3 :& D2)), openPeriod :: (Vector (S (S (Z))) (UIntN (D6 :& D4))), flags :: (Vector (S (S (Z))) Boolean) } -> Web3 e HexString
+cconstructor x0 r = uncurryFields  r $ cconstructor' x0
    where
-    constructor' :: TransactionOptions NoPay -> Tagged (SProxy "_specHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "openPeriod") (Vector (S (S (Z))) (UIntN (D6 :& D4))) -> Tagged (SProxy "flags") (Vector (S (S (Z))) Boolean) -> Web3 e HexString
-    constructor' y0 y1 y2 y3 = sendTx y0 ((tagged $ Tuple3 (untagged y1 ) (untagged y2 ) (untagged y3 )) :: ConstructorFn)
+    cconstructor' :: TransactionOptions NoPay -> Tagged (SProxy "_specHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "openPeriod") (Vector (S (S (Z))) (UIntN (D6 :& D4))) -> Tagged (SProxy "flags") (Vector (S (S (Z))) Boolean) -> Web3 e HexString
+    cconstructor' y0 y1 y2 y3 = sendTx y0 ((tagged $ Tuple3 (untagged y1 ) (untagged y2 ) (untagged y3 )) :: CconstructorFn)
 
 --------------------------------------------------------------------------------
 -- | CreatedBallot

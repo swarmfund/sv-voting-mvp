@@ -44,7 +44,9 @@
     "purescript-sized-vectors": "^2.2.0",
     "purescript-web3": "^0.16.0",
     "purescript-web3-generator": "^0.16.1",
-    "purescript-ipfs-api": "https://github.com/secure-vote/purescript-ipfs-api.git#548295c49ddfd577bb2f7b79e814880b27479a0e"
+    "purescript-ipfs-api": "https://github.com/secure-vote/purescript-ipfs-api.git#548295c49ddfd577bb2f7b79e814880b27479a0e",
+    "purescript-simple-json": "^2.0.1",
+    "purescript-record-show": "^0.4.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0",

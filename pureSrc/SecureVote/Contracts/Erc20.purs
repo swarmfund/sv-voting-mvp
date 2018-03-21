@@ -2,7 +2,7 @@
 -- | Erc20
 --------------------------------------------------------------------------------
 
-module SecureVote/Contracts.Erc20 where
+module SecureVote.Contracts.Erc20 where
 
 import Prelude 
 
@@ -22,129 +22,129 @@ import Network.Ethereum.Web3.Solidity.Size (type (:&))
 import Network.Ethereum.Web3.Types (Address, CallError, ChainCursor, HexString, NoPay, TransactionOptions, Web3, defaultFilter, mkHexString)
 import Partial.Unsafe (unsafePartial)
 --------------------------------------------------------------------------------
--- | NameFn
+-- | CnameFn
 --------------------------------------------------------------------------------
 
 
-type NameFn = Tagged (SProxy "name()") (Tuple0 )
+type CnameFn = Tagged (SProxy "name()") (Tuple0 )
 
-name :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError String)
-name x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: NameFn)
+cname :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError String)
+cname x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CnameFn)
 
 --------------------------------------------------------------------------------
--- | ApproveFn
+-- | CapproveFn
 --------------------------------------------------------------------------------
 
 
-type ApproveFn = Tagged (SProxy "approve(address,uint256)") (Tuple2 Address (UIntN (D2 :& D5 :& D6)))
+type CapproveFn = Tagged (SProxy "approve(address,uint256)") (Tuple2 Address (UIntN (D2 :& D5 :& D6)))
 
-approve :: forall e. TransactionOptions NoPay -> { _spender :: Address, _amount :: (UIntN (D2 :& D5 :& D6)) } -> Web3 e HexString
-approve x0 r = uncurryFields  r $ approve' x0
+capprove :: forall e. TransactionOptions NoPay -> { _spender :: Address, _amount :: (UIntN (D2 :& D5 :& D6)) } -> Web3 e HexString
+capprove x0 r = uncurryFields  r $ capprove' x0
    where
-    approve' :: TransactionOptions NoPay -> Tagged (SProxy "_spender") Address -> Tagged (SProxy "_amount") (UIntN (D2 :& D5 :& D6)) -> Web3 e HexString
-    approve' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: ApproveFn)
+    capprove' :: TransactionOptions NoPay -> Tagged (SProxy "_spender") Address -> Tagged (SProxy "_amount") (UIntN (D2 :& D5 :& D6)) -> Web3 e HexString
+    capprove' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: CapproveFn)
 
 --------------------------------------------------------------------------------
--- | TotalSupplyFn
---------------------------------------------------------------------------------
-
-
-type TotalSupplyFn = Tagged (SProxy "totalSupply()") (Tuple0 )
-
-totalSupply :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
-totalSupply x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: TotalSupplyFn)
-
---------------------------------------------------------------------------------
--- | TransferFromFn
+-- | CtotalSupplyFn
 --------------------------------------------------------------------------------
 
 
-type TransferFromFn = Tagged (SProxy "transferFrom(address,address,uint256)") (Tuple3 Address Address (UIntN (D2 :& D5 :& D6)))
+type CtotalSupplyFn = Tagged (SProxy "totalSupply()") (Tuple0 )
 
-transferFrom :: forall e. TransactionOptions NoPay -> { _from :: Address, _to :: Address, _amount :: (UIntN (D2 :& D5 :& D6)) } -> Web3 e HexString
-transferFrom x0 r = uncurryFields  r $ transferFrom' x0
+ctotalSupply :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
+ctotalSupply x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CtotalSupplyFn)
+
+--------------------------------------------------------------------------------
+-- | CtransferFromFn
+--------------------------------------------------------------------------------
+
+
+type CtransferFromFn = Tagged (SProxy "transferFrom(address,address,uint256)") (Tuple3 Address Address (UIntN (D2 :& D5 :& D6)))
+
+ctransferFrom :: forall e. TransactionOptions NoPay -> { _from :: Address, _to :: Address, _amount :: (UIntN (D2 :& D5 :& D6)) } -> Web3 e HexString
+ctransferFrom x0 r = uncurryFields  r $ ctransferFrom' x0
    where
-    transferFrom' :: TransactionOptions NoPay -> Tagged (SProxy "_from") Address -> Tagged (SProxy "_to") Address -> Tagged (SProxy "_amount") (UIntN (D2 :& D5 :& D6)) -> Web3 e HexString
-    transferFrom' y0 y1 y2 y3 = sendTx y0 ((tagged $ Tuple3 (untagged y1 ) (untagged y2 ) (untagged y3 )) :: TransferFromFn)
+    ctransferFrom' :: TransactionOptions NoPay -> Tagged (SProxy "_from") Address -> Tagged (SProxy "_to") Address -> Tagged (SProxy "_amount") (UIntN (D2 :& D5 :& D6)) -> Web3 e HexString
+    ctransferFrom' y0 y1 y2 y3 = sendTx y0 ((tagged $ Tuple3 (untagged y1 ) (untagged y2 ) (untagged y3 )) :: CtransferFromFn)
 
 --------------------------------------------------------------------------------
--- | DecimalsFn
---------------------------------------------------------------------------------
-
-
-type DecimalsFn = Tagged (SProxy "decimals()") (Tuple0 )
-
-decimals :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN D8))
-decimals x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: DecimalsFn)
-
---------------------------------------------------------------------------------
--- | BalanceOfFn
+-- | CdecimalsFn
 --------------------------------------------------------------------------------
 
 
-type BalanceOfFn = Tagged (SProxy "balanceOf(address)") (Tuple1 Address)
+type CdecimalsFn = Tagged (SProxy "decimals()") (Tuple0 )
 
-balanceOf :: forall e. TransactionOptions NoPay -> ChainCursor -> { _owner :: Address } -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
-balanceOf x0 cm r = uncurryFields  r $ balanceOf' x0 cm
+cdecimals :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN D8))
+cdecimals x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CdecimalsFn)
+
+--------------------------------------------------------------------------------
+-- | CbalanceOfFn
+--------------------------------------------------------------------------------
+
+
+type CbalanceOfFn = Tagged (SProxy "balanceOf(address)") (Tuple1 Address)
+
+cbalanceOf :: forall e. TransactionOptions NoPay -> ChainCursor -> { _owner :: Address } -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
+cbalanceOf x0 cm r = uncurryFields  r $ cbalanceOf' x0 cm
    where
-    balanceOf' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "_owner") Address -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
-    balanceOf' y0 cm' y2 = map unTuple1 <$> call y0 cm' ((tagged $ Tuple1 (untagged y2 )) :: BalanceOfFn)
+    cbalanceOf' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "_owner") Address -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
+    cbalanceOf' y0 cm' y2 = map unTuple1 <$> call y0 cm' ((tagged $ Tuple1 (untagged y2 )) :: CbalanceOfFn)
 
 --------------------------------------------------------------------------------
--- | OwnerFn
---------------------------------------------------------------------------------
-
-
-type OwnerFn = Tagged (SProxy "owner()") (Tuple0 )
-
-owner :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Address)
-owner x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: OwnerFn)
-
---------------------------------------------------------------------------------
--- | SymbolFn
+-- | CownerFn
 --------------------------------------------------------------------------------
 
 
-type SymbolFn = Tagged (SProxy "symbol()") (Tuple0 )
+type CownerFn = Tagged (SProxy "owner()") (Tuple0 )
 
-symbol :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError String)
-symbol x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: SymbolFn)
+cowner :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Address)
+cowner x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CownerFn)
 
 --------------------------------------------------------------------------------
--- | TransferFn
+-- | CsymbolFn
 --------------------------------------------------------------------------------
 
 
-type TransferFn = Tagged (SProxy "transfer(address,uint256)") (Tuple2 Address (UIntN (D2 :& D5 :& D6)))
+type CsymbolFn = Tagged (SProxy "symbol()") (Tuple0 )
 
-transfer :: forall e. TransactionOptions NoPay -> { _to :: Address, _amount :: (UIntN (D2 :& D5 :& D6)) } -> Web3 e HexString
-transfer x0 r = uncurryFields  r $ transfer' x0
+csymbol :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError String)
+csymbol x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CsymbolFn)
+
+--------------------------------------------------------------------------------
+-- | CtransferFn
+--------------------------------------------------------------------------------
+
+
+type CtransferFn = Tagged (SProxy "transfer(address,uint256)") (Tuple2 Address (UIntN (D2 :& D5 :& D6)))
+
+ctransfer :: forall e. TransactionOptions NoPay -> { _to :: Address, _amount :: (UIntN (D2 :& D5 :& D6)) } -> Web3 e HexString
+ctransfer x0 r = uncurryFields  r $ ctransfer' x0
    where
-    transfer' :: TransactionOptions NoPay -> Tagged (SProxy "_to") Address -> Tagged (SProxy "_amount") (UIntN (D2 :& D5 :& D6)) -> Web3 e HexString
-    transfer' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: TransferFn)
+    ctransfer' :: TransactionOptions NoPay -> Tagged (SProxy "_to") Address -> Tagged (SProxy "_amount") (UIntN (D2 :& D5 :& D6)) -> Web3 e HexString
+    ctransfer' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: CtransferFn)
 
 --------------------------------------------------------------------------------
--- | AllowanceFn
+-- | CallowanceFn
 --------------------------------------------------------------------------------
 
 
-type AllowanceFn = Tagged (SProxy "allowance(address,address)") (Tuple2 Address Address)
+type CallowanceFn = Tagged (SProxy "allowance(address,address)") (Tuple2 Address Address)
 
-allowance :: forall e. TransactionOptions NoPay -> ChainCursor -> { _owner :: Address, _spender :: Address } -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
-allowance x0 cm r = uncurryFields  r $ allowance' x0 cm
+callowance :: forall e. TransactionOptions NoPay -> ChainCursor -> { _owner :: Address, _spender :: Address } -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
+callowance x0 cm r = uncurryFields  r $ callowance' x0 cm
    where
-    allowance' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "_owner") Address -> Tagged (SProxy "_spender") Address -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
-    allowance' y0 cm' y2 y3 = map unTuple1 <$> call y0 cm' ((tagged $ Tuple2 (untagged y2 ) (untagged y3 )) :: AllowanceFn)
+    callowance' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "_owner") Address -> Tagged (SProxy "_spender") Address -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
+    callowance' y0 cm' y2 y3 = map unTuple1 <$> call y0 cm' ((tagged $ Tuple2 (untagged y2 ) (untagged y3 )) :: CallowanceFn)
 
 --------------------------------------------------------------------------------
--- | ConstructorFn
+-- | CconstructorFn
 --------------------------------------------------------------------------------
 
 
-type ConstructorFn = Tagged (SProxy "constructor()") (Tuple0 )
+type CconstructorFn = Tagged (SProxy "constructor()") (Tuple0 )
 
-constructor :: forall e. TransactionOptions NoPay -> Web3 e HexString
-constructor x0 = sendTx x0 ((tagged $ Tuple0 ) :: ConstructorFn)
+cconstructor :: forall e. TransactionOptions NoPay -> Web3 e HexString
+cconstructor x0 = sendTx x0 ((tagged $ Tuple0 ) :: CconstructorFn)
 
 --------------------------------------------------------------------------------
 -- | Transfer

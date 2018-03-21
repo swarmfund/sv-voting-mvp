@@ -108,7 +108,6 @@ const common = {
         ]
     },
     plugins: [
-        // new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR", "DELEGATE_ADDR"]),
         CopyWebpackPluginConfig,
         new HTMLWebpackPlugin({
             // using .ejs prevents other loaders causing errors
@@ -119,7 +118,8 @@ const common = {
         new Dotenv({
             systemvars: true,
             path: TARGET.slice(0, 3) === 'dev' ? './.env-dev' : './.env-prod'
-        })
+        }),
+        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR", "DELEGATE_ADDR"]),
     ],
     resolve: {
         extensions: [".js", ".json", ".ts"],
