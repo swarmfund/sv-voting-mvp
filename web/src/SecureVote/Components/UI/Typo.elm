@@ -28,5 +28,9 @@ subtitle w msg =
     el (w SubTitle) [] (text msg)
 
 
+subsubtitle w msg =
+    el (w SubSubTitle) [] (text msg)
+
+
 pageTitle w msg =
     el (w PageTitle) [] (text msg)

@@ -45,7 +45,7 @@ update msg model =
             update OnFieldUpdate { model | tokenConAddr = updateSelection selectMsg model.tokenConAddr }
 
         SetDelegationType delType ->
-            { model | delType = Just delType } ! []
+            update OnFieldUpdate { model | delType = Just delType }
 
         OnFieldUpdate ->
             let
