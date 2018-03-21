@@ -31,6 +31,8 @@ rootV model =
                         [ delegationFields model
                         , subtitle CS "Delegation Tx Preview"
                         , renderTxPreview model
+                        , subtitle CS "Delegation Via MEW"
+                        , renderTxForMew model
                         , subtitle CS "Write Delegation To Blockchain"
                         , paragraph DNoS
                             []
