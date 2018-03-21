@@ -15,303 +15,303 @@ import Data.Lens ((.~))
 import Data.Maybe (Maybe(..), fromJust)
 import Data.Newtype (class Newtype)
 import Data.Symbol (SProxy)
-import Network.Ethereum.Web3 (Vector, _address, _topics, call, class EventFilter, sendTx)
+import Network.Ethereum.Web3 (Vector, _address, _topics, call, class EventFilter, deployContract, sendTx)
 import Network.Ethereum.Web3.Contract.Internal (uncurryFields)
 import Network.Ethereum.Web3.Solidity (BytesN, D1, D2, D3, D4, D5, D6, D8, S, Tuple0(..), Tuple1(..), Tuple2(..), Tuple3(..), Tuple4, Tuple5(..), UIntN, Z, class IndexedEvent, unTuple1)
 import Network.Ethereum.Web3.Solidity.Size (type (:&))
 import Network.Ethereum.Web3.Types (Address, CallError, ChainCursor, HexString, NoPay, TransactionOptions, Web3, Wei, defaultFilter, mkHexString)
 import Partial.Unsafe (unsafePartial)
 --------------------------------------------------------------------------------
--- | CsetOwnerFn
+-- | SetOwnerFn
 --------------------------------------------------------------------------------
 
 
-type CsetOwnerFn = Tagged (SProxy "setOwner(address)") (Tuple1 Address)
+type SetOwnerFn = Tagged (SProxy "setOwner(address)") (Tuple1 Address)
 
-csetOwner :: forall e. TransactionOptions NoPay -> { _owner :: Address } -> Web3 e HexString
-csetOwner x0 r = uncurryFields  r $ csetOwner' x0
+setOwner :: forall e. TransactionOptions NoPay -> { _owner :: Address } -> Web3 e HexString
+setOwner x0 r = uncurryFields  r $ setOwner' x0
    where
-    csetOwner' :: TransactionOptions NoPay -> Tagged (SProxy "_owner") Address -> Web3 e HexString
-    csetOwner' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: CsetOwnerFn)
+    setOwner' :: TransactionOptions NoPay -> Tagged (SProxy "_owner") Address -> Web3 e HexString
+    setOwner' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: SetOwnerFn)
 
 --------------------------------------------------------------------------------
--- | CsetWhitelistBallotFn
+-- | SetWhitelistBallotFn
 --------------------------------------------------------------------------------
 
 
-type CsetWhitelistBallotFn = Tagged (SProxy "setWhitelistBallot(address,bool)") (Tuple2 Address Boolean)
+type SetWhitelistBallotFn = Tagged (SProxy "setWhitelistBallot(address,bool)") (Tuple2 Address Boolean)
 
-csetWhitelistBallot :: forall e. TransactionOptions NoPay -> { addr :: Address, _free :: Boolean } -> Web3 e HexString
-csetWhitelistBallot x0 r = uncurryFields  r $ csetWhitelistBallot' x0
+setWhitelistBallot :: forall e. TransactionOptions NoPay -> { addr :: Address, _free :: Boolean } -> Web3 e HexString
+setWhitelistBallot x0 r = uncurryFields  r $ setWhitelistBallot' x0
    where
-    csetWhitelistBallot' :: TransactionOptions NoPay -> Tagged (SProxy "addr") Address -> Tagged (SProxy "_free") Boolean -> Web3 e HexString
-    csetWhitelistBallot' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: CsetWhitelistBallotFn)
+    setWhitelistBallot' :: TransactionOptions NoPay -> Tagged (SProxy "addr") Address -> Tagged (SProxy "_free") Boolean -> Web3 e HexString
+    setWhitelistBallot' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: SetWhitelistBallotFn)
 
 --------------------------------------------------------------------------------
--- | CgetDemocInfoFn
+-- | GetDemocInfoFn
 --------------------------------------------------------------------------------
 
 
-type CgetDemocInfoFn = Tagged (SProxy "getDemocInfo(bytes32)") (Tuple1 (BytesN (D3 :& D2)))
+type GetDemocInfoFn = Tagged (SProxy "getDemocInfo(bytes32)") (Tuple1 (BytesN (D3 :& D2)))
 
-cgetDemocInfo :: forall e. TransactionOptions NoPay -> ChainCursor -> { democHash :: (BytesN (D3 :& D2)) } -> Web3 e (Either CallError (Tuple3 String Address (UIntN (D2 :& D5 :& D6))))
-cgetDemocInfo x0 cm r = uncurryFields  r $ cgetDemocInfo' x0 cm
+getDemocInfo :: forall e. TransactionOptions NoPay -> ChainCursor -> { democHash :: (BytesN (D3 :& D2)) } -> Web3 e (Either CallError (Tuple3 String Address (UIntN (D2 :& D5 :& D6))))
+getDemocInfo x0 cm r = uncurryFields  r $ getDemocInfo' x0 cm
    where
-    cgetDemocInfo' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Web3 e (Either CallError (Tuple3 String Address (UIntN (D2 :& D5 :& D6))))
-    cgetDemocInfo' y0 cm' y2 = call y0 cm' ((tagged $ Tuple1 (untagged y2 )) :: CgetDemocInfoFn)
+    getDemocInfo' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Web3 e (Either CallError (Tuple3 String Address (UIntN (D2 :& D5 :& D6))))
+    getDemocInfo' y0 cm' y2 = call y0 cm' ((tagged $ Tuple1 (untagged y2 )) :: GetDemocInfoFn)
 
 --------------------------------------------------------------------------------
--- | CsetPaymentEnabledFn
+-- | SetPaymentEnabledFn
 --------------------------------------------------------------------------------
 
 
-type CsetPaymentEnabledFn = Tagged (SProxy "setPaymentEnabled(bool)") (Tuple1 Boolean)
+type SetPaymentEnabledFn = Tagged (SProxy "setPaymentEnabled(bool)") (Tuple1 Boolean)
 
-csetPaymentEnabled :: forall e. TransactionOptions NoPay -> { _enabled :: Boolean } -> Web3 e HexString
-csetPaymentEnabled x0 r = uncurryFields  r $ csetPaymentEnabled' x0
+setPaymentEnabled :: forall e. TransactionOptions NoPay -> { _enabled :: Boolean } -> Web3 e HexString
+setPaymentEnabled x0 r = uncurryFields  r $ setPaymentEnabled' x0
    where
-    csetPaymentEnabled' :: TransactionOptions NoPay -> Tagged (SProxy "_enabled") Boolean -> Web3 e HexString
-    csetPaymentEnabled' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: CsetPaymentEnabledFn)
+    setPaymentEnabled' :: TransactionOptions NoPay -> Tagged (SProxy "_enabled") Boolean -> Web3 e HexString
+    setPaymentEnabled' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: SetPaymentEnabledFn)
 
 --------------------------------------------------------------------------------
--- | CsetFeeForFn
+-- | SetFeeForFn
 --------------------------------------------------------------------------------
 
 
-type CsetFeeForFn = Tagged (SProxy "setFeeFor(address,uint128[2])") (Tuple2 Address (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))))
+type SetFeeForFn = Tagged (SProxy "setFeeFor(address,uint128[2])") (Tuple2 Address (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))))
 
-csetFeeFor :: forall e. TransactionOptions NoPay -> { addr :: Address, fees :: (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))) } -> Web3 e HexString
-csetFeeFor x0 r = uncurryFields  r $ csetFeeFor' x0
+setFeeFor :: forall e. TransactionOptions NoPay -> { addr :: Address, fees :: (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))) } -> Web3 e HexString
+setFeeFor x0 r = uncurryFields  r $ setFeeFor' x0
    where
-    csetFeeFor' :: TransactionOptions NoPay -> Tagged (SProxy "addr") Address -> Tagged (SProxy "fees") (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))) -> Web3 e HexString
-    csetFeeFor' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: CsetFeeForFn)
+    setFeeFor' :: TransactionOptions NoPay -> Tagged (SProxy "addr") Address -> Tagged (SProxy "fees") (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))) -> Web3 e HexString
+    setFeeFor' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: SetFeeForFn)
 
 --------------------------------------------------------------------------------
--- | CnDemocsFn
---------------------------------------------------------------------------------
-
-
-type CnDemocsFn = Tagged (SProxy "nDemocs()") (Tuple0 )
-
-cnDemocs :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
-cnDemocs x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CnDemocsFn)
-
---------------------------------------------------------------------------------
--- | CsetPayToFn
+-- | NDemocsFn
 --------------------------------------------------------------------------------
 
 
-type CsetPayToFn = Tagged (SProxy "setPayTo(address)") (Tuple1 Address)
+type NDemocsFn = Tagged (SProxy "nDemocs()") (Tuple0 )
 
-csetPayTo :: forall e. TransactionOptions NoPay -> { newPayTo :: Address } -> Web3 e HexString
-csetPayTo x0 r = uncurryFields  r $ csetPayTo' x0
+nDemocs :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
+nDemocs x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: NDemocsFn)
+
+--------------------------------------------------------------------------------
+-- | SetPayToFn
+--------------------------------------------------------------------------------
+
+
+type SetPayToFn = Tagged (SProxy "setPayTo(address)") (Tuple1 Address)
+
+setPayTo :: forall e. TransactionOptions NoPay -> { newPayTo :: Address } -> Web3 e HexString
+setPayTo x0 r = uncurryFields  r $ setPayTo' x0
    where
-    csetPayTo' :: TransactionOptions NoPay -> Tagged (SProxy "newPayTo") Address -> Web3 e HexString
-    csetPayTo' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: CsetPayToFn)
+    setPayTo' :: TransactionOptions NoPay -> Tagged (SProxy "newPayTo") Address -> Web3 e HexString
+    setPayTo' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: SetPayToFn)
 
 --------------------------------------------------------------------------------
--- | CdeployBallotFn
+-- | DeployBallotFn
 --------------------------------------------------------------------------------
 
 
-type CdeployBallotFn = Tagged (SProxy "deployBallot(bytes32,bytes32,bytes32,uint64[2],bool[2])") (Tuple5 (BytesN (D3 :& D2)) (BytesN (D3 :& D2)) (BytesN (D3 :& D2)) (Vector (S (S (Z))) (UIntN (D6 :& D4))) (Vector (S (S (Z))) Boolean))
+type DeployBallotFn = Tagged (SProxy "deployBallot(bytes32,bytes32,bytes32,uint64[2],bool[2])") (Tuple5 (BytesN (D3 :& D2)) (BytesN (D3 :& D2)) (BytesN (D3 :& D2)) (Vector (S (S (Z))) (UIntN (D6 :& D4))) (Vector (S (S (Z))) Boolean))
 
-cdeployBallot :: forall e. TransactionOptions Wei -> { democHash :: (BytesN (D3 :& D2)), specHash :: (BytesN (D3 :& D2)), extraData :: (BytesN (D3 :& D2)), openPeriod :: (Vector (S (S (Z))) (UIntN (D6 :& D4))), flags :: (Vector (S (S (Z))) Boolean) } -> Web3 e HexString
-cdeployBallot x0 r = uncurryFields  r $ cdeployBallot' x0
+deployBallot :: forall e. TransactionOptions Wei -> { democHash :: (BytesN (D3 :& D2)), specHash :: (BytesN (D3 :& D2)), extraData :: (BytesN (D3 :& D2)), openPeriod :: (Vector (S (S (Z))) (UIntN (D6 :& D4))), flags :: (Vector (S (S (Z))) Boolean) } -> Web3 e HexString
+deployBallot x0 r = uncurryFields  r $ deployBallot' x0
    where
-    cdeployBallot' :: TransactionOptions Wei -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "specHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "extraData") (BytesN (D3 :& D2)) -> Tagged (SProxy "openPeriod") (Vector (S (S (Z))) (UIntN (D6 :& D4))) -> Tagged (SProxy "flags") (Vector (S (S (Z))) Boolean) -> Web3 e HexString
-    cdeployBallot' y0 y1 y2 y3 y4 y5 = sendTx y0 ((tagged $ Tuple5 (untagged y1 ) (untagged y2 ) (untagged y3 ) (untagged y4 ) (untagged y5 )) :: CdeployBallotFn)
+    deployBallot' :: TransactionOptions Wei -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "specHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "extraData") (BytesN (D3 :& D2)) -> Tagged (SProxy "openPeriod") (Vector (S (S (Z))) (UIntN (D6 :& D4))) -> Tagged (SProxy "flags") (Vector (S (S (Z))) Boolean) -> Web3 e HexString
+    deployBallot' y0 y1 y2 y3 y4 y5 = sendTx y0 ((tagged $ Tuple5 (untagged y1 ) (untagged y2 ) (untagged y3 ) (untagged y4 ) (untagged y5 )) :: DeployBallotFn)
 
 --------------------------------------------------------------------------------
--- | CdemocFeeFn
---------------------------------------------------------------------------------
-
-
-type CdemocFeeFn = Tagged (SProxy "democFee()") (Tuple0 )
-
-cdemocFee :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D1 :& D2 :& D8)))
-cdemocFee x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CdemocFeeFn)
-
---------------------------------------------------------------------------------
--- | CpaymentEnabledFn
+-- | DemocFeeFn
 --------------------------------------------------------------------------------
 
 
-type CpaymentEnabledFn = Tagged (SProxy "paymentEnabled()") (Tuple0 )
+type DemocFeeFn = Tagged (SProxy "democFee()") (Tuple0 )
 
-cpaymentEnabled :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Boolean)
-cpaymentEnabled x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CpaymentEnabledFn)
-
---------------------------------------------------------------------------------
--- | CdemocWhitelistFn
---------------------------------------------------------------------------------
-
-
-type CdemocWhitelistFn = Tagged (SProxy "democWhitelist(address)") (Tuple1 Address)
-
-cdemocWhitelist :: forall e. TransactionOptions NoPay -> ChainCursor -> Address -> Web3 e (Either CallError Boolean)
-cdemocWhitelist x0 cm x2 = map unTuple1 <$> call x0 cm ((tagged $ Tuple1 x2) :: CdemocWhitelistFn)
+democFee :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D1 :& D2 :& D8)))
+democFee x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: DemocFeeFn)
 
 --------------------------------------------------------------------------------
--- | CgetNthBallotFn
+-- | PaymentEnabledFn
 --------------------------------------------------------------------------------
 
 
-type CgetNthBallotFn = Tagged (SProxy "getNthBallot(bytes32,uint256)") (Tuple2 (BytesN (D3 :& D2)) (UIntN (D2 :& D5 :& D6)))
+type PaymentEnabledFn = Tagged (SProxy "paymentEnabled()") (Tuple0 )
 
-cgetNthBallot :: forall e. TransactionOptions NoPay -> ChainCursor -> { democHash :: (BytesN (D3 :& D2)), n :: (UIntN (D2 :& D5 :& D6)) } -> Web3 e (Either CallError (Tuple4 (BytesN (D3 :& D2)) (BytesN (D3 :& D2)) Address (UIntN (D6 :& D4))))
-cgetNthBallot x0 cm r = uncurryFields  r $ cgetNthBallot' x0 cm
+paymentEnabled :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Boolean)
+paymentEnabled x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: PaymentEnabledFn)
+
+--------------------------------------------------------------------------------
+-- | DemocWhitelistFn
+--------------------------------------------------------------------------------
+
+
+type DemocWhitelistFn = Tagged (SProxy "democWhitelist(address)") (Tuple1 Address)
+
+democWhitelist :: forall e. TransactionOptions NoPay -> ChainCursor -> Address -> Web3 e (Either CallError Boolean)
+democWhitelist x0 cm x2 = map unTuple1 <$> call x0 cm ((tagged $ Tuple1 x2) :: DemocWhitelistFn)
+
+--------------------------------------------------------------------------------
+-- | GetNthBallotFn
+--------------------------------------------------------------------------------
+
+
+type GetNthBallotFn = Tagged (SProxy "getNthBallot(bytes32,uint256)") (Tuple2 (BytesN (D3 :& D2)) (UIntN (D2 :& D5 :& D6)))
+
+getNthBallot :: forall e. TransactionOptions NoPay -> ChainCursor -> { democHash :: (BytesN (D3 :& D2)), n :: (UIntN (D2 :& D5 :& D6)) } -> Web3 e (Either CallError (Tuple4 (BytesN (D3 :& D2)) (BytesN (D3 :& D2)) Address (UIntN (D6 :& D4))))
+getNthBallot x0 cm r = uncurryFields  r $ getNthBallot' x0 cm
    where
-    cgetNthBallot' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "n") (UIntN (D2 :& D5 :& D6)) -> Web3 e (Either CallError (Tuple4 (BytesN (D3 :& D2)) (BytesN (D3 :& D2)) Address (UIntN (D6 :& D4))))
-    cgetNthBallot' y0 cm' y2 y3 = call y0 cm' ((tagged $ Tuple2 (untagged y2 ) (untagged y3 )) :: CgetNthBallotFn)
+    getNthBallot' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "n") (UIntN (D2 :& D5 :& D6)) -> Web3 e (Either CallError (Tuple4 (BytesN (D3 :& D2)) (BytesN (D3 :& D2)) Address (UIntN (D6 :& D4))))
+    getNthBallot' y0 cm' y2 y3 = call y0 cm' ((tagged $ Tuple2 (untagged y2 ) (untagged y3 )) :: GetNthBallotFn)
 
 --------------------------------------------------------------------------------
--- | CownerFn
---------------------------------------------------------------------------------
-
-
-type CownerFn = Tagged (SProxy "owner()") (Tuple0 )
-
-cowner :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Address)
-cowner x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CownerFn)
-
---------------------------------------------------------------------------------
--- | CdemocsFn
+-- | OwnerFn
 --------------------------------------------------------------------------------
 
 
-type CdemocsFn = Tagged (SProxy "democs(bytes32)") (Tuple1 (BytesN (D3 :& D2)))
+type OwnerFn = Tagged (SProxy "owner()") (Tuple0 )
 
-cdemocs :: forall e. TransactionOptions NoPay -> ChainCursor -> (BytesN (D3 :& D2)) -> Web3 e (Either CallError (Tuple2 String Address))
-cdemocs x0 cm x2 = call x0 cm ((tagged $ Tuple1 x2) :: CdemocsFn)
+owner :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Address)
+owner x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: OwnerFn)
 
 --------------------------------------------------------------------------------
--- | CaddBallotFn
+-- | DemocsFn
 --------------------------------------------------------------------------------
 
 
-type CaddBallotFn = Tagged (SProxy "addBallot(bytes32,bytes32,address)") (Tuple3 (BytesN (D3 :& D2)) (BytesN (D3 :& D2)) Address)
+type DemocsFn = Tagged (SProxy "democs(bytes32)") (Tuple1 (BytesN (D3 :& D2)))
 
-caddBallot :: forall e. TransactionOptions Wei -> { democHash :: (BytesN (D3 :& D2)), extraData :: (BytesN (D3 :& D2)), votingContract :: Address } -> Web3 e HexString
-caddBallot x0 r = uncurryFields  r $ caddBallot' x0
+democs :: forall e. TransactionOptions NoPay -> ChainCursor -> (BytesN (D3 :& D2)) -> Web3 e (Either CallError (Tuple2 String Address))
+democs x0 cm x2 = call x0 cm ((tagged $ Tuple1 x2) :: DemocsFn)
+
+--------------------------------------------------------------------------------
+-- | AddBallotFn
+--------------------------------------------------------------------------------
+
+
+type AddBallotFn = Tagged (SProxy "addBallot(bytes32,bytes32,address)") (Tuple3 (BytesN (D3 :& D2)) (BytesN (D3 :& D2)) Address)
+
+addBallot :: forall e. TransactionOptions Wei -> { democHash :: (BytesN (D3 :& D2)), extraData :: (BytesN (D3 :& D2)), votingContract :: Address } -> Web3 e HexString
+addBallot x0 r = uncurryFields  r $ addBallot' x0
    where
-    caddBallot' :: TransactionOptions Wei -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "extraData") (BytesN (D3 :& D2)) -> Tagged (SProxy "votingContract") Address -> Web3 e HexString
-    caddBallot' y0 y1 y2 y3 = sendTx y0 ((tagged $ Tuple3 (untagged y1 ) (untagged y2 ) (untagged y3 )) :: CaddBallotFn)
+    addBallot' :: TransactionOptions Wei -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "extraData") (BytesN (D3 :& D2)) -> Tagged (SProxy "votingContract") Address -> Web3 e HexString
+    addBallot' y0 y1 y2 y3 = sendTx y0 ((tagged $ Tuple3 (untagged y1 ) (untagged y2 ) (untagged y3 )) :: AddBallotFn)
 
 --------------------------------------------------------------------------------
--- | CsetWhitelistDemocFn
+-- | SetWhitelistDemocFn
 --------------------------------------------------------------------------------
 
 
-type CsetWhitelistDemocFn = Tagged (SProxy "setWhitelistDemoc(address,bool)") (Tuple2 Address Boolean)
+type SetWhitelistDemocFn = Tagged (SProxy "setWhitelistDemoc(address,bool)") (Tuple2 Address Boolean)
 
-csetWhitelistDemoc :: forall e. TransactionOptions NoPay -> { addr :: Address, _free :: Boolean } -> Web3 e HexString
-csetWhitelistDemoc x0 r = uncurryFields  r $ csetWhitelistDemoc' x0
+setWhitelistDemoc :: forall e. TransactionOptions NoPay -> { addr :: Address, _free :: Boolean } -> Web3 e HexString
+setWhitelistDemoc x0 r = uncurryFields  r $ setWhitelistDemoc' x0
    where
-    csetWhitelistDemoc' :: TransactionOptions NoPay -> Tagged (SProxy "addr") Address -> Tagged (SProxy "_free") Boolean -> Web3 e HexString
-    csetWhitelistDemoc' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: CsetWhitelistDemocFn)
+    setWhitelistDemoc' :: TransactionOptions NoPay -> Tagged (SProxy "addr") Address -> Tagged (SProxy "_free") Boolean -> Web3 e HexString
+    setWhitelistDemoc' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: SetWhitelistDemocFn)
 
 --------------------------------------------------------------------------------
--- | CpayToFn
---------------------------------------------------------------------------------
-
-
-type CpayToFn = Tagged (SProxy "payTo()") (Tuple0 )
-
-cpayTo :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Address)
-cpayTo x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CpayToFn)
-
---------------------------------------------------------------------------------
--- | CsetEthFn
+-- | PayToFn
 --------------------------------------------------------------------------------
 
 
-type CsetEthFn = Tagged (SProxy "setEth(uint128[2])") (Tuple1 (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))))
+type PayToFn = Tagged (SProxy "payTo()") (Tuple0 )
 
-csetEth :: forall e. TransactionOptions NoPay -> { newFees :: (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))) } -> Web3 e HexString
-csetEth x0 r = uncurryFields  r $ csetEth' x0
+payTo :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Address)
+payTo x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: PayToFn)
+
+--------------------------------------------------------------------------------
+-- | SetEthFn
+--------------------------------------------------------------------------------
+
+
+type SetEthFn = Tagged (SProxy "setEth(uint128[2])") (Tuple1 (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))))
+
+setEth :: forall e. TransactionOptions NoPay -> { newFees :: (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))) } -> Web3 e HexString
+setEth x0 r = uncurryFields  r $ setEth' x0
    where
-    csetEth' :: TransactionOptions NoPay -> Tagged (SProxy "newFees") (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))) -> Web3 e HexString
-    csetEth' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: CsetEthFn)
+    setEth' :: TransactionOptions NoPay -> Tagged (SProxy "newFees") (Vector (S (S (Z))) (UIntN (D1 :& D2 :& D8))) -> Web3 e HexString
+    setEth' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: SetEthFn)
 
 --------------------------------------------------------------------------------
--- | CballotWhitelistFn
---------------------------------------------------------------------------------
-
-
-type CballotWhitelistFn = Tagged (SProxy "ballotWhitelist(address)") (Tuple1 Address)
-
-cballotWhitelist :: forall e. TransactionOptions NoPay -> ChainCursor -> Address -> Web3 e (Either CallError Boolean)
-cballotWhitelist x0 cm x2 = map unTuple1 <$> call x0 cm ((tagged $ Tuple1 x2) :: CballotWhitelistFn)
-
---------------------------------------------------------------------------------
--- | CnBallotsFn
+-- | BallotWhitelistFn
 --------------------------------------------------------------------------------
 
 
-type CnBallotsFn = Tagged (SProxy "nBallots(bytes32)") (Tuple1 (BytesN (D3 :& D2)))
+type BallotWhitelistFn = Tagged (SProxy "ballotWhitelist(address)") (Tuple1 Address)
 
-cnBallots :: forall e. TransactionOptions NoPay -> ChainCursor -> { democHash :: (BytesN (D3 :& D2)) } -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
-cnBallots x0 cm r = uncurryFields  r $ cnBallots' x0 cm
+ballotWhitelist :: forall e. TransactionOptions NoPay -> ChainCursor -> Address -> Web3 e (Either CallError Boolean)
+ballotWhitelist x0 cm x2 = map unTuple1 <$> call x0 cm ((tagged $ Tuple1 x2) :: BallotWhitelistFn)
+
+--------------------------------------------------------------------------------
+-- | NBallotsFn
+--------------------------------------------------------------------------------
+
+
+type NBallotsFn = Tagged (SProxy "nBallots(bytes32)") (Tuple1 (BytesN (D3 :& D2)))
+
+nBallots :: forall e. TransactionOptions NoPay -> ChainCursor -> { democHash :: (BytesN (D3 :& D2)) } -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
+nBallots x0 cm r = uncurryFields  r $ nBallots' x0 cm
    where
-    cnBallots' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
-    cnBallots' y0 cm' y2 = map unTuple1 <$> call y0 cm' ((tagged $ Tuple1 (untagged y2 )) :: CnBallotsFn)
+    nBallots' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
+    nBallots' y0 cm' y2 = map unTuple1 <$> call y0 cm' ((tagged $ Tuple1 (untagged y2 )) :: NBallotsFn)
 
 --------------------------------------------------------------------------------
--- | CballotFeeFn
---------------------------------------------------------------------------------
-
-
-type CballotFeeFn = Tagged (SProxy "ballotFee()") (Tuple0 )
-
-cballotFee :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D1 :& D2 :& D8)))
-cballotFee x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CballotFeeFn)
-
---------------------------------------------------------------------------------
--- | CdemocListFn
+-- | BallotFeeFn
 --------------------------------------------------------------------------------
 
 
-type CdemocListFn = Tagged (SProxy "democList(uint256)") (Tuple1 (UIntN (D2 :& D5 :& D6)))
+type BallotFeeFn = Tagged (SProxy "ballotFee()") (Tuple0 )
 
-cdemocList :: forall e. TransactionOptions NoPay -> ChainCursor -> (UIntN (D2 :& D5 :& D6)) -> Web3 e (Either CallError (BytesN (D3 :& D2)))
-cdemocList x0 cm x2 = map unTuple1 <$> call x0 cm ((tagged $ Tuple1 x2) :: CdemocListFn)
+ballotFee :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D1 :& D2 :& D8)))
+ballotFee x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: BallotFeeFn)
 
 --------------------------------------------------------------------------------
--- | CsetAdminFn
+-- | DemocListFn
 --------------------------------------------------------------------------------
 
 
-type CsetAdminFn = Tagged (SProxy "setAdmin(bytes32,address)") (Tuple2 (BytesN (D3 :& D2)) Address)
+type DemocListFn = Tagged (SProxy "democList(uint256)") (Tuple1 (UIntN (D2 :& D5 :& D6)))
 
-csetAdmin :: forall e. TransactionOptions NoPay -> { democHash :: (BytesN (D3 :& D2)), newAdmin :: Address } -> Web3 e HexString
-csetAdmin x0 r = uncurryFields  r $ csetAdmin' x0
+democList :: forall e. TransactionOptions NoPay -> ChainCursor -> (UIntN (D2 :& D5 :& D6)) -> Web3 e (Either CallError (BytesN (D3 :& D2)))
+democList x0 cm x2 = map unTuple1 <$> call x0 cm ((tagged $ Tuple1 x2) :: DemocListFn)
+
+--------------------------------------------------------------------------------
+-- | SetAdminFn
+--------------------------------------------------------------------------------
+
+
+type SetAdminFn = Tagged (SProxy "setAdmin(bytes32,address)") (Tuple2 (BytesN (D3 :& D2)) Address)
+
+setAdmin :: forall e. TransactionOptions NoPay -> { democHash :: (BytesN (D3 :& D2)), newAdmin :: Address } -> Web3 e HexString
+setAdmin x0 r = uncurryFields  r $ setAdmin' x0
    where
-    csetAdmin' :: TransactionOptions NoPay -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "newAdmin") Address -> Web3 e HexString
-    csetAdmin' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: CsetAdminFn)
+    setAdmin' :: TransactionOptions NoPay -> Tagged (SProxy "democHash") (BytesN (D3 :& D2)) -> Tagged (SProxy "newAdmin") Address -> Web3 e HexString
+    setAdmin' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: SetAdminFn)
 
 --------------------------------------------------------------------------------
--- | CinitDemocFn
+-- | InitDemocFn
 --------------------------------------------------------------------------------
 
 
-type CinitDemocFn = Tagged (SProxy "initDemoc(string)") (Tuple1 String)
+type InitDemocFn = Tagged (SProxy "initDemoc(string)") (Tuple1 String)
 
-cinitDemoc :: forall e. TransactionOptions Wei -> { democName :: String } -> Web3 e HexString
-cinitDemoc x0 r = uncurryFields  r $ cinitDemoc' x0
+initDemoc :: forall e. TransactionOptions Wei -> { democName :: String } -> Web3 e HexString
+initDemoc x0 r = uncurryFields  r $ initDemoc' x0
    where
-    cinitDemoc' :: TransactionOptions Wei -> Tagged (SProxy "democName") String -> Web3 e HexString
-    cinitDemoc' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: CinitDemocFn)
+    initDemoc' :: TransactionOptions Wei -> Tagged (SProxy "democName") String -> Web3 e HexString
+    initDemoc' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: InitDemocFn)
 
 --------------------------------------------------------------------------------
--- | CconstructorFn
+-- | ConstructorFn
 --------------------------------------------------------------------------------
 
 
-type CconstructorFn = Tagged (SProxy "constructor()") (Tuple0 )
+type ConstructorFn = Tagged (SProxy "constructor()") (Tuple0 )
 
-cconstructor :: forall e. TransactionOptions NoPay -> Web3 e HexString
-cconstructor x0 = sendTx x0 ((tagged $ Tuple0 ) :: CconstructorFn)
+constructor :: forall e. TransactionOptions NoPay -> HexString -> Web3 e HexString
+constructor x0 bc = deployContract x0 bc ((tagged $ Tuple0 ) :: ConstructorFn)
 
 --------------------------------------------------------------------------------
 -- | PaymentMade

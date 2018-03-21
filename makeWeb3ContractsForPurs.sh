@@ -10,5 +10,5 @@ for file in ./tmpSolDist/*.abi; do
 done
 ls ./tmpSolDist
 
-node generator.js --abis tmpSolDist/ --dest pureSrc/ --module SecureVote.Contracts --prefix c && \
+node generator.js --abis tmpSolDist/ --dest pureSrc/ --module SecureVote.Contracts && \
 rm generator.js && rm -r tmpSolDist

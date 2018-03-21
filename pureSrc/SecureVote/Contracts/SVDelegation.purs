@@ -15,116 +15,116 @@ import Data.Lens ((.~))
 import Data.Maybe (Maybe(..), fromJust)
 import Data.Newtype (class Newtype)
 import Data.Symbol (SProxy)
-import Network.Ethereum.Web3 (_address, _topics, call, class EventFilter, sendTx)
+import Network.Ethereum.Web3 (_address, _topics, call, class EventFilter, deployContract, sendTx)
 import Network.Ethereum.Web3.Contract.Internal (uncurryFields)
 import Network.Ethereum.Web3.Solidity (D2, D5, D6, Tuple0(..), Tuple1(..), Tuple2(..), Tuple3, Tuple4, UIntN, class IndexedEvent, unTuple1)
 import Network.Ethereum.Web3.Solidity.Size (type (:&))
 import Network.Ethereum.Web3.Types (Address, CallError, ChainCursor, HexString, NoPay, TransactionOptions, Web3, defaultFilter, mkHexString)
 import Partial.Unsafe (unsafePartial)
 --------------------------------------------------------------------------------
--- | CtotalDelegationsFn
+-- | TotalDelegationsFn
 --------------------------------------------------------------------------------
 
 
-type CtotalDelegationsFn = Tagged (SProxy "totalDelegations()") (Tuple0 )
+type TotalDelegationsFn = Tagged (SProxy "totalDelegations()") (Tuple0 )
 
-ctotalDelegations :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
-ctotalDelegations x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CtotalDelegationsFn)
-
---------------------------------------------------------------------------------
--- | ChistoricalDelegationsFn
---------------------------------------------------------------------------------
-
-
-type ChistoricalDelegationsFn = Tagged (SProxy "historicalDelegations(uint256)") (Tuple1 (UIntN (D2 :& D5 :& D6)))
-
-chistoricalDelegations :: forall e. TransactionOptions NoPay -> ChainCursor -> (UIntN (D2 :& D5 :& D6)) -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
-chistoricalDelegations x0 cm x2 = call x0 cm ((tagged $ Tuple1 x2) :: ChistoricalDelegationsFn)
+totalDelegations :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError (UIntN (D2 :& D5 :& D6)))
+totalDelegations x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: TotalDelegationsFn)
 
 --------------------------------------------------------------------------------
--- | C_rawGetTokenDelegationFn
+-- | HistoricalDelegationsFn
 --------------------------------------------------------------------------------
 
 
-type C_rawGetTokenDelegationFn = Tagged (SProxy "_rawGetTokenDelegation(address,address)") (Tuple2 Address Address)
+type HistoricalDelegationsFn = Tagged (SProxy "historicalDelegations(uint256)") (Tuple1 (UIntN (D2 :& D5 :& D6)))
 
-c_rawGetTokenDelegation :: forall e. TransactionOptions NoPay -> ChainCursor -> { _voter :: Address, _tokenContract :: Address } -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
-c_rawGetTokenDelegation x0 cm r = uncurryFields  r $ c_rawGetTokenDelegation' x0 cm
+historicalDelegations :: forall e. TransactionOptions NoPay -> ChainCursor -> (UIntN (D2 :& D5 :& D6)) -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
+historicalDelegations x0 cm x2 = call x0 cm ((tagged $ Tuple1 x2) :: HistoricalDelegationsFn)
+
+--------------------------------------------------------------------------------
+-- | FnT_rawGetTokenDelegationFn
+--------------------------------------------------------------------------------
+
+
+type FnT_rawGetTokenDelegationFn = Tagged (SProxy "_rawGetTokenDelegation(address,address)") (Tuple2 Address Address)
+
+_rawGetTokenDelegation :: forall e. TransactionOptions NoPay -> ChainCursor -> { _voter :: Address, _tokenContract :: Address } -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
+_rawGetTokenDelegation x0 cm r = uncurryFields  r $ _rawGetTokenDelegation' x0 cm
    where
-    c_rawGetTokenDelegation' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "_voter") Address -> Tagged (SProxy "_tokenContract") Address -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
-    c_rawGetTokenDelegation' y0 cm' y2 y3 = call y0 cm' ((tagged $ Tuple2 (untagged y2 ) (untagged y3 )) :: C_rawGetTokenDelegationFn)
+    _rawGetTokenDelegation' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "_voter") Address -> Tagged (SProxy "_tokenContract") Address -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
+    _rawGetTokenDelegation' y0 cm' y2 y3 = call y0 cm' ((tagged $ Tuple2 (untagged y2 ) (untagged y3 )) :: FnT_rawGetTokenDelegationFn)
 
 --------------------------------------------------------------------------------
--- | CresolveDelegationFn
+-- | ResolveDelegationFn
 --------------------------------------------------------------------------------
 
 
-type CresolveDelegationFn = Tagged (SProxy "resolveDelegation(address,address)") (Tuple2 Address Address)
+type ResolveDelegationFn = Tagged (SProxy "resolveDelegation(address,address)") (Tuple2 Address Address)
 
-cresolveDelegation :: forall e. TransactionOptions NoPay -> ChainCursor -> { voter :: Address, tokenContract :: Address } -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
-cresolveDelegation x0 cm r = uncurryFields  r $ cresolveDelegation' x0 cm
+resolveDelegation :: forall e. TransactionOptions NoPay -> ChainCursor -> { voter :: Address, tokenContract :: Address } -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
+resolveDelegation x0 cm r = uncurryFields  r $ resolveDelegation' x0 cm
    where
-    cresolveDelegation' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "voter") Address -> Tagged (SProxy "tokenContract") Address -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
-    cresolveDelegation' y0 cm' y2 y3 = call y0 cm' ((tagged $ Tuple2 (untagged y2 ) (untagged y3 )) :: CresolveDelegationFn)
+    resolveDelegation' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "voter") Address -> Tagged (SProxy "tokenContract") Address -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
+    resolveDelegation' y0 cm' y2 y3 = call y0 cm' ((tagged $ Tuple2 (untagged y2 ) (untagged y3 )) :: ResolveDelegationFn)
 
 --------------------------------------------------------------------------------
--- | CownerFn
---------------------------------------------------------------------------------
-
-
-type CownerFn = Tagged (SProxy "owner()") (Tuple0 )
-
-cowner :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Address)
-cowner x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: CownerFn)
-
---------------------------------------------------------------------------------
--- | CsetGlobalDelegationFn
+-- | OwnerFn
 --------------------------------------------------------------------------------
 
 
-type CsetGlobalDelegationFn = Tagged (SProxy "setGlobalDelegation(address)") (Tuple1 Address)
+type OwnerFn = Tagged (SProxy "owner()") (Tuple0 )
 
-csetGlobalDelegation :: forall e. TransactionOptions NoPay -> { dlgtAddress :: Address } -> Web3 e HexString
-csetGlobalDelegation x0 r = uncurryFields  r $ csetGlobalDelegation' x0
+owner :: forall e. TransactionOptions NoPay -> ChainCursor -> Web3 e (Either CallError Address)
+owner x0 cm = map unTuple1 <$> call x0 cm ((tagged $ Tuple0 ) :: OwnerFn)
+
+--------------------------------------------------------------------------------
+-- | SetGlobalDelegationFn
+--------------------------------------------------------------------------------
+
+
+type SetGlobalDelegationFn = Tagged (SProxy "setGlobalDelegation(address)") (Tuple1 Address)
+
+setGlobalDelegation :: forall e. TransactionOptions NoPay -> { dlgtAddress :: Address } -> Web3 e HexString
+setGlobalDelegation x0 r = uncurryFields  r $ setGlobalDelegation' x0
    where
-    csetGlobalDelegation' :: TransactionOptions NoPay -> Tagged (SProxy "dlgtAddress") Address -> Web3 e HexString
-    csetGlobalDelegation' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: CsetGlobalDelegationFn)
+    setGlobalDelegation' :: TransactionOptions NoPay -> Tagged (SProxy "dlgtAddress") Address -> Web3 e HexString
+    setGlobalDelegation' y0 y1 = sendTx y0 ((tagged $ Tuple1 (untagged y1 )) :: SetGlobalDelegationFn)
 
 --------------------------------------------------------------------------------
--- | CsetTokenDelegationFn
+-- | SetTokenDelegationFn
 --------------------------------------------------------------------------------
 
 
-type CsetTokenDelegationFn = Tagged (SProxy "setTokenDelegation(address,address)") (Tuple2 Address Address)
+type SetTokenDelegationFn = Tagged (SProxy "setTokenDelegation(address,address)") (Tuple2 Address Address)
 
-csetTokenDelegation :: forall e. TransactionOptions NoPay -> { tokenContract :: Address, dlgtAddress :: Address } -> Web3 e HexString
-csetTokenDelegation x0 r = uncurryFields  r $ csetTokenDelegation' x0
+setTokenDelegation :: forall e. TransactionOptions NoPay -> { tokenContract :: Address, dlgtAddress :: Address } -> Web3 e HexString
+setTokenDelegation x0 r = uncurryFields  r $ setTokenDelegation' x0
    where
-    csetTokenDelegation' :: TransactionOptions NoPay -> Tagged (SProxy "tokenContract") Address -> Tagged (SProxy "dlgtAddress") Address -> Web3 e HexString
-    csetTokenDelegation' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: CsetTokenDelegationFn)
+    setTokenDelegation' :: TransactionOptions NoPay -> Tagged (SProxy "tokenContract") Address -> Tagged (SProxy "dlgtAddress") Address -> Web3 e HexString
+    setTokenDelegation' y0 y1 y2 = sendTx y0 ((tagged $ Tuple2 (untagged y1 ) (untagged y2 )) :: SetTokenDelegationFn)
 
 --------------------------------------------------------------------------------
--- | C_rawGetGlobalDelegationFn
+-- | FnT_rawGetGlobalDelegationFn
 --------------------------------------------------------------------------------
 
 
-type C_rawGetGlobalDelegationFn = Tagged (SProxy "_rawGetGlobalDelegation(address)") (Tuple1 Address)
+type FnT_rawGetGlobalDelegationFn = Tagged (SProxy "_rawGetGlobalDelegation(address)") (Tuple1 Address)
 
-c_rawGetGlobalDelegation :: forall e. TransactionOptions NoPay -> ChainCursor -> { _voter :: Address } -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
-c_rawGetGlobalDelegation x0 cm r = uncurryFields  r $ c_rawGetGlobalDelegation' x0 cm
+_rawGetGlobalDelegation :: forall e. TransactionOptions NoPay -> ChainCursor -> { _voter :: Address } -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
+_rawGetGlobalDelegation x0 cm r = uncurryFields  r $ _rawGetGlobalDelegation' x0 cm
    where
-    c_rawGetGlobalDelegation' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "_voter") Address -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
-    c_rawGetGlobalDelegation' y0 cm' y2 = call y0 cm' ((tagged $ Tuple1 (untagged y2 )) :: C_rawGetGlobalDelegationFn)
+    _rawGetGlobalDelegation' :: TransactionOptions NoPay -> ChainCursor -> Tagged (SProxy "_voter") Address -> Web3 e (Either CallError (Tuple4 (UIntN (D2 :& D5 :& D6)) Address (UIntN (D2 :& D5 :& D6)) (UIntN (D2 :& D5 :& D6))))
+    _rawGetGlobalDelegation' y0 cm' y2 = call y0 cm' ((tagged $ Tuple1 (untagged y2 )) :: FnT_rawGetGlobalDelegationFn)
 
 --------------------------------------------------------------------------------
--- | CconstructorFn
+-- | ConstructorFn
 --------------------------------------------------------------------------------
 
 
-type CconstructorFn = Tagged (SProxy "constructor()") (Tuple0 )
+type ConstructorFn = Tagged (SProxy "constructor()") (Tuple0 )
 
-cconstructor :: forall e. TransactionOptions NoPay -> Web3 e HexString
-cconstructor x0 = sendTx x0 ((tagged $ Tuple0 ) :: CconstructorFn)
+constructor :: forall e. TransactionOptions NoPay -> HexString -> Web3 e HexString
+constructor x0 bc = deployContract x0 bc ((tagged $ Tuple0 ) :: ConstructorFn)
 
 --------------------------------------------------------------------------------
 -- | SetGlobalDelegation
