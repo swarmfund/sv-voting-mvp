@@ -73,7 +73,6 @@ getLsOnLoad =
     Cmd.batch <|
         List.map getLocalStorage
             [ lsAddrId
-            , lsBallotsVotedId
             , lsPendingVotesId
             ]
 
