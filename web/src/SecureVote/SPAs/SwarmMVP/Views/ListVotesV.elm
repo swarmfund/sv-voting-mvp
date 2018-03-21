@@ -21,6 +21,7 @@ import SecureVote.SPAs.SwarmMVP.Helpers exposing (getUserErc20Addr)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(OpeningSlideR))
+import SecureVote.Utils.Lenses exposing (..)
 import SecureVote.Utils.Time exposing (readableTime)
 import Time
 import Tuple exposing (first, second)
@@ -31,6 +32,25 @@ listVotesView model =
     let
         userAddr =
             getUserErc20Addr model
+
+        prelimInfo =
+            Dict.toList model.specToDeets
+                |> List.map
+                    (\( k, v ) ->
+                        ( k
+                        , (dictWDE model.currDemoc).getOption model.democIssues
+                            |> Maybe.withDefault Dict.empty
+                            |> Dict.toList
+                            |> List.filter (\( i, bpi ) -> bpi.specHash == k)
+                            |> List.map (\( i, bpi ) -> bpi.startTime)
+                            |> List.head
+                        )
+                    )
+                |> List.map (\( k, mst ) -> Maybe.map (\st -> ( k, st )) mst)
+                |> List.filter Maybe.Extra.isJust
+                |> Maybe.Extra.combine
+                |> Maybe.withDefault []
+                |> Dict.fromList
 
         allBallots =
             Dict.toList model.specToDeets
@@ -53,7 +73,8 @@ listVotesView model =
                 |> (==) (Just True)
 
         currentBallots =
-            List.sortBy (.endTime << second) <| filter (second >> (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime)) allBallots
+            List.sortBy (\( k, meh ) -> Dict.get k prelimInfo |> Maybe.withDefault 0) <|
+                filter (second >> (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime)) allBallots
 
         currVotedIn =
             List.filter (first >> haveVoted) currentBallots
