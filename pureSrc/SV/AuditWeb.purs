@@ -3,6 +3,7 @@ module SV.AuditWeb where
 import SV.Prelude
 
 import Control.Monad.Aff (launchAff_, liftEff', message)
+import Control.Monad.Aff.Console as AffC
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.AVar (AVAR)
 import Control.Monad.Eff.Class (liftEff)
@@ -17,6 +18,7 @@ import Data.Either (Either(..))
 import Data.Int (toNumber)
 import Data.StrMap as SMap
 import Data.Tuple (Tuple(..))
+import Global.Unsafe (unsafeStringify)
 import SV.Light.AuditApp (app, AppArgs)
 import SV.Types.OutboundLogs (SUAux(..))
 
@@ -28,6 +30,7 @@ main :: forall a e eff. AppArgs -> (J.Json -> Unit) -> Eff _ Unit
 main args updateF = launchAff_ $ do
     let updateF_ = updateF2 updateF
     let failErrorCode = 1
+    AffC.log $ "AuditWeb starting with args: " <> unsafeStringify args
     _ <- catchError (app args updateF_) \e -> do
                 let _ = updateF_ {t: "fail", p: SuStr $ message e}
                 pure $ Left $ Tuple failErrorCode $ message e

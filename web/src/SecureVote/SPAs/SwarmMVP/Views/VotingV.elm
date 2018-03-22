@@ -8,6 +8,7 @@ import Material.Card as Card
 import Material.Options as Options exposing (cs)
 import Material.Typography as Typo exposing (display2, title)
 import Maybe.Extra exposing ((?))
+import Monocle.Common exposing ((=>), dict)
 import RemoteData exposing (RemoteData(Success))
 import SecureVote.Ballots.Lenses exposing (..)
 import SecureVote.Ballots.Types exposing (..)
@@ -21,9 +22,10 @@ import SecureVote.Eth.Encoders exposing (minEthTxEncoder)
 import SecureVote.Eth.Types exposing (CandidateEthTx)
 import SecureVote.Eth.Utils exposing (processCandidateTx)
 import SecureVote.SPAs.SwarmMVP.Helpers exposing (formatTsAsDate, genVoteOptId, getDelegateAddress)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Model exposing (Model, bpiVotingAddr)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
-import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(GethDialog, MEWDialog, VerifyDialog), Route(SwmSubmitR))
+import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(FullAuditDialog, GethDialog, MEWDialog, VerifyDialog), Route(SwmSubmitR))
+import SecureVote.Utils.Lenses exposing ((=|>), dictWDE)
 import SecureVote.Utils.Lists exposing (enumerate)
 
 
@@ -94,9 +96,19 @@ votingView model ( bHash, bSpec ) =
                 , PageGoHome
                 ]
 
+        ( auditBtn, auditTitle, auditBtnText ) =
+            if endTime < model.now then
+                ( PriBtn, "Audit Ballot Results", "See Results" )
+            else
+                ( SecBtn, "Ballot Premilinary Results", "See Preliminary Results" )
+
+        resultsMsg =
+            MultiMsg <| [ SetDialog auditTitle FullAuditDialog, DoAudit ]
+
         endBtns model =
             div []
-                [ btn 987572349 model [ PriBtn, Attr (class "ma2"), Click (SetDialog "Verify Your Ballot" VerifyDialog), OpenDialog ] [ text "Verify Ballot" ]
+                [ btn 829378439 model [ auditBtn, Attr (class "ma2"), Click resultsMsg, OpenDialog ] [ text auditBtnText ]
+                , btn 987572349 model [ PriBtn, Attr (class "ma2"), Click (SetDialog "Verify Your Ballot" VerifyDialog), OpenDialog ] [ text "Verify Ballot" ]
                 , btn 843973394 model [ SecBtn, Attr (class "ma2"), Click endBtnMsgs ] [ text "I'm Done Voting - Next Ballot" ]
                 ]
 
@@ -107,7 +119,7 @@ votingView model ( bHash, bSpec ) =
                 , ballotClosedWarning
                 , span [] [ text "Tip: you can change your address in the settings." ]
                 , voteBtnsOrTxid model
-                , span [ class "" ] [ subhead <| "Results available " ++ formatTsAsDate endTime ]
+                , span [ class "" ] [ subhead <| "Final results available " ++ formatTsAsDate endTime ]
                 , endBtns model
                 ]
 

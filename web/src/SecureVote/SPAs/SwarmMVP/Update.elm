@@ -119,7 +119,7 @@ update msg model =
                     case bSpecM of
                         Just bSpec ->
                             if (bEndTime.getOption bSpec ? maxInt) < model.now then
-                                [ auditCmd { model | currentBallot = Just bHash } ( bHash, bSpec ) ]
+                                [ auditCmd model ]
                             else
                                 []
 
@@ -303,6 +303,9 @@ update msg model =
         FromAuditor msg ->
             { model | auditMsgs = msg :: model.auditMsgs } ! []
 
+        DoAudit ->
+            model ! [ auditCmd model ]
+
         LS msg ->
             lsWatchers msg <| doUpdate LS lsUpdate msg model.lsBucket (\b -> { model | lsBucket = b })
 
@@ -319,15 +322,12 @@ update msg model =
             Material.update Mdl msg_ model
 
 
-auditCmd model ( bHash, bSpec ) =
+auditCmd model =
     let
         votingAddr =
             mCurrVotingAddr.get model
-
-        erc20Addr =
-            bErc20Addr.getOption bSpec ? "NO ERC20 ADDR"
     in
-    getBallotResults { ethUrl = model.ethNode, ethRPCAuth = "", votingAddr = votingAddr, erc20Addr = erc20Addr }
+    getBallotResults { bScAddr = votingAddr, dev = model.dev, ethUrl = model.eth.ethNode }
 
 
 fatalFailedSpecUpdate : String -> Model -> ( Model, Cmd Msg )
