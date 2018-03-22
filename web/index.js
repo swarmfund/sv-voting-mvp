@@ -5,7 +5,7 @@ require('./css/vendor/material.amber-light_blue.min.css');
 const map = require('ramda/src/map');
 
 // current build issue with netlify - ignore for now
-// import AuditWeb from "../pureSrc/SecureVote/Democs/SwarmMVP/AuditWeb.purs";
+import AuditWeb from "../pureSrc/SV/AuditWeb.purs";
 
 const Decimal = require('decimal.js');
 window.Decimal = Decimal;
@@ -34,7 +34,7 @@ window.addEventListener('load', function() {
 
     const Elm = require('./src/SecureVote/SPAs/SwarmMVP/Main.elm');
     const app = Elm.SecureVote.SPAs.SwarmMVP.Main.embed(document.getElementById('sv-fullscreen'), flags);
-    web3Ports(web3js, {mmDetected, mmWeb3}, app, {AuditWeb: null, dev: flags.dev});
+    web3Ports(web3js, {mmDetected, mmWeb3}, app, {AuditWeb, dev: flags.dev});
     curve25519Ports(app);
     specSourcePorts(app, {dev: flags.dev});
     lsPorts(app, {dev: flags.dev});
