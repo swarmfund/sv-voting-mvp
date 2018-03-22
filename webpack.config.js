@@ -115,11 +115,11 @@ const common = {
             // inject details of output file at end of body
             inject: 'body'
         }),
-        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR", "DELEGATION_ADDR"]),
         new Dotenv({
             systemvars: true,
             path: TARGET.slice(0, 3) === 'dev' ? './.env-dev' : './.env-prod'
         }),
+        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR", "DELEGATION_ADDR"]),
     ],
     resolve: {
         extensions: [".js", ".json", ".ts"],
