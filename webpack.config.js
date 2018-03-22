@@ -119,7 +119,7 @@ const common = {
             systemvars: true,
             path: TARGET.slice(0, 3) === 'dev' ? './.env-dev' : './.env-prod'
         }),
-        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR", "DELEGATE_ADDR"]),
+        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR", "DELEGATION_ADDR"]),
     ],
     resolve: {
         extensions: [".js", ".json", ".ts"],
