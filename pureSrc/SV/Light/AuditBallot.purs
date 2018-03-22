@@ -135,6 +135,7 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
     ballotStartBlock <- lift $ joinFiber startingBlockFibre
     let ballotStartCC = BN $ wrap $ embed ballotStartBlock
 
+    -- TODO : Delegations don't seem to work either as historical or `Latest`
     delegateMap <- lift $ getDelegates {tknAddr, allBallots: plaintextBallots} dlgtSC Latest
     log $ "Found " <> show (Map.size delegateMap) <> " relevant delegations"
 
