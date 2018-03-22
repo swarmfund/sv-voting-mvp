@@ -79,6 +79,7 @@ type alias Model =
     , delegationAddr : String
     , lsBucket : Dict String String
     , eth : EthMdl
+    , enableEarlyResults : Bool
     }
 
 
@@ -135,7 +136,7 @@ bpiVotingAddr =
 
 
 initModel : Flags -> Model
-initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, delegationAddr, mmDetected } =
+initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, delegationAddr, mmDetected, enableEarlyResults } =
     let
         ethNode_ =
             if dev then
@@ -197,6 +198,7 @@ initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, de
     , delegationAddr = delegationAddr
     , lsBucket = Dict.empty
     , eth = initEthMdl { mmDetected = mmDetected, ethNode = ethNode_ }
+    , enableEarlyResults = enableEarlyResults
     }
 
 

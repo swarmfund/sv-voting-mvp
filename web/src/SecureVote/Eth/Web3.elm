@@ -227,7 +227,7 @@ onGotPubkey pubkeyVal =
             errHelper "Error while retrieving encryption public key: " err
 
 
-port getBallotResults : { ethUrl : String, ethRPCAuth : String, votingAddr : String, erc20Addr : String } -> Cmd msg
+port getBallotResults : { bScAddr : String, ethUrl : String, dev : Bool } -> Cmd msg
 
 
 port gotAuditMsgImpl : (Value -> msg) -> Sub msg

@@ -26,4 +26,5 @@ type alias Flags =
     , delegationABI : String
     , delegationAddr : String
     , mmDetected : Bool
+    , enableEarlyResults : Bool
     }

@@ -53,6 +53,7 @@ type Msg
     | Web3 EthMsg
       -- ** Auditor msgs
     | FromAuditor AuditDoc
+    | DoAudit
       -- ** Errors
     | LogErr String
     | Snackbar (Snackbar.Msg String)

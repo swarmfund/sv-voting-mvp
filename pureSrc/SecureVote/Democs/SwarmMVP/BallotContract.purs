@@ -400,7 +400,7 @@ runBallotCount startTime votingAddr contract erc20 {silent} updateF =
         optLog = log
 
 
--- | Log and increment the number of ballots we've processed to faciliate progress updates
+-- | Log and increment the number of ballots we've processed to facilitate progress updates
 incrementBallotProgress :: forall e. Int -> (String -> Aff (console :: CONSOLE, avar :: AVAR | e) Unit) -> AVar Int -> Aff (avar :: AVAR, console :: CONSOLE | e) Unit
 incrementBallotProgress totalBallots log avar = do
     n <- (+) 1 <$> takeVar avar
