@@ -11,7 +11,9 @@ import Control.Monad.Aff.AVar (AVAR, AVar, makeVar, putVar, takeVar)
 import Control.Monad.Aff.Console as AffC
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (CONSOLE)
+import Control.Monad.Eff.Console as EffC
 import Control.Monad.Eff.Ref (REF)
+import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.Except (ExceptT, lift)
 import Control.Parallel (parTraverse)
@@ -133,7 +135,7 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
     ballotStartBlock <- lift $ joinFiber startingBlockFibre
     let ballotStartCC = BN $ wrap $ embed ballotStartBlock
 
-    delegateMap <- lift $ getDelegates {tknAddr, allBallots: plaintextBallots} dlgtSC ballotStartCC
+    delegateMap <- lift $ getDelegates {tknAddr, allBallots: plaintextBallots} dlgtSC Latest
     log $ "Found " <> show (Map.size delegateMap) <> " relevant delegations"
 
     let allVoters = (\{voterAddr} -> voterAddr) <$> plaintextBallots
@@ -338,8 +340,11 @@ findEthBlockEndingInZeroBefore targetTime = do
 -- | This takes a ballotMap, delegateMap, and a (voter, balance) - it'll find the _first_ ballot in the
 -- | delegation chain and associate the balance with that ballot.
 getVoteOrRecurse :: BallotMap -> DelegateMap -> Tuple Address BigNumber -> Maybe (Tuple BallotFromSC BigNumber)
-getVoteOrRecurse ballotMap delegateMap p@(Tuple voter balance) =
-    case Map.lookup voter ballotMap of
+getVoteOrRecurse ballotMap delegateMap p@(Tuple voter balance) = do
+    let _ = unsafePerformEff $ EffC.log $ "Returning for voter " <> show voter <> " balance " <> show balance <> " with ballot " <> unsafeStringify res
+    res
+  where
+    res = case Map.lookup voter ballotMap of
         Just ballot -> Just $ Tuple ballot balance
         Nothing -> case Map.lookup voter delegateMap of
             Just dlgt -> getVoteOrRecurse ballotMap delegateMap p

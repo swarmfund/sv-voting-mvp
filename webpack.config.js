@@ -115,11 +115,11 @@ const common = {
             // inject details of output file at end of body
             inject: 'body'
         }),
+        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR", "DELEGATION_ADDR"]),
         new Dotenv({
             systemvars: true,
             path: TARGET.slice(0, 3) === 'dev' ? './.env-dev' : './.env-prod'
         }),
-        new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR", "DELEGATION_ADDR"]),
     ],
     resolve: {
         extensions: [".js", ".json", ".ts"],
@@ -209,7 +209,7 @@ const genConfig = () => {
 
     if (TARGET === 'prod-ui' || TARGET === 'prod-admin-ui' || TARGET === 'prod-delegation-ui') {
         console.log('Building for prod...');
-        const config = merge(common, buildAuditWeb({outputDir: ".cache/output"}), {
+        const config = merge(common, /*buildAuditWeb({outputDir: ".cache/output"}),*/ {
             // mode: "production",  // webpack v4
             plugins: [
                 // Delete everything from output directory and report to user
