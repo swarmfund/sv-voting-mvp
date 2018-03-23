@@ -25,6 +25,21 @@ openingSlide model ( bHash, bSpec ) =
         ballotOver =
             (bEndTime.getOption bSpec ? maxInt) < model.now
 
+        ( auditBtn, auditTitle, auditBtnText ) =
+            if ballotOver then
+                ( PriBtn, "Audit Ballot Results", "See Results" )
+            else
+                ( SecBtn, "Ballot Premilinary Results", "See Preliminary Results" )
+
+        resultsMsg =
+            MultiMsg <| [ SetDialog auditTitle FullAuditDialog, DoAudit ]
+
+        maybeEarlyResults =
+            if model.enableEarlyResults then
+                btn 829378439 model [ auditBtn, Attr (class "ma2"), Click resultsMsg, OpenDialog ] [ text auditBtnText ]
+            else
+                Html.span [] []
+
         getDomain l =
             String.split "/" l
                 |> List.drop 2
@@ -128,6 +143,7 @@ openingSlide model ( bHash, bSpec ) =
                     resultsParas
                   else
                     introParagraphs
+                , maybeEarlyResults
                 , ballotIntegrity ( bHash, bSpec ) model
                 , continueBtn
                 ]
