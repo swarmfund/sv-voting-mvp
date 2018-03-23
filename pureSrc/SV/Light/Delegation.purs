@@ -35,22 +35,23 @@ procResDlgtion :: (Tuple6 _ _ _ Address Address Address) -> {delegator :: Addres
 procResDlgtion (Tuple6 _ _ _ delegatee delegator token) = {delegatee, delegator, token}
 
 
+-- | Find all delegators to a particular delegate recursively
 findDelegatorsRecursive :: {tknAddr :: Address, delegate :: Address} -> (forall args r. SmartContract _ args r) -> ChainCursor -> Aff _ (Array Address)
 findDelegatorsRecursive = findDelegators_ Set.empty
   where
     findDelegators_ :: Set.Set Address -> _ -> (forall args r. SmartContract _ args r) -> _ -> Aff _ (Array Address)
     findDelegators_ carry opts@{tknAddr, delegate} dlgtSC cc = do
         Tuple2 delegators tokens <- dlgtSC findPossibleDelegatorsOf cc {delegate}
-        -- AffC.log $ show (Arr.length delegators) <> " possible delegators to " <> show delegate
+        AffC.log $ show (Arr.length delegators) <> " possible delegators to " <> show delegate
         let dlgtPairs = Arr.filter (\(Tuple vtr tkn) -> not (Set.member vtr carry)) $ Arr.zip delegators tokens
-        -- AffC.log $ "Finding delegators for " <> show delegate <> ", dlgtPairs len: " <> show (Arr.length dlgtPairs)
+        AffC.log $ "Finding delegators for " <> show delegate <> ", dlgtPairs len: " <> show (Arr.length dlgtPairs)
         realDelegators <- onlyJust <$> parTraverse confirmDelegation dlgtPairs
         let checkNext = fst <$> realDelegators
             nextCarry = carry <> Set.fromFoldable checkNext
-        -- AffC.log $ "Finding delegators recursivley for " <> show delegate <> ", nextCarry n: " <> show (Set.size nextCarry)
+        AffC.log $ "Finding delegators recursively for " <> show delegate <> ", nextCarry n: " <> show (Set.size nextCarry)
         deeperDelegators <- foldr (<>) [] <$> parTraverse (\newDlgt -> findDelegators_ nextCarry (opts {delegate = newDlgt}) dlgtSC cc) checkNext
-        -- AffC.log $ "Got delegators for " <> show delegate <> ", n: " <> show (Arr.length deeperDelegators)
-        pure (Set.toUnfoldable $ Set.fromFoldable deeperDelegators)
+        AffC.log $ "Got delegators for " <> show delegate <> ", n: " <> show (Arr.length deeperDelegators)
+        pure $ Set.toUnfoldable (nextCarry <> Set.fromFoldable deeperDelegators)
       where
         confirmDelegation p@(Tuple vtr tkn) = do
             Tuple6 _ _ _ delegatee delegator token <- dlgtSC resolveDelegation cc {voter: vtr, tokenContract: tkn}
