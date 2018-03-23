@@ -16,6 +16,7 @@ import Control.Monad.Eff.Ref (REF)
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.Except (ExceptT, lift)
+import Control.Monad.Rec.Class (Step(..), tailRec, tailRecM)
 import Control.Parallel (parTraverse)
 import Crypt.NaCl (BoxSecretKey)
 import Data.Array (concat, foldr, last, range)
@@ -23,7 +24,7 @@ import Data.Array as Arr
 import Data.Decimal as Dec
 import Data.Int (round, toNumber)
 import Data.Int as DInt
-import Data.Lens ((.~), (^.))
+import Data.Lens ((.~), (^.), _1, _2)
 import Data.Map (Map, fromFoldable)
 import Data.Map as Map
 import Data.Newtype (unwrap, wrap)
@@ -148,7 +149,7 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
     let (weightedBallots :: Array _) = onlyJust $ getVoteOrRecurse ballotMap delegateMap <$> Map.toUnfoldable balanceMap
 
     log $ "Calculating final results..."
-    let results = foldr (\(Tuple ({ballot}) bal) m ->
+    let results = foldr (\{ballot: {ballot}, bal} m ->
                                 Map.lookup ballot m
                                 # fromMaybe (embed 0)
                                 # \v -> Map.insert ballot (v + bal) m)
@@ -337,15 +338,20 @@ findEthBlockEndingInZeroBefore targetTime = do
     getBlockTimestamp blkNum = runWeb3_ (eth_getBlockByNumber (BN $ wrap $ embed blkNum)) >>= eToAff <#> (\(Block b) -> b.timestamp # unsafeToInt)
 
 
+type GetVoteResult = {origVoter :: Address, ballot :: BallotFromSC, bal :: BigNumber}
+type GetVoteLoopInput = {ballotMap :: BallotMap, delegateMap :: DelegateMap, p :: {origVoter :: Address, bal :: BigNumber, vtr :: Address}}
+
 -- | This takes a ballotMap, delegateMap, and a (voter, balance) - it'll find the _first_ ballot in the
 -- | delegation chain and associate the balance with that ballot.
-getVoteOrRecurse :: BallotMap -> DelegateMap -> Tuple Address BigNumber -> Maybe (Tuple BallotFromSC BigNumber)
-getVoteOrRecurse ballotMap delegateMap p@(Tuple voter balance) = do
-    let _ = unsafePerformEff $ EffC.log $ "Returning for voter " <> show voter <> " balance " <> show balance <> " with ballot " <> unsafeStringify res
-    res
+getVoteOrRecurse :: BallotMap -> DelegateMap -> Tuple Address BigNumber -> Maybe GetVoteResult
+getVoteOrRecurse ballotMap delegateMap p@(Tuple origVoter origBal) = do
+    ret <- tailRecM go {ballotMap, delegateMap, p: {origVoter, vtr: origVoter, bal: origBal}}
+    let _ = unsafePerformEff $ EffC.log $ "Returning for voter " <> show ret.origVoter <> " balance " <> show (ret.bal) <> " with ballot " <> unsafeStringify (ret.ballot)
+    pure ret
   where
-    res = case Map.lookup voter ballotMap of
-        Just ballot -> Just $ Tuple ballot balance
-        Nothing -> case Map.lookup voter delegateMap of
-            Just dlgt -> getVoteOrRecurse ballotMap delegateMap p
-            Nothing -> Nothing
+    go :: GetVoteLoopInput -> Maybe (Step _ GetVoteResult)
+    go {ballotMap, delegateMap, p: p@{origVoter, bal, vtr}} = case Map.lookup vtr ballotMap of
+            Just ballot -> pure $ Done $ {origVoter, ballot, bal}
+            Nothing -> do
+                dlgt <- Map.lookup vtr delegateMap
+                pure $ Loop {ballotMap, delegateMap, p: p {vtr = dlgt}}
