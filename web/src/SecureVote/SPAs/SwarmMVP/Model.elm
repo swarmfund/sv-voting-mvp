@@ -107,16 +107,12 @@ initModel dev mainTitle =
 
 initEthNode : String
 initEthNode =
-    "https://eth-aws-nv-node-02.secure.vote:8545/microgov"
+    "https://mainnet.eth.secure.vote:8545/microgov"
 
 
 devEthNode : String
 devEthNode =
-    "https://eth-kovan-aws-nv-node-01.secure.vote:8545/microgovDev"
-
-
-
---    "https://mainnet.infura.io/securevote"
+    "https://kovan.eth.secure.vote:8545/microgovDev"
 
 
 type LastPageDirection
