@@ -106,7 +106,7 @@ votingView model ( bHash, bSpec ) =
             MultiMsg <| [ SetDialog auditTitle FullAuditDialog, DoAudit ]
 
         maybeEarlyResults =
-            if model.enableEarlyResults then
+            if model.enableEarlyResults || endTime < model.now then
                 btn 829378439 model [ auditBtn, Attr (class "ma2"), Click resultsMsg, OpenDialog ] [ text auditBtnText ]
             else
                 Html.span [] []

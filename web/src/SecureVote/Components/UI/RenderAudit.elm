@@ -8,7 +8,7 @@ import Maybe.Extra exposing ((?))
 import SecureVote.Ballots.Lenses exposing (..)
 import SecureVote.Ballots.Types exposing (..)
 import SecureVote.Eth.Types exposing (AuditDoc(..), BallotResult)
-import SecureVote.Eth.Utils exposing (isLegacyAddress)
+import SecureVote.Eth.Utils exposing (formatBalance, isLegacyAddress)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
@@ -39,7 +39,7 @@ renderResults model ( bHash, bSpec ) { nVotes, totals } =
 
         {- process (title, score) tuples -}
         procHS ( t, score ) =
-            ( text t, span [ sCls score ] [ text <| D.toString score ] )
+            ( text t, span [ sCls score ] [ text <| formatBalance <| D.toString score ] )
 
         --optTitles =
         --    case bVoteOpts.get bSpec of
