@@ -161,7 +161,11 @@ setDelegationBtns model =
 
 
 tokenAddrInput model =
-    when (getStrField model getDlgtTypeId == Just "token") (tokenSelector model)
+    when (getStrField model getDlgtTypeId == Just "token") (rawTokenAddrInput model)
+
+
+rawTokenAddrInput model =
+    tokenSelector model
 
 
 viewDlgtFields : Model -> UiElem
@@ -265,6 +269,7 @@ viewVotersFields model =
             , label = I.labelAbove (text "Delegate's Address")
             , options = []
             }
+        , rawTokenAddrInput model
         , cmnBtn CS
             { onClick = MMsg [ GetVotersForDlgt dlgtAddr ]
             , text = "Show Voters"
