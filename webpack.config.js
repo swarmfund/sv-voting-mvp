@@ -279,9 +279,8 @@ const genConfig = () => {
             }
         });
     }
-    
-    console.log("env vars at build:\n", JSON.stringify(process.env, null, 2));
 };
 
+console.log("env vars at build:\n", JSON.stringify(process.env, null, 2));
 
 module.exports = genConfig();
