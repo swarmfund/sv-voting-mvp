@@ -1,8 +1,10 @@
 pragma solidity ^0.4.19;
 
-// DELEGATION SC
+// DELEGATION SC v1.0
 
 // (c) SecureVote 2018
+
+// This SC is now deprecated
 
 // Released under MIT licence
 

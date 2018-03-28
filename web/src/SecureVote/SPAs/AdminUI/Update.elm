@@ -3,21 +3,30 @@ module SecureVote.SPAs.AdminUI.Update exposing (..)
 import Dict
 import Element.Input exposing (dropMenu, menu, select, selected, updateSelection)
 import Maybe.Extra exposing ((?), isJust)
+import RemoteData
 import SecureVote.Ballots.Encoders exposing (bSpecToJson, bSpecValueToString)
 import SecureVote.Ballots.Types exposing (emptyBSpec01)
 import SecureVote.Crypto.Hashing as H exposing (HashAlg(Sha256), HashFmt(EthHex), hash, hashUpdate)
+import SecureVote.Eth.Tasks exposing (getContractData)
 import SecureVote.Eth.Web3 exposing (getTxInfoContractWrite, performContractWriteMM)
+import SecureVote.SPAs.AdminUI.ArchivePush exposing (pushToArchive)
 import SecureVote.SPAs.AdminUI.Components.Input exposing (genDropSelect)
 import SecureVote.SPAs.AdminUI.Fields exposing (..)
 import SecureVote.SPAs.AdminUI.Helpers exposing (genDeployArgs, getStrField)
 import SecureVote.SPAs.AdminUI.Model exposing (Model, Web3Model, initWeb3Model)
 import SecureVote.SPAs.AdminUI.Msg exposing (FromWeb3Msg(..), Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.AdminUI.Views.BallotBuilder exposing (buildBSpecV01)
+import SecureVote.Utils.Msgs exposing (msgOrErr)
 import String exposing (toInt)
+import Task
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        onFieldUpdate k =
+            update (MMsg [ ResetBallotPubFields k, UpdateWrkBallot ])
+    in
     case msg of
         Nop ->
             model ! []
@@ -30,10 +39,40 @@ update msg model =
                     else
                         Dict.insert k v model.strFields
             in
-            { model | strFields = sf } ! []
+            onFieldUpdate k { model | strFields = sf }
+
+        SetIntField k v ->
+            onFieldUpdate k { model | intFields = Dict.insert k v model.intFields }
 
         SetBoolField k v ->
-            { model | boolFields = Dict.insert k v model.boolFields } ! []
+            onFieldUpdate k { model | boolFields = Dict.insert k v model.boolFields }
+
+        ToggleBoolField k ->
+            onFieldUpdate k { model | boolFields = Dict.update k (\v -> Just <| not <| v ? False) model.boolFields }
+
+        SetLoadingField k v ->
+            { model | loadingFields = Dict.insert k v model.loadingFields } ! []
+
+        ResetBallotPubFields k ->
+            let
+                pubFields =
+                    [ showWriteBallotButtonId, uploadBallotButtonId ]
+
+                boolFields =
+                    model.boolFields
+                        |> Dict.remove uploadBallotButtonId
+                        |> Dict.remove showWriteBallotButtonId
+
+                loadingFields =
+                    model.loadingFields
+                        |> Dict.remove writeContractLoadingInd
+                        |> Dict.remove saveJsonLoadingIndicator
+                        |> Dict.remove uploadBallotLoadingInd
+            in
+            if List.member k pubFields then
+                model ! []
+            else
+                { model | boolFields = boolFields, loadingFields = loadingFields } ! []
 
         SelectBallot selectMsg ->
             let
@@ -106,6 +145,20 @@ update msg model =
 
         SaveJson ->
             model ! []
+
+        UploadBallot { andThen } ->
+            let
+                doNext rd =
+                    let
+                        setLdMsg =
+                            SetLoadingField uploadBallotLoadingInd rd
+                    in
+                    if RemoteData.isSuccess rd then
+                        MMsg [ setLdMsg, andThen ]
+                    else
+                        setLdMsg
+            in
+            model ! [ pushToArchive model |> Cmd.map doNext ]
 
         LogErr err ->
             { model | errors = err :: model.errors, log = err :: model.log } ! []

@@ -21,6 +21,7 @@ module.exports = function(){
         delegationAddr: process.env.DELEGATION_ADDR,
         delegationABI: JSON.stringify(delegationABI),
         enableEarlyResults: url.query.enableEarlyResults === "true" || false,
-    }
+        archivePushApiKey: process.env.ARCHIVE_PUSH_API_KEY || "",
+    };
     return flags;
 }
