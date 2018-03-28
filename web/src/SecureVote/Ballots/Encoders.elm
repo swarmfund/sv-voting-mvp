@@ -52,7 +52,10 @@ oSpecToJson o =
                 ]
 
         OptsSimple RangeVotingPlusMinus3 opts ->
-            E.array <| Array.fromList <| List.map simpleOToJson opts
+            E.object
+                [ ( "optionsVersion", E.int 1 )
+                , ( "options", E.array <| Array.fromList <| List.map simpleOToJson opts )
+                ]
 
         OptsBinary ->
             E.object
