@@ -4,6 +4,7 @@ const delegationABI = require('../../_solDist/SVDelegationV0101.abi.json');
 const Url = require('domurl');
 
 const _DEV_ = process.env.DEV;
+console.log("(JSON stringified) Dev env variable:", JSON.stringify(_DEV_));
 const DEV = (_DEV_ && _DEV_.toLowerCase() === "true") || false;
 
 const url = new Url;
