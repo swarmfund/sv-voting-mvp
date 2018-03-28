@@ -2,6 +2,7 @@ module SecureVote.SPAs.AdminUI.Views.Styles exposing (..)
 
 import Color exposing (black, darkGray)
 import Element exposing (Element)
+import SecureVote.Components.UI.CommonStyles exposing (CommonStyle, Variations(..), commonStyleSheet)
 import SecureVote.SPAs.AdminUI.Msg exposing (Msg)
 import Style exposing (prop, style, styleSheet, variation)
 import Style.Border exposing (..)
@@ -25,13 +26,7 @@ type AdminStyles
     | Code
     | LogEntry
     | EventLogBox
-
-
-type Variations
-    = NoVar
-    | RoundedTop
-    | RoundedAll
-    | FSmall
+    | CS CommonStyle
 
 
 radius =
@@ -39,7 +34,7 @@ radius =
 
 
 stylesheet =
-    styleSheet
+    styleSheet <|
         [ style NoS []
         , style BallotElemSelector []
         , style Title
@@ -93,3 +88,4 @@ stylesheet =
             , border black
             ]
         ]
+            ++ commonStyleSheet CS

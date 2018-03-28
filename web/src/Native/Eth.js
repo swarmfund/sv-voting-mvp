@@ -38,21 +38,35 @@ const _secure_vote$sv_light$Native_Eth = function() {
     };
 
 
-    const readCRaw = ({abi, addr, method, args}) => cb => {
+    const readCRaw = ({abi, addr, method, args}, {action}) => cb => {
         try {
             addr = addr.toLowerCase();
             console.log(`Task: Reading ${addr}.${method}(${args})`);
             const c = web3js.eth.contract(JSON.parse(abi)).at(addr);
-            console.log(`Got contract: ${c}`)
-            mkPromise(c[method])(...args)
-                .then(response => {
-                    const resp = convertBigNums(response);
-                    console.log(`Read ${addr}.${method}(${args}) w/ response ${resp}`);
-                    return cb(null, {method, resp, addr});
-                }).catch(err => {
-                    console.log(`Error reading ${addr}.${method}(${args}) => ${err.message}`);
-                    return cb(err.message);
-            })
+            console.log(`Got contract: ${c}`);
+
+            if (action === 'read') {
+                mkPromise(c[method])(...args)
+                    .then(response => {
+                        const resp = convertBigNums(response);
+                        console.log(`Read ${addr}.${method}(${args}) w/ response ${resp}`);
+                        return cb(null, {method, resp, addr});
+                    }).catch(err => {
+                        console.log(`Error reading ${addr}.${method}(${args}) => ${err.message}`);
+                        return cb(err.message);
+                })
+            } else if (action === 'getData') {
+                mkPromise(c[method]['getData'])(...args)
+                    .then(data => {
+                        console.log(`GotData ${addr}.${method}(${args}) => ${data}`);
+                        return cb(null, data);
+                    }).catch(err => {
+                        console.log(`GetData error: ${addr}.${method}(${args}) => ${err.message}`);
+                        return cb(err.message);
+                })
+            } else {
+                throw Error("Unknown method in Native.Eth.readCRaw");
+            }
         } catch (e) {
             console.log('ReadContract caught an error: ', e);
             return cb(e.message);
@@ -76,18 +90,22 @@ const _secure_vote$sv_light$Native_Eth = function() {
 
 
     const readContract = ({abi, addr, method, args}) => {
-        return scheduler.nativeBinding(cb => readCRaw({abi, addr, method, args})(canonCbToElmCb(cb)));
+        return scheduler.nativeBinding(cb => readCRaw({abi, addr, method, args}, {action: 'read'})(canonCbToElmCb(cb)));
     };
 
     const readContractParallel = (rs) => {
         return scheduler.nativeBinding(cb => {
-            AsyncPar(rs, (args) => mkPromise(readCRaw(args)))
+            AsyncPar(rs, (args) => mkPromise(readCRaw(args, {action: 'read'})))
                 .then(allRs => cb(rSucc(allRs)))
                 .catch(e => cb(rFail(e)))
         });
     }
 
+    const getContractData = (args) => {
+        return scheduler.nativeBinding(cb => readCRaw(args, {action: 'getData'})(canonCbToElmCb(cb)));
+    }
+
     console.log(scheduler)
 
-    return {init, readContract, readContractParallel};
+    return {init, readContract, readContractParallel, getContractData};
 }();

@@ -43,3 +43,8 @@ readContractParallel : List ReadContractDoc -> Task String (List ReadResponse)
 readContractParallel =
     Native.Eth.readContractParallel
         >> Task.andThen (decodeValue (list readResponseDec) >> Result.Extra.unpack Task.fail Task.succeed)
+
+
+getContractData : ReadContractDoc -> Task String String
+getContractData =
+    Native.Eth.getContractData

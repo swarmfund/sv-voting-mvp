@@ -12,11 +12,12 @@ type alias CollapsibleOpts s msg =
     , header : String
     , body : List (Element s Variations msg)
     , startOpen : Bool
+    , smallTitle : Bool
     }
 
 
 collapsible : (CommonStyle -> s) -> CollapsibleOpts s msg -> Element s Variations msg
-collapsible w { onCollapse, isCollapsed, header, body, startOpen } =
+collapsible w { onCollapse, isCollapsed, header, body, startOpen, smallTitle } =
     let
         isOpen =
             xor startOpen isCollapsed
@@ -26,10 +27,16 @@ collapsible w { onCollapse, isCollapsed, header, body, startOpen } =
                 "➕"
             else
                 "➖"
+
+        titleSty =
+            if smallTitle then
+                SubTitle
+            else
+                Title
     in
     column (w Collapsible)
         [ spacing cmnSpacing ]
     <|
-        [ el (w Title) [ onClick onCollapse, vary BtnCursor True ] <| text <| collapsedSymbol ++ " " ++ header
+        [ el (w titleSty) [ onClick onCollapse, vary BtnCursor True ] <| text <| collapsedSymbol ++ " " ++ header
         ]
             ++ [ when isOpen <| column (w NoS) [ spacing cmnSpacing ] body ]

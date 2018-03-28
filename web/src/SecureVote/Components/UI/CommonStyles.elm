@@ -3,7 +3,7 @@ module SecureVote.Components.UI.CommonStyles exposing (..)
 import Color exposing (..)
 import Style exposing (Property, Style, StyleSheet, cursor, prop, style, variation)
 import Style.Border exposing (..)
-import Style.Color exposing (border, text)
+import Style.Color exposing (background, border, text)
 import Style.Font exposing (..)
 
 
@@ -38,6 +38,9 @@ type CommonStyle
     | SubSubTitle
     | Field
     | NoS
+    | LoadingIndStyle
+    | GreyOut
+    | LinProcElement
 
 
 type Variations
@@ -46,6 +49,7 @@ type Variations
     | RoundedTop
     | RoundedAll
     | Disabled
+    | FSmall
 
 
 commonStyleSheet : (CommonStyle -> s) -> List (Style s Variations)
@@ -57,29 +61,36 @@ commonStyleSheet wrap =
             ]
           )
         , ( Warning
-          , [ size 20
+          , [ size 17
             , text red
+            , background <| rgb 255 200 200
+            , border red
+            , left 2
             ]
           )
         , ( PageTitle
           , [ text black
             , size 40
+            , bold
             ]
           )
         , ( Title
           , [ text black
             , size 30
             , variation BtnCursor [ cursor "pointer" ]
+            , bold
             ]
           )
         , ( SubTitle
           , [ text black
             , size 20
+            , bold
             ]
           )
         , ( SubSubTitle
           , [ text black
-            , size 15
+            , size 17
+            , bold
             ]
           )
         , ( Field
@@ -96,4 +107,13 @@ commonStyleSheet wrap =
             ]
           )
         , ( Collapsible, [] )
+        , ( LoadingIndStyle, [ size 25 ] )
+        , ( GreyOut
+          , []
+          )
+        , ( LinProcElement
+          , [ top 1
+            , border black
+            ]
+          )
         ]

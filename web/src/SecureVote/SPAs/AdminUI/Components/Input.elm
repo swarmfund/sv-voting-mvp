@@ -2,8 +2,9 @@ module SecureVote.SPAs.AdminUI.Components.Input exposing (..)
 
 import Element.Attributes exposing (minHeight, padding, px, spacing, vary)
 import Element.Input as I
+import SecureVote.Components.UI.CommonStyles exposing (Variations(..))
 import SecureVote.SPAs.AdminUI.Msg exposing (Msg(SelectBallot))
-import SecureVote.SPAs.AdminUI.Views.Styles exposing (AdminStyles(..), Variations(..))
+import SecureVote.SPAs.AdminUI.Views.Styles exposing (AdminStyles(..))
 
 
 stdPad =

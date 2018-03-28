@@ -4,16 +4,20 @@ import Dict exposing (Dict)
 import Element.Input exposing (SelectWith)
 import Json.Decode exposing (Value)
 import Json.Encode exposing (object)
+import RemoteData exposing (RemoteData)
 import SecureVote.Ballots.Types exposing (BallotSpec, BallotSpecChoice, OptsChoice, emptyBSpec01)
+import SecureVote.Const exposing (archivePushProdURL, archivePushTestURL, fakeErc20Addr)
 import SecureVote.Crypto.Hashing exposing (HashModel)
-import SecureVote.SPAs.AdminUI.Fields exposing (democHashId, erc20Id)
+import SecureVote.SPAs.AdminUI.Fields exposing (democHashId, erc20Id, rangeVoteNumOptsId)
 import SecureVote.SPAs.AdminUI.Msg exposing (Msg)
 import SecureVote.SPAs.AdminUI.Types exposing (Flags)
 
 
 type alias Model =
     { strFields : Dict String String
+    , intFields : Dict String Int
     , boolFields : Dict String Bool
+    , loadingFields : Dict String (RemoteData String String)
     , select : Maybe (SelectWith BallotSpecChoice Msg)
     , selectOpts : Maybe (SelectWith OptsChoice Msg)
     , workingBallot : BallotSpec
@@ -27,22 +31,32 @@ type alias Model =
     , indexAddr : String
     , indexABI : String
     , log : List String
+    , archivePushApiKey : String
+    , archivePushURL : String
     }
 
 
 initModel : Flags -> Model
-initModel { mainTitle, dev, democHash, indexAddr, indexABI } =
+initModel { mainTitle, dev, democHash, indexAddr, indexABI, archivePushApiKey } =
     let
         initStrFields =
             [ ( democHashId, democHash ) ]
                 ++ (if dev then
-                        [ ( erc20Id, "0xc3D10aF066bde2357C92Bc4Af25FB5f42e73F1a4" ) ]
+                        [ ( erc20Id, fakeErc20Addr ) ]
                     else
                         []
                    )
+
+        ( archivePushURL, meh ) =
+            if dev then
+                ( archivePushTestURL, "" )
+            else
+                ( archivePushProdURL, "" )
     in
     { strFields = Dict.fromList initStrFields
+    , intFields = Dict.fromList [ ( rangeVoteNumOptsId, 1 ) ]
     , boolFields = Dict.empty
+    , loadingFields = Dict.empty
     , select = Nothing
     , selectOpts = Nothing
     , workingBallot = emptyBSpec01
@@ -56,6 +70,8 @@ initModel { mainTitle, dev, democHash, indexAddr, indexABI } =
     , indexAddr = indexAddr
     , indexABI = indexABI
     , log = []
+    , archivePushApiKey = archivePushApiKey
+    , archivePushURL = archivePushURL
     }
 
 

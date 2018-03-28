@@ -14,6 +14,14 @@ selectOptionId =
     "selectOptionTypeId"
 
 
+genSimpOptTitleId i =
+    idB1F <| "-simpleOpt-title-" ++ toString i
+
+
+genSimpOptDescId i =
+    idB1F <| "-simpleOpt-desc-" ++ toString i
+
+
 idB1F s =
     "bBallotV01" ++ s
 
@@ -52,3 +60,27 @@ discussId =
 
 isBindingId =
     idB1F "IsBinding"
+
+
+rangeVoteNumOptsId =
+    idB1F "rangeVoteNumOptsId"
+
+
+uploadBallotButtonId =
+    "uploadBallotButtonId"
+
+
+showWriteBallotButtonId =
+    "showWriteBallotButtonId"
+
+
+saveJsonLoadingIndicator =
+    "saveJsonLoadingIndicator"
+
+
+uploadBallotLoadingInd =
+    "uploadBallotLoadingInd"
+
+
+writeContractLoadingInd =
+    "writeContractLoadingInd"
