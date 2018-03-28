@@ -3,13 +3,10 @@
 
 [context.production]
     [context.production.environment]
-        DEV = "false"
         YARN_VERSION = "0.18.1"
 
 [context.deploy-preview.environment]
-    DEV = "false"
     YARN_VERSION = "0.18.1"
 
 [context.branch-deploy.environment]
-    DEV = "true"
     YARN_VERSION = "0.18.1"
