@@ -41,6 +41,7 @@ rootV model =
                         , setDelegationBtns model
                         ]
                     , startOpen = False
+                    , smallTitle = False
                     }
                 , collapsible CS
                     { header = "Voter -> Delegate"
@@ -48,6 +49,7 @@ rootV model =
                     , isCollapsed = getBoolFieldWD model viewDlgtCollapsedId
                     , body = [ viewDlgtFields model, viewDelegateResp model ]
                     , startOpen = True
+                    , smallTitle = False
                     }
                 , collapsible CS
                     { header = "Delegate -> Voters"
@@ -55,5 +57,6 @@ rootV model =
                     , isCollapsed = getBoolFieldWD model viewVotersForDlgtCollapsedId
                     , body = [ viewVotersFields model, viewVotersForDlgtResp model ]
                     , startOpen = False
+                    , smallTitle = False
                     }
                 ]
