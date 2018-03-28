@@ -184,13 +184,16 @@ listVotesView model =
             (dict model.currDemoc).getOption model.democIToSpec |> Maybe.map Dict.size |> Maybe.withDefault 0
 
         gotNBallots =
-            Dict.size model.specToDeets
+            Dict.size model.specToDeets + gotNBadBallots
 
         gotNAbrvs =
-            Dict.size model.erc20Abrvs
+            Dict.size model.erc20Abrvs + gotNBadBallots
 
         gotNBallotScDetails =
             Dict.size model.ballotScDetails
+
+        gotNBadBallots =
+            List.length model.fatalSpecFail
 
         gotNPrevVoteDeets =
             userAddr
@@ -199,7 +202,21 @@ listVotesView model =
                 |> Maybe.withDefault 0
 
         doneLoadingBallots =
-            isJust totalBallots && totalBallots == Just gotNBallots && BE.all (List.map ((==) gotNBallots) [ gotNAbrvs, gotNBallotScDetails, foundNBallots, gotNPrevVoteDeets ])
+            let
+                totBallots_ =
+                    totalBallots ? 0
+            in
+            isJust totalBallots
+                -- use <= not == here because we want to be okay with accidentally counting extra stuff (e.g. from errors with gotNBadBallots)
+                && BE.all
+                    (List.map ((<=) totBallots_)
+                        [ gotNAbrvs
+                        , gotNBallotScDetails
+                        , foundNBallots
+                        , gotNPrevVoteDeets
+                        , gotNBallots
+                        ]
+                    )
 
         allBallotsView =
             currBallotNotVotedV ++ currBallotVotedV ++ futureBallotV ++ pastBallotV

@@ -119,7 +119,8 @@ update msg model =
                     case bSpecM of
                         Just bSpec ->
                             if (bEndTime.getOption bSpec ? maxInt) < model.now then
-                                [ auditCmd model ]
+                                -- need to use updated model for audit cmd as it gets the current ballot address which is only set in updated model
+                                [ auditCmd m_ ]
                             else
                                 []
 
