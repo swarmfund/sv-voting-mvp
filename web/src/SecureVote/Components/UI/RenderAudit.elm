@@ -106,5 +106,8 @@ renderAuditMsg model currBallot auditMsg =
         AuditFail msg ->
             wrapper [ class "red bold" ] msg
 
+        AuditWarn msg ->
+            wrapper [ class "orange" ] msg
+
         AuditSuccess res ->
             renderResults model currBallot res

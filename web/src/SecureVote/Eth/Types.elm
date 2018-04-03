@@ -17,6 +17,7 @@ type AuditDoc
     = AuditLog String
     | AuditLogErr String
     | AuditFail String
+    | AuditWarn String
     | AuditSuccess BallotResult
 
 
