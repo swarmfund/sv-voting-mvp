@@ -4,19 +4,22 @@ import Date
 import Date.Extra.Config.Config_en_us as USDate
 import Date.Extra.Format exposing (format, isoString)
 import Dict
+import Dict.Extra
 import Html exposing (Html, pre)
 import Html.Attributes exposing (class)
 import Maybe exposing (andThen)
+import Maybe.Extra
 import Monocle.Common exposing (dict)
 import ParseInt exposing (parseIntRadix, toRadix)
 import RemoteData exposing (RemoteData(Loading))
 import Result.Extra exposing (isOk)
+import SecureVote.Ballots.Lenses exposing (..)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Hashing exposing (hashToInt)
 import SecureVote.Eth.Types exposing (nullCandidateEthTx)
 import SecureVote.SPAs.SwarmMVP.Ballots.Types exposing (BallotParams)
 import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
-import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
+import SecureVote.SPAs.SwarmMVP.Model exposing (Model, mBSpec)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Types exposing (TxidCheckStatus(TxidNotMade))
 import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits, intsToRangeBallot3Bits)
@@ -55,6 +58,46 @@ getNBallots model =
     (dict model.currDemoc).getOption model.democIssues
         |> Maybe.map Dict.size
         |> Maybe.withDefault 0
+
+
+getLiveBallots : Model -> Dict.Dict String Bool
+getLiveBallots model =
+    (dict model.currDemoc).getOption model.democIssues
+        |> Maybe.withDefault Dict.empty
+        |> Dict.Extra.filterMap
+            (\k { specHash } ->
+                (mBSpec specHash).getOption model
+            )
+        |> Dict.Extra.filterMap
+            (\k bSpec ->
+                case ( bStartTime.getOption bSpec, bEndTime.getOption bSpec ) of
+                    ( Just st, Just et ) ->
+                        if st < model.now && model.now < et then
+                            Just True
+                        else
+                            Nothing
+
+                    _ ->
+                        Nothing
+            )
+
+
+getNLiveBallots : Model -> Int
+getNLiveBallots model =
+    getLiveBallots model |> Dict.size
+
+
+getNLiveBallotsVotedOn : Model -> Int
+getNLiveBallotsVotedOn model =
+    let
+        liveBallots =
+            getLiveBallots model
+    in
+    getUserErc20Addr model
+        |> Maybe.andThen (\a -> (dict a).getOption model.haveVotedOn)
+        |> Maybe.withDefault Dict.empty
+        |> Dict.filter (\k v -> v && (Maybe.Extra.isJust <| Dict.get k liveBallots))
+        |> Dict.size
 
 
 getUserErc20Addr : Model -> Maybe String
