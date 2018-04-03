@@ -95,17 +95,18 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
             fail "Only binary ballots supported currently"
             throwError "Only binary ballots supported currently"
 
-    startingBlockFibre <- lift $ forkAff $ do
+    blocksFibre <- lift $ forkAff $ do
         logAff $ "Finding Eth block close to time: " <> show startTime <> " (takes 10-20 seconds)"
-        startBlock <- findEthBlockEndingInZeroBefore startTime
-        logAff $ "Using block " <> show startBlock <> " for ERC20 balances."
-        pure startBlock
+        blocks <- sequential $ Tuple <$> parallel (findEthBlockEndingInZeroBefore startTime)
+                                         <*> parallel (findEthBlockEndingInZeroBefore $ min nowTime endTime)
+        logAff $ "Using start/end blocks " <> show blocks <> " for ERC20 balances and delegation."
+        pure blocks
 
     -- check that we can proceed
     let encPkM = bSpec ^. _encryptionPK
     secKey <- bytesNToHex <$> w3BB getEncSeckey Latest
     case (Tuple (nowTime < endTime) (isNothing encPkM || secKey /= zeroHash)) of
-        Tuple false true -> warn "Ballot has not ended, determining live results..."
+        Tuple false true -> warn "Ballot has not ended, determining live results and using current delegations..."
         Tuple true false -> throwError "Error: The ballot has ended but I cannot determine the results due as the secret key has not been released"
         _ -> pure unit
 
@@ -133,10 +134,10 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
 
     let ballotMap = Map.fromFoldable $ (\b@{voterAddr} -> Tuple voterAddr b) <$> plaintextBallots
 
-    ballotStartBlock <- lift $ joinFiber startingBlockFibre
+    Tuple ballotStartBlock ballotEndBlock <- lift $ joinFiber blocksFibre
     let ballotStartCC = BN $ wrap $ embed ballotStartBlock
 
-    delegateMap <- lift $ getDelegates {tknAddr, allBallots: plaintextBallots} dlgtSC Latest
+    delegateMap <- lift $ getDelegates {tknAddr, allBallots: plaintextBallots} dlgtSC (BN $ wrap $ embed ballotEndBlock)
     log $ "Found " <> show (Map.size delegateMap) <> " relevant delegations"
 
     let allVoters = (\{voterAddr} -> voterAddr) <$> plaintextBallots

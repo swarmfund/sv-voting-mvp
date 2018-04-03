@@ -276,6 +276,9 @@ decodeAuditMsg auditVal =
                                 |> required "totals" (procSuccessKVs <| Decode.keyValuePairs string)
                             )
 
+                "warn" ->
+                    Decode.map AuditWarn <| Decode.field "p" Decode.string
+
                 _ ->
                     Decode.succeed <| AuditLogErr <| "Unable to decode msg from auditor with type: " ++ tVal
 
