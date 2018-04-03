@@ -64,7 +64,7 @@ type alias Model =
     , democCounts : Dict String Int --^ map (democHashes => number of ballots in it)
     , democIToSpec : Dict String (Dict Int String) --^ map (democHash => (ballotId => prelimInfo))
     , democIssues : Dict String (Dict String BallotPrelimInfo) --^ map (democHash => (ballotId => prelimInfo))
-    , specToDeets : Dict String BallotSpec --^ map (specHash => RemoteData BallotSpec) - can error gracefully
+    , specToDeets : Dict String BallotSpec --^ map (specHash => BallotSpec)
     , haveVotedOn : Dict String (Dict String Bool) --^ (voterAddr => (specHash => Have Voted On))
     , pendingVotes : Dict String (Dict String Float) --^ (voterAddr => (bHash => Bool))
     , failedSpec : Dict String String

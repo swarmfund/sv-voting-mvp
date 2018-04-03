@@ -106,7 +106,7 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
     let encPkM = bSpec ^. _encryptionPK
     secKey <- bytesNToHex <$> w3BB getEncSeckey Latest
     case (Tuple (nowTime < endTime) (isNothing encPkM || secKey /= zeroHash)) of
-        Tuple false true -> warn "Ballot has not ended, determining live results and using current delegations..."
+        Tuple true true -> warn "Ballot has not ended, determining live results and using current delegations..."
         Tuple true false -> throwError "Error: The ballot has ended but I cannot determine the results due as the secret key has not been released"
         _ -> pure unit
 
