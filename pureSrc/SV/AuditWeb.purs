@@ -14,9 +14,6 @@ import SV.Types.OutboundLogs (SUAux(..), OutAllDeets)
 import SV.Utils.BigNumber (bnToStr)
 
 
-data DOut a = DStr String | DOther a
-
-
 main :: forall a e eff. AppArgs -> (J.Json -> Unit) -> Eff _ Unit
 main args updateF = launchAff_ $ do
     let updateF_ = updateF2 updateF

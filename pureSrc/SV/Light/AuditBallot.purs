@@ -45,7 +45,7 @@ import Node.Buffer (BUFFER)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Partial.Unsafe (unsafePartial)
-import SV.Light.Counts (countBinary)
+import SV.Light.Counts (countBinary, countRange, RangeOffset(..))
 import SV.Light.Delegation (getDelegates)
 import SV.Light.IPFS (getBlock)
 import SV.Types.OutboundLogs (mkSUFail, mkSULog, mkSUWarn)
@@ -378,4 +378,5 @@ getVoteOrRecurse ballotMap delegateMap p@(Tuple origVoter origBal) = do
 getResults :: OptsOuter -> Array GetVoteResult -> Array BallotOptResult
 getResults ballotOpts weightedBallots = case ballotOpts of
         OptsBinary -> countBinary weightedBallots
-        OptsSimple RangeVotingPlusMinus3 opts -> []
+        OptsSimple simpleType opts -> case simpleType of
+            RangeVotingPlusMinus3 -> countRange (RangePlusMinus {magnitude: 3}) opts weightedBallots
