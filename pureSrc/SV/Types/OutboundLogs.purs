@@ -2,12 +2,11 @@ module SV.Types.OutboundLogs where
 
 import SV.Prelude
 
-import Data.Decimal (Decimal)
+import Data.StrMap (StrMap)
 import Network.Ethereum.Web3 (BigNumber)
-import SV.Light.Types.RunBallot (BallotResult)
 
 
-type OutAllDeets = {nVotes :: Int, ballotResults :: {yes :: String, no :: String}}
+type OutAllDeets = {nVotes :: Int, ballotResults :: StrMap BigNumber}
 
 data SUAux = SuStr String | SuRes OutAllDeets | SuBal String | SuDlgt String
 
