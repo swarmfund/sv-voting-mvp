@@ -23,6 +23,7 @@ import Partial.Unsafe (unsafePartial)
 import SV.Light.Types.Ballot (SimpleOption(..))
 import SV.Light.Types.RunBallot (GetVoteResult, BallotOptResult)
 import SV.Utils.Binary (octetToBitStr)
+import SV.Utils.Votes (nBitsForRangeVote)
 import SecureVote.Utils.Array (chunk)
 import SecureVote.Utils.Binary (hexStrToBs)
 
@@ -82,7 +83,6 @@ hexToRangeBallot {rangeMax, nOpts, offset} rawBallot =
         -- offset each vote
         # map (flip (-) offset)
   where
-    -- need to add 1 here because a rangeMax of 2^n has (2^n + 1) options and requires n+1 bits
-    nBits = ceil $ log (toNumber rangeMax + 1.0) / log 2.0
+    nBits = nBitsForRangeVote rangeMax
     -- string of just ones and zeros
     fullBitString = rawBallot # hexStrToBs # BS.unpack # map octetToBitStr # foldr (<>) ""
