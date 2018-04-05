@@ -4,6 +4,7 @@ import SV.Prelude
 
 import Data.Array (length)
 import Data.Foreign (Foreign)
+import Data.Newtype (class Newtype)
 import Data.Record.ShowRecord (showRecord)
 import Global.Unsafe (unsafeStringify)
 import Network.Ethereum.Web3.Types.Types (Address, HexString, mkAddress, mkHexString)
@@ -86,6 +87,7 @@ newtype SimpleOption = SimpleOption
     { optionTitle :: String, optionDesc :: Maybe String }
 
 derive instance eqSimpleOption :: Eq SimpleOption
+derive instance ntSimpleOption :: Newtype SimpleOption _
 
 showSimpleOpt :: SimpleOption -> String
 showSimpleOpt (SimpleOption {optionTitle, optionDesc}) = "[ Title: " <> optionTitle <> ", Desc: " <> show optionDesc <> " ]"

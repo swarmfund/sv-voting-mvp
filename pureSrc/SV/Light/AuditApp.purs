@@ -12,7 +12,7 @@ import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Now (NOW)
 import Control.Monad.Except (runExceptT)
 import Crypt.NaCl (NACL_RANDOM)
-import Data.Array ((:))
+import Data.Array (foldr, (:))
 import Data.Array as A
 import Data.Decimal as Dec
 import Data.Either (Either(..), either, fromRight, isRight)
@@ -22,6 +22,7 @@ import Data.Lens ((.~), (^.))
 import Data.Map (lookup)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.StrMap as StrMap
 import Data.String as String
 import Data.Tuple (Tuple(..))
 import Network.Ethereum.Web3 (_to, defaultTransactionOptions, mkAddress, mkHexString)
@@ -31,6 +32,7 @@ import SV.Light.AuditBallot (getBallotInfo, getBallotSpec, runBallotCount)
 import SV.Light.Delegation (dlgtAddr)
 import SV.Types.Lenses (_erc20Addr)
 import SV.Types.OutboundLogs (StatusUpdate, mkSUFail, mkSULog, mkSUSuccess)
+import SV.Utils.BigNumber (bnToStr)
 import SecureVote.Democs.SwarmMVP.BallotContract (AllDetails, BallotResult, findEthBlockEndingInZeroBefore, noArgs)
 import SecureVote.Democs.SwarmMVP.Types (swmBallotShowJustVotes)
 import SecureVote.Utils.Array (fromList)
@@ -95,14 +97,13 @@ app {ethUrl, bScAddr, dev} updateF =
         let msgStart = exitMsgHeader exitC
         let msgBody = case ballotAns of
                 Left err -> err
-                Right {ballotResults: {yes, no}} -> "\n\nResults:\n\n"
-                        <> "YES: " <> bnToStr yes
-                        <> "\nNO: " <> bnToStr no
+                Right {ballotResults: bRes} -> "\n\nResults:\n"
+                        <> foldr (\{name, count} rem -> "\n" <> name <> ": " <> bnToStr count) "" bRes
         log $ "\n" <> msgStart <> "\n" <> msgBody
 
         let toRetE = case ballotAns of
-                Right bRes@{nVotes, ballotResults: {yes, no}} ->
-                    (\_ -> Right bRes) $ updateF $ mkSUSuccess {nVotes, ballotResults: {yes: bnToStr yes, no: bnToStr no}}
+                Right bRes@{nVotes, ballotResults} ->
+                    (\_ -> Right bRes) $ updateF $ mkSUSuccess {nVotes, ballotResults: mkBResStrMap ballotResults}
                 Left err -> (\_ -> Left err) $ updateF $ mkSUFail ("ERROR: " <> err)
 
         case toRetE of
@@ -111,4 +112,4 @@ app {ethUrl, bScAddr, dev} updateF =
     where
         exitCode e = if isRight e then 0 else 1
         exitMsgHeader exitC = if exitC == 0 then "___Success:___" else ">>> ERROR <<<"
-        bnToStr = BN.toString decimal
+        mkBResStrMap bRes = StrMap.fromFoldable $ (\{name, count} -> Tuple name count) <$> bRes

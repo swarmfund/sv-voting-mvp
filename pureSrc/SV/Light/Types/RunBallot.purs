@@ -11,7 +11,9 @@ import SV.Light.Types.Ballot (BallotSpec)
 import SV.Light.Types.BallotBox (BallotFromSC)
 
 
-type BallotResult = {nVotes :: Int, ballotResults :: {yes :: BigNumber, no :: BigNumber}}
+type BallotOptResult = {name :: String, count :: BigNumber}
+type BallotResult = {nVotes :: Int, ballotResults :: Array BallotOptResult}
+type GetVoteResult = {origVoter :: Address, ballot :: BallotFromSC, bal :: BigNumber}
 
 type TxOpts = TransactionOptions NoPay
 type RunBallotArgs = {bInfo :: BallotInfo, bSpec :: BallotSpec, bbTos :: TxOpts, ercTos :: TxOpts, dlgtTos :: TxOpts, silent :: Boolean}

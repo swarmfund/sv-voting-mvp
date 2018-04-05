@@ -21,6 +21,7 @@ import Control.Parallel (parTraverse)
 import Crypt.NaCl (BoxSecretKey)
 import Data.Array (concat, foldr, last, range)
 import Data.Array as Arr
+import Data.Array as Array
 import Data.Decimal as Dec
 import Data.Int (round, toNumber)
 import Data.Int as DInt
@@ -28,7 +29,9 @@ import Data.Lens ((.~), (^.), _1, _2)
 import Data.Map (Map, fromFoldable)
 import Data.Map as Map
 import Data.Newtype (unwrap, wrap)
+import Data.Record as R
 import Data.Set as Set
+import Data.Symbol (SProxy(..))
 import Data.Traversable (sequence)
 import Global.Unsafe (unsafeStringify)
 import IPFS (IPFSEff)
@@ -42,10 +45,11 @@ import Node.Buffer (BUFFER)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
 import Partial.Unsafe (unsafePartial)
+import SV.Light.Counts (countBinary, countRange, RangeOffset(..))
 import SV.Light.Delegation (getDelegates)
 import SV.Light.IPFS (getBlock)
 import SV.Types.OutboundLogs (mkSUFail, mkSULog, mkSUWarn)
-import SecureVote.Contracts.Erc20 (balanceOf)
+import SecureVote.Contracts.Erc20 (balanceOf, decimals)
 import SecureVote.Contracts.SVLightBallotBox (associatedPubkeys, ballotEncryptionSeckey, ballotMap, creationBlock, endTime, getEncSeckey, nVotesCast, specHash, startTime, startingBlockAround)
 import SecureVote.Utils.Array (chunk, fromList, onlyJust)
 import SecureVote.Utils.IPFS (hexHashToSha256Bs58)
@@ -89,11 +93,12 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
         tknAddr = unsafePartial fromJust $ ercTos ^. _to
     log $ "Ballot StartTime: " <> show startTime <> ", Ballot EndTime: " <> show endTime <> ", Current Time: " <> show nowTime
 
-    if bSpec ^. _options == OptsBinary
-        then pure unit
-        else do
-            fail "Only binary ballots supported currently"
-            throwError "Only binary ballots supported currently"
+    let ballotOptions = bSpec ^. _options
+
+        -- then pure unit
+        -- else do
+        --     fail "Only binary ballots supported currently"
+        --     throwError "Only binary ballots supported currently"
 
     blocksFibre <- lift $ forkAff $ do
         logAff $ "Finding Eth block close to time: " <> show startTime <> " (takes 10-20 seconds)"
@@ -137,30 +142,40 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
     Tuple ballotStartBlock ballotEndBlock <- lift $ joinFiber blocksFibre
     let ballotStartCC = BN $ wrap $ embed ballotStartBlock
 
+    log $ "Finding all delegates..."
     delegateMap <- lift $ getDelegates {tknAddr, allBallots: plaintextBallots} dlgtSC (BN $ wrap $ embed ballotEndBlock)
     log $ "Found " <> show (Map.size delegateMap) <> " relevant delegations"
 
+    log $ "Getting balances for all addresses..."
     let allVoters = (\{voterAddr} -> voterAddr) <$> plaintextBallots
     -- also get all ppl who have made some delegation that relates to some vote
     let allRelevantTknHolders = fromList $ Map.keys delegateMap
     balanceMap <- lift $ removeBannedAddrs <$> getBalances ercSC ballotStartBlock (allVoters <> allRelevantTknHolders)
     log $ "Got " <> show (Map.size balanceMap) <> " total balances"
 
+    log $ "Calculating weighted ballots according to ERC20 balances..."
     -- | loop through addrs in balance map to find the first associated vote and associate balances
-    let (weightedBallots :: Array _) = onlyJust $ getVoteOrRecurse ballotMap delegateMap <$> Map.toUnfoldable balanceMap
+    let (weightedBallotsPre :: Array GetVoteResult) = onlyJust $ getVoteOrRecurse ballotMap delegateMap <$> Map.toUnfoldable balanceMap
+
+    -- | adjust totals in weightedBallotsPre according to ERC20 DPS
+    adjustBal <- lift mkAdjustBalF
+    let weightedBallots = R.modify (SProxy :: SProxy "bal") adjustBal <$> weightedBallotsPre
 
     log $ "Calculating final results..."
-    let results = foldr (\{ballot: {ballot}, bal} m ->
-                                Map.lookup ballot m
-                                # fromMaybe (embed 0)
-                                # \v -> Map.insert ballot (v + bal) m)
-                        Map.empty weightedBallots
+    let (results :: Array BallotOptResult) = getResults ballotOptions weightedBallots
 
-    let ballotYes = unsafePartial fromJust $ mkHexString "8000000000000000000000000000000000000000000000000000000000000000"
-        ballotNo = unsafePartial fromJust $ mkHexString "4000000000000000000000000000000000000000000000000000000000000000"
+    -- let results = foldr (\{ballot: {ballot}, bal} m ->
+    --                             Map.lookup ballot m
+    --                             # fromMaybe (embed 0)
+    --                             # \v -> Map.insert ballot (v + bal) m)
+    --                     Map.empty weightedBallots
 
-    let getRes a = procBal $ Map.lookup a results
-    pure {nVotes, ballotResults: {yes: getRes ballotYes, no: getRes ballotNo}}
+    -- let ballotYes = unsafePartial fromJust $ mkHexString "8000000000000000000000000000000000000000000000000000000000000000"
+    --     ballotNo = unsafePartial fromJust $ mkHexString "4000000000000000000000000000000000000000000000000000000000000000"
+
+    -- let getRes a = procBal $ Map.lookup a results
+
+    pure {nVotes, ballotResults: results}
   where
     w3BB :: forall a b. (TransactionOptions _ -> b -> Web3 _ (Either CallError a)) -> b -> ExceptT String (Aff _) a
     w3BB r = w3Gen r bbTos
@@ -170,11 +185,9 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
 
     bbSC :: forall args e a. SmartContract e args a
     bbSC = genericSC bbTos
-    -- bbSC f c args = eToAff <=< eToAff <=< runWeb3_ $ f bbTos c args
 
     ercSC :: forall args e a. SmartContract e args a
     ercSC = genericSC ercTos
-    -- ercSC f c args = eToAff <=< eToAff <=< runWeb3_ $ f ercTos c args
 
     dlgtSC :: forall args e a. SmartContract e args a
     dlgtSC = genericSC dlgtTos
@@ -207,7 +220,11 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
     convE :: forall m a. MonadThrow String m => m (Either CallError a) -> m a
     convE me = either (throwError <<< (<>) "Web3 Call Error: " <<< show) pure =<< me
 
-    procBal mtotal = (fromMaybe (embed 0) mtotal) * (recip $ pow (embed 10) 18)
+    web3NoArgs f txOpts cc _ = f txOpts cc
+
+    mkAdjustBalF = do
+        dps <- (unsafeToInt <<< unUIntN) <$> ercSC (web3NoArgs decimals) Latest unit
+        pure $ (*) (recip $ pow (embed 10) dps)
 
 
 -- | Log and increment the number of ballots we've processed to facilitate progress updates
@@ -339,7 +356,6 @@ findEthBlockEndingInZeroBefore targetTime = do
     getBlockTimestamp blkNum = runWeb3_ (eth_getBlockByNumber (BN $ wrap $ embed blkNum)) >>= eToAff <#> (\(Block b) -> b.timestamp # unsafeToInt)
 
 
-type GetVoteResult = {origVoter :: Address, ballot :: BallotFromSC, bal :: BigNumber}
 type GetVoteLoopInput = {ballotMap :: BallotMap, delegateMap :: DelegateMap, p :: {origVoter :: Address, bal :: BigNumber, vtr :: Address}}
 
 -- | This takes a ballotMap, delegateMap, and a (voter, balance) - it'll find the _first_ ballot in the
@@ -356,3 +372,11 @@ getVoteOrRecurse ballotMap delegateMap p@(Tuple origVoter origBal) = do
             Nothing -> do
                 dlgt <- Map.lookup vtr delegateMap
                 pure $ Loop {ballotMap, delegateMap, p: p {vtr = dlgt}}
+
+
+-- | Take the BallotOptions and weighted ballots and give back results
+getResults :: OptsOuter -> Array GetVoteResult -> Array BallotOptResult
+getResults ballotOpts weightedBallots = case ballotOpts of
+        OptsBinary -> countBinary weightedBallots
+        OptsSimple simpleType opts -> case simpleType of
+            RangeVotingPlusMinus3 -> countRange (RangePlusMinus {magnitude: 3}) opts weightedBallots
