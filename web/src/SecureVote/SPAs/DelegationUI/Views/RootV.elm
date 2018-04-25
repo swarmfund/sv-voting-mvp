@@ -5,7 +5,7 @@ import Element.Attributes exposing (..)
 import Element.Events exposing (onClick)
 import Html exposing (Html)
 import SecureVote.Components.UI.Collapsible exposing (collapsible)
-import SecureVote.Components.UI.CommonStyles exposing (cmnSpacing)
+import SecureVote.Components.UI.CommonStyles exposing (CommonStyle(..), Variations(..), cmnSpacing)
 import SecureVote.Components.UI.Typo exposing (pageTitle, subtitle, title)
 import SecureVote.SPAs.AdminUI.Helpers exposing (getBoolField)
 import SecureVote.SPAs.DelegationUI.Helpers exposing (..)
@@ -18,11 +18,28 @@ import SecureVote.SPAs.DelegationUI.Views.Styles exposing (..)
 
 rootV : Model -> Html Msg
 rootV model =
+    let
+        code txt =
+            column (CS CodeStyle)
+                [ xScrollbar, alignBottom, vary FSmall True, maxWidth <| percent 100 ]
+                [ row DNoS [ height fill ] [], paragraph DNoS [ xScrollbar ] [ text txt ] ]
+
+        networkName =
+            if model.dev then
+                "Kovan"
+            else
+                "Mainnet"
+    in
     layout stylesheet <|
         el DNoS [ padding 20, width fill, height fill, maxWidth <| px 800 ] <|
             column DNoS
                 [ spacing <| cmnSpacing * 2 ]
                 [ pageTitle CS "SV.Light Delegation"
+                , table DNoS
+                    [ spacing 5 ]
+                    [ [ text "Network", text "Delegation SC" ]
+                    , [ text networkName, code model.delegationAddr ]
+                    ]
                 , collapsible CS
                     { header = "Set Delegation"
                     , onCollapse = ToggleBoolField setDlgtCollapseId
