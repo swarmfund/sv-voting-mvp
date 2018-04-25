@@ -117,7 +117,7 @@ const common = {
         }),
         new Dotenv({
             systemvars: true,
-            path: TARGET.slice(0, 3) === 'dev' ? './.env-dev' : './.env-prod'
+            path: TARGET.slice(0, 3) === 'dev' || process.env.DEV === "true" ? './.env-dev' : './.env-prod'
         }),
         new webpack.EnvironmentPlugin(["MAIN_TITLE", "DEV", "DEMOC_HASH", "INDEX_ADDR", "DELEGATION_ADDR"]),
     ],

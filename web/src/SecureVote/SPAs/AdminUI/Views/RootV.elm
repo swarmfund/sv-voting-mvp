@@ -25,6 +25,12 @@ rootV model =
             column Code
                 [ xScrollbar, alignBottom, vary FSmall True, maxWidth <| percent 100 ]
                 [ row NoS [ height fill ] [], paragraph NoS [ xScrollbar ] [ text txt ] ]
+
+        networkName =
+            if model.dev then
+                "Kovan"
+            else
+                "MainNet"
     in
     viewport stylesheet <|
         -- An el is the most basic element, like a <div>
@@ -37,8 +43,8 @@ rootV model =
                     [ h1 Title [] (text "SecureVote Light Ballot Builder")
                     , table NoS
                         [ spacing 5 ]
-                        [ [ text "Democracy Index", text "Democracy ID" ]
-                        , [ code model.indexAddr, code democHash ]
+                        [ [ text "Network", text "Democracy Index", text "Democracy ID" ]
+                        , [ text networkName, code model.indexAddr, code democHash ]
                         ]
                     , ballotBuilder model
                     , column NoS [ height <| px 300 ] <| []
