@@ -62,6 +62,6 @@ rootV model =
                     , renderTxInfo model
                     , subheading NoS [] "Event Log"
                     , renderEventLog model
-                    , column NoS [ height <| px 300 ] <| []
+                    , column NoS [ padding 50 ] <| [ text "" ]
                     ]
                 ]
