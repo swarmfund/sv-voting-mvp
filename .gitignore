@@ -64,8 +64,6 @@ typings/
 *.tgz
 
 # Output of 'webpack'
-_dist/*
-_dist
 _pureDist
 
 # Yarn Integrity file
