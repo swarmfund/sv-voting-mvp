@@ -55,6 +55,7 @@
   },
   "resolutions": {
     "purescript-ipfs-api": "548295c49ddfd577bb2f7b79e814880b27479a0e",
-    "purescript-web3": "99c67712059920800b97b86c4ad26e571e6da17e"
+    "purescript-web3": "99c67712059920800b97b86c4ad26e571e6da17e",
+    "purescript-arraybuffer-types": "^2.0.0"
   }
 }
