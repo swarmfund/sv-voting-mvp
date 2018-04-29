@@ -13,6 +13,7 @@ import Control.Monad.Eff.Ref (REF)
 import Crypt.NaCl (NACL_RANDOM)
 import IPFS (IPFSEff)
 import Network.Ethereum.Web3 (ETH)
+import Network.HTTP.Affjax (AJAX)
 import Node.Buffer (BUFFER)
 import Node.Process (PROCESS, exit)
 import Node.Yargs.Applicative (flag, runY, yarg)
@@ -24,7 +25,7 @@ getArgs :: forall eff. String -> String -> Boolean -> Eff (console :: CONSOLE, e
 getArgs e a d = pure $ {ethUrl: e, bScAddr: a, dev: d}
 
 
-main :: forall e. Eff ( eth :: ETH, exception :: EXCEPTION, console :: CONSOLE, naclRandom :: NACL_RANDOM, now :: NOW, process :: PROCESS, avar :: AVAR, ref :: REF, buffer :: BUFFER, ipfs :: IPFSEff | e) Unit
+main :: forall e. Eff ( eth :: ETH, ajax :: AJAX, exception :: EXCEPTION, console :: CONSOLE, naclRandom :: NACL_RANDOM, now :: NOW, process :: PROCESS, avar :: AVAR, ref :: REF, buffer :: BUFFER, ipfs :: IPFSEff | e) Unit
 main = do
     let setup = usage "$0 --bScAddr 0x1234abcd... [--ethUrl <ethNodeUrl>] [--dev <boolean>]"
                 <> defaultHelp

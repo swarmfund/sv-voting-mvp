@@ -6,7 +6,8 @@ import SV.Light.Types.RunBallot
 import SV.Prelude
 import SV.Types.Lenses
 
-import Control.Monad.Aff (ParAff, catchError, error, forkAff, joinFiber, message, parallel, sequential, throwError)
+import Control.Alt ((<|>))
+import Control.Monad.Aff (Milliseconds(..), ParAff, catchError, delay, error, forkAff, joinFiber, message, parallel, sequential, throwError)
 import Control.Monad.Aff.AVar (AVAR, AVar, makeVar, putVar, takeVar)
 import Control.Monad.Aff.Console as AffC
 import Control.Monad.Eff.Class (liftEff)
@@ -32,15 +33,17 @@ import Data.Newtype (unwrap, wrap)
 import Data.Record as R
 import Data.Set as Set
 import Data.Symbol (SProxy(..))
-import Data.Traversable (sequence)
+import Data.Traversable (oneOf, sequence)
 import Global.Unsafe (unsafeStringify)
 import IPFS (IPFSEff)
-import Network.Ethereum.Web3 (type (:&), Address, BigNumber, Block(..), CallError, ChainCursor(..), D2, D5, D6, ETH, TransactionOptions, UIntN, _to, defaultTransactionOptions, embed, mkAddress, mkHexString, pow, uIntNFromBigNumber, unUIntN, unsafeToInt)
+import Network.Ethereum.Web3 (type (:&), Address, BigNumber, Block(..), CallError, ChainCursor(..), D2, D5, D6, ETH, TransactionOptions, UIntN, _to, defaultTransactionOptions, embed, mkAddress, mkHexString, pow, uIntNFromBigNumber, unHex, unUIntN, unsafeToInt)
 import Network.Ethereum.Web3.Api (eth_blockNumber, eth_getBlockByNumber)
 import Network.Ethereum.Web3.Solidity (Tuple3(..))
 import Network.Ethereum.Web3.Solidity.Size (class KnownSize)
 import Network.Ethereum.Web3.Types (Web3)
 import Network.Ethereum.Web3.Types.Types (HexString)
+import Network.HTTP.Affjax (AJAX, get)
+import Network.HTTP.StatusCode (StatusCode(..))
 import Node.Buffer (BUFFER)
 import Node.Buffer as Buffer
 import Node.Encoding (Encoding(..))
@@ -79,10 +82,30 @@ getBallotInfo {bScAddr} = do
     skCheck a = if a == zeroHash then Nothing else Just a
 
 
-getBallotSpec :: forall e. HexString -> Aff (ref :: REF, ipfs :: IPFSEff, buffer :: BUFFER | e) BallotSpec
+getBallotSpec :: forall e. HexString -> Aff (ref :: REF, ipfs :: IPFSEff, buffer :: BUFFER, ajax :: AJAX | e) BallotSpec
 getBallotSpec h = do
-    block <- getBlock (hexHashToSha256Bs58 h)
-    (exceptToAff <<< readJSON') =<< (liftEff $ Buffer.toString UTF8 block."data")
+    (exceptToAff <<< readJSON') =<< _getBallotSpec
+  where
+    getIpfs = do
+        block <- getBlock (hexHashToSha256Bs58 h)
+        (liftEff $ Buffer.toString UTF8 block."data")
+    getHttp = do
+        -- 3s delay on getting HTTP for ALT instance on parallel
+        delay (Milliseconds 3000.0)
+        ajaxGet ("https://archive.secure.vote/" <> filename)
+            <|> ajaxGet ("https://archive.test.secure.vote/" <> filename)
+      where
+        filename = "0x" <> (unHex h) <> ".json"
+    _getBallotSpec = sequential $ oneOf
+            [ parallel getIpfs
+            , parallel getHttp
+            ]
+    ajaxGet url = do
+        resp <- get url
+        when (resp.status /= StatusCode 200) do
+            throwError (error $ "URL (" <> url <> ") responded with status code (" <> show resp.status <> ")")
+        pure resp.response
+
 
 
 runBallotCount :: RunBallotArgs -> (_ -> Unit) -> ExceptT String (Aff _) BallotResult
