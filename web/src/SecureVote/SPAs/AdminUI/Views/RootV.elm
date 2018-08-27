@@ -47,7 +47,6 @@ rootV model =
                         , [ text networkName, code model.indexAddr, code democHash ]
                         ]
                     , ballotBuilder model
-                    , column NoS [ height <| px 300 ] <| []
                     ]
                 , column NoS
                     [ width <| px 40 ]
