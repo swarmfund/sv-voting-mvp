@@ -43,8 +43,8 @@ subscriptions model =
         , localStorageSub lsGetHandler
         , localStorageErrSub lsFailHandler
         , contractReadResponse (onContractReadResponse (cReadHandler model) LogErr)
-        , every (15 * second) (\_ -> CheckForPrevVotes)
-        , every (5 * second) (flip (/) 1000 >> round >> SetTime)
+        , every (5 * second) (\_ -> CheckForPrevVotes)
+        , every (1 * second) (flip (/) 1000 >> round >> SetTime)
         , every (1 * second) (\_ -> Web3 RefreshMMAddress)
         , gotMMAddress (Web3 << SetMMAddress)
         , ethGenericSubs Web3
