@@ -110,11 +110,11 @@ getBallotSpec h = do
 
 runBallotCount :: RunBallotArgs -> (_ -> Unit) -> ExceptT String (Aff _) BallotResult
 runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
-    nowTime <- lift $ liftEff $ round <$> currentTimestamp
+    nowTime <- lift $ liftEff $ ((\ts -> ts - 60) <<< round) <$> currentTimestamp
     let endTime = bSpec ^. _endTime
         startTime = bInfo.startTime
         tknAddr = unsafePartial fromJust $ ercTos ^. _to
-    log $ "Ballot StartTime: " <> show startTime <> ", Ballot EndTime: " <> show endTime <> ", Current Time: " <> show nowTime
+    log $ "Ballot StartTime: " <> show startTime <> ", Ballot EndTime: " <> show endTime <> ", Using Current Time: " <> show nowTime
 
     let ballotOptions = bSpec ^. _options
 
@@ -347,7 +347,7 @@ findEthBlockEndingInZeroBefore targetTime = do
     AffC.log $ "Searching for block with targetTs: " <> show targetTime <> ", currBlockTs: " <> show currBlockTs <> ", currBlock: " <> show currBlock
     let runF = _findLastEthBlockBefore targetTime
     if currBlockTs < targetTime || targetTime < lowTs
-        then throwError $ error $ "Cannot find Eth block at " <> show targetTime <> " because it is outside range: " <> show lowTs <> ", " <> show currBlockTs
+        then throwError $ error $ "Cannot find Eth block at " <> show targetTime <> " because it is too early or later than the current block. Earliest allowed timestamp: " <> show lowTs <> ", current block: " <> show currBlockTs
         else case Tuple (compare gHTs targetTime) (compare gLTs targetTime) of
             -- if upper guess is LT target time
             Tuple LT _ -> runF {hTs: currBlockTs, hB: currBlock, lTs: gHTs, lB: gBH}
