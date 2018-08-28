@@ -44,7 +44,7 @@ initModel { mainTitle, dev, democHash, indexAddr, indexABI, archivePushApiKey } 
                 ++ (if dev then
                         [ ( erc20Id, fakeErc20Addr ) ]
                     else
-                        []
+                        [ ( erc20Id, "0x9e88613418cf03dca54d6a2cf6ad934a78c7a17a" ) ]
                    )
 
         ( archivePushURL, meh ) =
