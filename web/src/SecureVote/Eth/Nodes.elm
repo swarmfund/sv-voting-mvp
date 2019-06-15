@@ -10,6 +10,6 @@ type alias NetworkTo a =
 ethNodes : NetworkTo String
 ethNodes =
     { mainnet = "https://mainnet.eth.secure.vote:8545/svLight"
-    , kovan = "https://kovan.eth.secure.vote:8545/svLightDev"
+    , kovan = "https://kovan.infura.io/mew"
     , ropsten = "https://ropsten.infura.io/someApiKeyShrug"
     }
