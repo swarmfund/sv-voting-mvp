@@ -74,7 +74,8 @@ listVotesView model =
                 |> (==) (Just True)
 
         currentBallots =
-            List.sortBy (\( k, meh ) -> Dict.get k prelimInfo |> Maybe.withDefault 0) <|
+            -- List.sortBy (\( k, meh ) -> Dict.get k prelimInfo |> Maybe.withDefault 0) <|
+            List.sortBy (.endTime << second) <|
                 filter (second >> (\{ startTime, endTime } -> startTime <= model.now && model.now < endTime)) allBallots
 
         currVotedIn =

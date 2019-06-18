@@ -87,7 +87,7 @@
     "sol-cli": "node -i ./bin/solidity/contractCli.js",
     "----- WEB / ELM COMMANDS": "",
     "elm-live-deprecated": "yarn _live",
-    "web": "webpack-dev-server --port 3000 --open --progress",
+    "web": "webpack-dev-server --port 3000 --open --progress --host 0.0.0.0",
     "dev-bundle-analyzer": "webpack-dev-server --port 3300 --open --progress",
     "web-admin": "webpack-dev-server --port 3010 --open --progress",
     "web-delegation": "webpack-dev-server --port 3020 --open --progress",
