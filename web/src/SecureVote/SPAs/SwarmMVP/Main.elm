@@ -74,6 +74,7 @@ getLsOnLoad =
         List.map getLocalStorage
             [ lsAddrId
             , lsPendingVotesId
+            , lsEthNode
             ]
 
 

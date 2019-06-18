@@ -23,6 +23,7 @@ import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(GetErc20Balance
 import SecureVote.SPAs.SwarmMVP.Routes exposing (Route(OpeningSlideR))
 import SecureVote.Utils.Lenses exposing (..)
 import SecureVote.Utils.Time exposing (readableTime)
+import Set
 import Time
 import Tuple exposing (first, second)
 
@@ -183,27 +184,36 @@ listVotesView model =
         ballotPrelimDictM =
             (dict model.currDemoc).getOption model.democIToSpec
 
-        foundNBallots =
-            ballotPrelimDictM |> Maybe.map Dict.size |> Maybe.withDefault 0
-
         foundBallotHashes =
             ballotPrelimDictM |> Maybe.map Dict.values |> Maybe.withDefault []
 
+        foundNBallots =
+            ballotPrelimDictM |> Maybe.map Dict.size |> Maybe.withDefault 0
+
+        ourDemocIssuesToSpec =
+            (dictWDE model.currDemoc).getOption model.democIToSpec ? Dict.empty
+
         gotNBallots =
-            Dict.size model.specToDeets + gotNBadBallots
+            List.length gotBallotHashes
 
         gotBallotHashes =
-            Dict.keys model.specToDeets
+            foundBallotHashes |> List.filter (flip List.member <| Dict.values ourDemocIssuesToSpec)
+
+        nDuplicateBallotSpecs =
+            Set.fromList foundBallotHashes
+                |> Set.size
+                |> (-) (List.length foundBallotHashes)
 
         ballotsMissing =
             filter (not << flip List.member gotBallotHashes) foundBallotHashes
                 |> filter (not << flip List.member model.fatalSpecFail)
 
         gotNAbrvs =
-            Dict.size model.erc20Abrvs + gotNBadBallots
+            Dict.size model.erc20Abrvs + gotNBadBallots + nDuplicateBallotSpecs
 
         gotNBallotScDetails =
             Dict.size model.ballotScDetails
+                |> (+) nDuplicateBallotSpecs
 
         gotNBadBallots =
             List.length model.fatalSpecFail
@@ -213,6 +223,7 @@ listVotesView model =
                 |> Maybe.andThen (\a -> (dict a).getOption model.haveVotedOn)
                 |> Maybe.map Dict.size
                 |> Maybe.withDefault 0
+                |> (+) nDuplicateBallotSpecs
 
         doneLoadingBallots =
             let

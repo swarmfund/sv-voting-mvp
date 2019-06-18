@@ -13,6 +13,10 @@ lsPendingVotesId =
     "voting.votesPending"
 
 
+lsEthNode =
+    "eth.nodeUrl"
+
+
 userErc20AddrId : String
 userErc20AddrId =
     "ethAddress"

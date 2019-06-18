@@ -15,13 +15,14 @@ import SecureVote.Ballots.Lenses exposing (..)
 import SecureVote.Ballots.SpecSource exposing (CidType(Sha256), getBallotSpec)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
+import SecureVote.Eth.Msg exposing (EthMsg(SetEthProvider))
 import SecureVote.Eth.Types exposing (zeroAddr)
 import SecureVote.Eth.Update exposing (ethUpdate)
 import SecureVote.Eth.Utils exposing (isValidEthAddress, keccak256OverString, toHex)
 import SecureVote.Eth.Web3 exposing (..)
 import SecureVote.LocalStorage exposing (LsMsg(LsGeneral), getLocalStorage, lsUpdate, setLocalStorage)
 import SecureVote.SPAs.SwarmMVP.Fields exposing (..)
-import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getDelegateAddress, getUserErc20Addr, resetAllBallotFields)
+import SecureVote.SPAs.SwarmMVP.Helpers exposing (ballotValToBytes, getDelegateAddress, getUserErc20Addr, resetAllBallotFields, setEthNodeTemp)
 import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (FromCurve25519Msg(..), FromWeb3Msg(..), Msg(..), ToCurve25519Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (defaultRoute)
@@ -280,7 +281,7 @@ update msg model =
             { model | candidateTx = f model.candidateTx } ! []
 
         SetEthNode addr ->
-            { model | ethNode = addr } ! []
+            { model | ethNode = addr } ! [ setLocalStorage { key = lsEthNode, value = addr } ]
 
         -- Errors
         LogErr err ->
@@ -571,6 +572,14 @@ lsWatchers msg ( m, c ) =
                   , \v_ ->
                         D.decodeString (dDictDict D.float) v_
                             |> Result.map (\d -> ( { m | pendingVotes = d }, c ))
+                  )
+                , ( lsEthNode
+                  , \n ->
+                        let
+                            (m1, c1) = update (setEthNodeTemp n) m
+                            (m2, c2) = ethUpdate Web3 (SetEthProvider n) ({ m1 | ethNode = n })
+                        in
+                            Ok <| m2 ! [c1, c2]
                   )
                 ]
                 |> List.filter isJust
