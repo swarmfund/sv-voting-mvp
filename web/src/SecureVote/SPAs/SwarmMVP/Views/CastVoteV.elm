@@ -24,6 +24,7 @@ import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(BallotDialog), Route(SwmSubmitR))
 import SecureVote.Utils.Lists exposing (enumerate)
+import SecureVote.Utils.Markdown exposing (toHtmlWHardLineBreaks)
 import String exposing (lines)
 
 
@@ -104,9 +105,8 @@ castVoteView model ( bHash, bSpec ) =
 
         descriptionReminder =
             div [ class "mb4 mh3 mw8 center" ]
-                [ subhead <| bTitle.getOption bSpec ? "NO TITLE FOR BALLOT"
-                , text <| bLongDesc.getOption bSpec ? "NO LONG DESCRIPTION FOR BALLOT"
-                ]
+                <| (++) [ subhead <| bTitle.getOption bSpec ? "NO TITLE FOR BALLOT" ]
+                <| toHtmlWHardLineBreaks <| bLongDesc.getOption bSpec ? "NO LONG DESCRIPTION FOR BALLOT"
 
         contEnabled =
             if Dict.size model.ballotBits > 0 then
@@ -116,7 +116,7 @@ castVoteView model ( bHash, bSpec ) =
     in
     fullPageSlide model
         { id = 123413553
-        , title = "Choose Your Vote"
+        , title = "Cast Your Vote"
         , inner =
             balanceV
                 ++ [ descriptionReminder

@@ -2,8 +2,6 @@ module SecureVote.SPAs.SwarmMVP.Views.BallotOpeningSlideV exposing (..)
 
 import Html exposing (Html, a, div, em, p, span, strong, text, pre)
 import Html.Attributes exposing (class, href, style, target)
-import Markdown
-import Markdown.Config exposing (Options, defaultOptions)
 import Material.Options as Options exposing (cs, css)
 import Material.Typography exposing (body1, display1, display2, display3, display4, title)
 import Maybe.Extra exposing ((?))
@@ -19,6 +17,7 @@ import SecureVote.SPAs.SwarmMVP.Model exposing (..)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg(..), ToWeb3Msg(..))
 import SecureVote.SPAs.SwarmMVP.Routes exposing (DialogRoute(FullAuditDialog), Route(..))
 import SecureVote.Utils.Int exposing (maxInt, minInt)
+import SecureVote.Utils.Markdown exposing (toHtmlWHardLineBreaks)
 
 
 openingSlide : Model -> ( String, BallotSpec ) -> Html Msg
@@ -85,7 +84,7 @@ openingSlide model ( bHash, bSpec ) =
                         _ ->
                             ( "ERROR: UNKNOWN BALLOT TYPE", "ERROR: UNKNOWN BALLOT TYPE", [] )
             in
-            [ Markdown.toHtml (Just <| { defaultOptions | softAsHardLineBreak = True }) <| "Ballot description:\n\n" ++ bLongDesc.getOption bSpec ? "NO DESCRIPTION"
+            [ toHtmlWHardLineBreaks <| "Ballot description:\n\n" ++ bLongDesc.getOption bSpec ? "NO DESCRIPTION"
             ]
                 ++ discussionLink
                 ++ [ [ subhead "Voting" ]
