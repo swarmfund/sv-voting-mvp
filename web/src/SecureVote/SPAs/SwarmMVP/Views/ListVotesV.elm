@@ -180,11 +180,24 @@ listVotesView model =
         totalBallots =
             Dict.get model.currDemoc model.democCounts
 
+        ballotPrelimDictM =
+            (dict model.currDemoc).getOption model.democIToSpec
+
         foundNBallots =
-            (dict model.currDemoc).getOption model.democIToSpec |> Maybe.map Dict.size |> Maybe.withDefault 0
+            ballotPrelimDictM |> Maybe.map Dict.size |> Maybe.withDefault 0
+
+        foundBallotHashes =
+            ballotPrelimDictM |> Maybe.map Dict.values |> Maybe.withDefault []
 
         gotNBallots =
             Dict.size model.specToDeets + gotNBadBallots
+
+        gotBallotHashes =
+            Dict.keys model.specToDeets
+
+        ballotsMissing =
+            filter (not << flip List.member gotBallotHashes) foundBallotHashes
+                |> filter (not << flip List.member model.fatalSpecFail)
 
         gotNAbrvs =
             Dict.size model.erc20Abrvs + gotNBadBallots
@@ -235,7 +248,7 @@ listVotesView model =
         { id = 3409830456
         , title = model.mainTitle
         , inner =
-            case ( totalBallots, ( foundNBallots, gotNBallots, gotNAbrvs, gotNBallotScDetails, gotNPrevVoteDeets ), doneLoadingBallots ) of
+            case ( totalBallots, ( foundNBallots, gotNBallots, gotNAbrvs, gotNBallotScDetails, gotNPrevVoteDeets, ballotsMissing, gotNBadBallots, model ), doneLoadingBallots ) of
                 ( Nothing, _, _ ) ->
                     [ loadingBallots ]
 
@@ -253,7 +266,7 @@ loadingBallots =
         ]
 
 
-ballotsProgress n ( f, g, ga, gd, prevVs ) =
+ballotsProgress n ( f, g, ga, gd, prevVs, ballotsMissing, badBs, model ) =
     let
         attrs =
             [ class "f4 mv2" ]
@@ -266,4 +279,7 @@ ballotsProgress n ( f, g, ga, gd, prevVs ) =
         , div attrs [ text <| "Voting Details " ++ toString gd ++ " of " ++ toString n ++ " ballots." ]
         , div attrs [ text <| "Checking Past Votes " ++ toString prevVs ++ " of " ++ toString n ++ " ballots." ]
         , loadingSpinner ""
+        -- , div attrs [ text <| "Missing Ballots: " ++ toString ballotsMissing ]
+        -- , div attrs [ text <| "Bad Ballots: " ++ toString badBs ]
+        -- , div attrs [ text <| "Bad Ballots: " ++ toString model.fatalSpecFail ]
         ]

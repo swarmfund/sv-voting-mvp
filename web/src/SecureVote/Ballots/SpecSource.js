@@ -45,10 +45,10 @@ const specSourcePorts = (app, opts) => {
         const cid = bs58.encode(_cidBuffer);
         console.log("IPFS requesting cid:", cid, "with id", id, "and hex", cidHex);
 
-        // give us 7.5s to get the ballot from IPFS
+        // give us ~~7.5s~~ 75ms to get the ballot from IPFS
         new Promise((resolve, reject) => {
-            ipfs.block.get(cid).then(resolve);
-            setTimeout(reject, 7500);
+            // ipfs.block.get(cid).then(resolve);
+            setTimeout(reject, 75);
         }).then(block => {
                 console.log("IPFS found cid", cid, "with block", block);
                 const genHash = doHashWPrefix(block._data);
@@ -60,7 +60,7 @@ const specSourcePorts = (app, opts) => {
                 }
             })
             .catch(err => {
-                console.error("ipfs.block.get errored:", err);
+                // console.error("ipfs.block.get errored:", err);
                 tryGettingBallotFromS3(id)
                     .then(response => {
                         if (response.status === 200) {
@@ -83,7 +83,7 @@ const specSourcePorts = (app, opts) => {
                         }
                     })
                     .catch(err => {
-                        console.log("Getting bSpec with bHash", id, "encountered fatal error:", err);
+                        console.error("Getting bSpec with bHash", id, "encountered fatal error:", err);
                         app.ports.gotFailedSpecFromIpfs.send({id, cid, err: err.message});
                         implNotifyErr(`Error while getting ballot ${err.message}. Ballot ID: ${id}`);
                     });
