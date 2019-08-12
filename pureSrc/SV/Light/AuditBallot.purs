@@ -126,7 +126,7 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
     blocksFibre <- lift $ forkAff $ do
         logAff $ "Finding Eth block close to time: " <> show startTime <> " (takes 10-20 seconds)"
         blocks <- sequential $ Tuple <$> parallel (findEthBlockEndingInZeroBefore startTime)
-                                         <*> parallel (findEthBlockEndingInZeroBefore $ min nowTime endTime)
+                                         <*> parallel (findEthBlockEndingInZeroBefore $ min (nowTime - 60) endTime)
         logAff $ "Using start/end blocks " <> show blocks <> " for ERC20 balances and delegation."
         pure blocks
 
