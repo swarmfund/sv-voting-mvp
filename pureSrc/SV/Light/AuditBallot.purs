@@ -379,22 +379,26 @@ findEthBlockEndingInZeroBefore targetTime = do
     getBlockTimestamp blkNum = runWeb3_ (eth_getBlockByNumber (BN $ wrap $ embed blkNum)) >>= eToAff <#> (\(Block b) -> b.timestamp # unsafeToInt)
 
 
-type GetVoteLoopInput = {ballotMap :: BallotMap, delegateMap :: DelegateMap, p :: {origVoter :: Address, bal :: BigNumber, vtr :: Address}}
+type GetVoteLoopInput = {ballotMap :: BallotMap, delegateMap :: DelegateMap, p :: {origVoter :: Address, bal :: BigNumber, vtr :: Address}, n :: Int}
 
 -- | This takes a ballotMap, delegateMap, and a (voter, balance) - it'll find the _first_ ballot in the
 -- | delegation chain and associate the balance with that ballot.
 getVoteOrRecurse :: BallotMap -> DelegateMap -> Tuple Address BigNumber -> Maybe GetVoteResult
 getVoteOrRecurse ballotMap delegateMap p@(Tuple origVoter origBal) = do
-    ret <- tailRecM go {ballotMap, delegateMap, p: {origVoter, vtr: origVoter, bal: origBal}}
+    let _ = unsafePerformEff $ EffC.log $ "Checking orig voter " <> show origVoter
+    ret <- tailRecM go {ballotMap, delegateMap, p: {origVoter, vtr: origVoter, bal: origBal}, n: 0}
     let _ = unsafePerformEff $ EffC.log $ "Returning for voter " <> show ret.origVoter <> " balance " <> show (ret.bal) <> " with ballot " <> unsafeStringify (ret.ballot)
     pure ret
   where
     go :: GetVoteLoopInput -> Maybe (Step _ GetVoteResult)
-    go {ballotMap, delegateMap, p: p@{origVoter, bal, vtr}} = case Map.lookup vtr ballotMap of
+    go {ballotMap, delegateMap, p: p@{origVoter, bal, vtr}, n} = case Map.lookup vtr ballotMap of
             Just ballot -> pure $ Done $ {origVoter, ballot, bal}
             Nothing -> do
+                let _ = unsafePerformEff $ EffC.log $ "Looking up delegate balance for " <> show vtr <> " with orig voter " <> show origVoter
                 dlgt <- Map.lookup vtr delegateMap
-                pure $ Loop {ballotMap, delegateMap, p: p {vtr = dlgt}}
+                if origVoter == dlgt && n /= 0
+                    then Nothing
+                    else pure $ Loop {ballotMap, delegateMap, p: p {vtr = dlgt}, n: n+1}
 
 
 -- | Take the BallotOptions and weighted ballots and give back results
