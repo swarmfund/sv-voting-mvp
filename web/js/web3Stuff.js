@@ -9,8 +9,8 @@ let mmWeb3;
 let mmDetected = false;
 let mmAcct = "";
 
-if (typeof web3 !== 'undefined') {
-    console.log("Metamask detected...", web3.currentProvider);
+if (typeof web3 !== 'undefined' && typeof ethereum !== 'undefined') {
+    console.info("Metamask detected...", web3.currentProvider);
     web3js = new Web3Legacy(web3.currentProvider);
     mmDetected = true;
     mmWeb3 = web3;

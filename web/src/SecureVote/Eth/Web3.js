@@ -21,7 +21,7 @@ import {BigNumber} from 'bignumber.js';
 const mkPromise = f => (...args) => {
     return new Promise((resolve, reject) => {
         f(...args, (err, resp) => {
-            console.log(`promiseCB ${err} / ${resp}`);
+            console.debug(`promiseCB ${err} / ${resp}`);
             err ? reject(err) : resolve(resp);
         })
     })
@@ -29,7 +29,7 @@ const mkPromise = f => (...args) => {
 
 
 const promiseCb = (resolve, reject, extra = []) => (err, val) => {
-    console.log('promiseCb got:', {err, val, extra});
+    console.debug('promiseCb got:', {err, val, extra});
     if (err) {
         reject(err);
     } else {
@@ -40,7 +40,7 @@ const promiseCb = (resolve, reject, extra = []) => (err, val) => {
 
 const logPrm = (msg, f) => (arg) => {
     f = f || (x => x);
-    console.log(msg, f(arg));
+    console.debug(msg, f(arg));
     return arg;
 };
 
@@ -67,6 +67,9 @@ const convertBigNums = (args) => {
 
 const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     if (mmDetected) {
+        if (!!window.ethereum && !!window.ethereum.enable) {
+            window.ethereum.enable();
+        }
         app.ports.gotMetamaskImpl.send(true);
     }
 
@@ -82,7 +85,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         const delegateABIObj = JSON.parse(delegationABI);
         const delegateContract = web3js.eth.contract(delegateABIObj).at(contractAddr);
 
-        console.log(`Getting data for setTokenDelegation(${tokenContract}, ${delegateAddr})`);
+        console.debug(`Getting data for setTokenDelegation(${tokenContract}, ${delegateAddr})`);
         const payload = delegateContract.setTokenDelegation.getData(tokenContract, delegateAddr);
 
         app.ports.gotDelegatePayloadImpl.send(payload);
@@ -115,21 +118,21 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
         index.nBallots(democHash, (e, nBI) => {
             const n = nBI.toNumber();
-            console.log("getDemocHashes got", n, "total ballots");
+            console.debug("getDemocHashes got", n, "total ballots");
             app.ports.democNBallots.send({democHash, n});
             map(i => {
                 index.getNthBallot(democHash, i, handleErrOr((info) => {
-                    console.log("getNthBallot: ", info);
+                    console.debug("getNthBallot: ", info);
                     const [specHash, extraData, votingContract, startTs] = info;
                     const sendBack = {democHash, i, specHash, extraData, votingContract, startTs: startTs.toNumber()};
-                    console.log("nthBallot: ", i, sendBack);
+                    console.debug("nthBallot: ", i, sendBack);
                     app.ports.gotBallotInfo.send(sendBack);
 
-                    console.log("Getting starting block")
+                    console.debug("Getting starting block")
                     const vc = web3js.eth.contract(bbABIObj).at(votingContract);
                     vc.startingBlockAround(handleErrOr(sBlock => {
                         const startingBlockEst = sBlock.toNumber();
-                        console.log(`(${votingContract}).startingBlockAround:`, startingBlockEst);
+                        console.debug(`(${votingContract}).startingBlockAround:`, startingBlockEst);
                         app.ports.ballotInfoExtra.send({bHash: specHash, startingBlockEst});
                     }))
                 }));
@@ -156,14 +159,14 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
     app.ports.getTxInfoContractWrite.subscribe(wrapIncoming(params => {
         const {to, abi, method, args} = params;
-        console.log("getTxInfoContractWrite got:", params);
+        console.debug("getTxInfoContractWrite got:", params);
 
         const c = web3js.eth.contract(JSON.parse(abi)).at(to);
         const data = c[method].getData(...args);
 
-        console.log("getTxInfo got data", data);
+        console.debug("getTxInfo got data", data);
         const toRet = JSON.stringify({to, data}, null, 4);
-        console.log("Sending to gotTxInfo", toRet);
+        console.debug("Sending to gotTxInfo", toRet);
         app.ports.gotTxInfo.send(toRet);
     }));
 
@@ -216,7 +219,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
     // Implementation of port sends
     const implBallotPeriod = (err, [startTime, endTime]) => {
-        console.log('implBallotPeriod got', err, [startTime, endTime]);
+        console.debug('implBallotPeriod got', err, [startTime, endTime]);
         if (err) {
             app.ports.contractReadResponse.send({
                 success: false,
@@ -236,7 +239,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
 
     const implRecieveBallotOptsCBLegacy = (err, ballotOpts) => {
-        console.log('implRecieveBallotOptsCBLegacy got:', err, ballotOpts)
+        console.debug('implRecieveBallotOptsCBLegacy got:', err, ballotOpts)
         if (err) {
             app.ports.contractReadResponse.send({
                 success: false,
@@ -262,7 +265,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
         // hash of empty string
         padding.fill("0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
         const hashes = concat(hashes_, padding);
-        console.log('implRecieveBallotOptsCB got:', err, ballotOpts, "with titles", oTitles, "and calculated hashes", hashes);
+        console.debug('implRecieveBallotOptsCB got:', err, ballotOpts, "with titles", oTitles, "and calculated hashes", hashes);
         if (err) {
             app.ports.contractReadResponse.send({
                 success: false,
@@ -286,7 +289,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
     const implSendErc20Balance = wrapIncoming((balance) => {
         const toRet = balance.toString(10);
-        console.log('implSendErc20Balance got:', toRet);
+        console.debug('implSendErc20Balance got:', toRet);
         app.ports.implErc20Balance.send(toRet);
     });
 
@@ -294,7 +297,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     // Help with error handling boilerplate
     const handleErrOr = (f) => (err, resp) => {
         if (err) {
-            console.log('handleErrOr got err:', err);
+            console.warn('handleErrOr got err:', err);
             implNotifyErr(err);
         } else {
             f(resp);
@@ -306,14 +309,14 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     app.ports.initWeb3WProvider.subscribe(wrapIncoming((web3Provider) => {
         web3js.setProvider(new Web3.providers.HttpProvider(web3Provider));
         app.ports.gotWeb3.send(web3js);
-        console.log("Web3 provider set to:", web3js.currentProvider);
+        console.debug("Web3 provider set to:", web3js.currentProvider);
     }));
 
     app.ports.getErc20Balance.subscribe(wrapIncoming(params => {
         let {contractAddress, userAddress, chainIndex, delegationABI, delegationAddr} = params;
         userAddress = userAddress.toLowerCase();
         const ci_ = parseInt(chainIndex) || chainIndex || "latest";
-        console.log("getErc20Balance got params", params);
+        console.debug("getErc20Balance got params", params);
         const tokenContract = Erc20Contract.at(contractAddress);
         const delegationC = web3js.eth.contract(JSON.parse(delegationABI)).at(delegationAddr);
 
@@ -340,14 +343,14 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                 }).then(addToTotal)
                 .then(logPrm(`\nFound balance for ${v} delegating ${userAddress} of`, n => n.toString(10)))
                 .catch(e => {
-                    console.log(`Err in resolveDelegationsPrm: ${e.message}`);
-                    console.log(e);
+                    console.warn(`Err in resolveDelegationsPrm: ${e.message}`);
+                    console.warn(e);
             })
         });
 
         const findDlgtionBals = () => mkPromise(delegationC.findPossibleDelegatorsOf)(userAddress)
             .then(([voters, tokenCs]) => {
-                console.log(`Processing delegations of ${userAddress}: voters(${voters})`);
+                console.debug(`Processing delegations of ${userAddress}: voters(${voters})`);
                 const delegatorPairs = zip(voters, tokenCs);
                 // filter out delegations that aren't for this token and get unique pairs
                 const processedVPs = uniq(filter(([v, tC]) => ethAddrEq(tC, contractAddress), delegatorPairs));
@@ -360,14 +363,14 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
         AsyncPar.invoke([findDlgtionBals, findUserBal])
             .then(() => implSendErc20Balance(total))
-            .then(() => console.log(`Sent balance total: ${total.toString(10)}`));
+            .then(() => console.debug(`Sent balance total: ${total.toString(10)}`));
     }));
 
 
     app.ports.constructDataParam.subscribe(wrapIncoming((params) => {
         params.abi = JSON.parse(params.abi);
         const {ballot, useEnc, voterPubkey, votingContractAddr, abi} = params;
-        console.log("constructDataParam got params:", params);
+        console.debug("constructDataParam got params:", params);
         const voteC = web3js.eth.contract(abi).at(votingContractAddr);
         let data;
         if (useEnc) {
@@ -376,7 +379,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
             data = voteC.submitBallotNoPk.getData("0x" + ballot);
         }
         app.ports.implDataParam.send(data);
-        console.log("constructDataParam sent: ", data);
+        console.debug("constructDataParam sent: ", data);
     }));
 
 
@@ -387,15 +390,15 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
     app.ports.performContractRead.subscribe(wrapIncoming(({abi, addr, method, args, carry}) => {
         carry.hops += 1
-        console.log(`Reading ${addr}.${method}(${args})`);
+        console.debug(`Reading ${addr}.${method}(${args})`);
         const c = web3js.eth.contract(JSON.parse(abi)).at(addr);
         mkPromise(c[method])(...args)
             .then(response => {
                 const resp = convertBigNums(response);
-                console.log(`Read ${addr}.${method}(${args}) w/ response ${resp}`);
+                console.debug(`Read ${addr}.${method}(${args}) w/ response ${resp}`);
                 app.ports.contractReadResponse.send({success: true, errMsg: "", method, resp, addr, carry});
             }).catch(err => {
-                console.log(`Error reading ${addr}.${method}(${args}) => ${err.message}`);
+                console.warn(`Error reading ${addr}.${method}(${args}) => ${err.message}`);
                 app.ports.contractReadResponse.send({success: false, errMsg: err.message, method, resp: null, addr, carry});
         })
     }));
@@ -408,7 +411,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     // };
 
     app.ports.performContractWriteMM.subscribe(wrapIncoming(({abi, addr, method, args}) => {
-        console.log("mm contract write:", {abi, addr, method, args});
+        console.debug("mm contract write:", {abi, addr, method, args});
         const c = mmWeb3.eth.contract(JSON.parse(abi)).at(addr);
         const data = c[method].getData(...args);
         const tx = {to: addr, value: 0, data};
@@ -416,15 +419,15 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     }));
 
     app.ports.checkTxid.subscribe(wrapIncoming(({txid, abi}) => {
-        console.log(`Checking TXID ${txid}`)
+        console.debug(`Checking TXID ${txid}`)
         mkPromise(web3js.eth.getTransaction)(txid)
             .then(getTx => {
-                console.log(`Found tx ${txid}`)
+                console.debug(`Found tx ${txid}`)
                 return new Promise((resolve, reject) => {
                     web3js.eth.getTransactionReceipt(txid, promiseCb(resolve, reject, [getTx]));
             })
         }).then(([getTxR, getTx]) => {
-            console.log("checkTxid got tx and txR of:", getTx, getTxR);
+            console.debug("checkTxid got tx and txR of:", getTx, getTxR);
             let ret
             if (getTxR === null || getTx === null) {
                 ret = {data: "", confirmed: false, gas: 0, logMsg: ""};
@@ -433,10 +436,10 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                 try {
                     abiDecoder.addABI(JSON.parse(abi));
                     const logs = abiDecoder.decodeLogs(getTxR.logs);
-                    console.log(logs);
+                    console.debug('decoded logs:', logs);
                     logMsg = logs[0].events[0].value;
                 } catch (err) {
-                    console.log('checkTxid decoding error broke with: ', err.toString());
+                    console.debug('checkTxid decoding error broke with: ', err.toString());
                 }
                 ret = {data: getTx.input, confirmed: getTx.blockNumber !== null, gas: getTxR.gasUsed || 0, logMsg};
             }
@@ -454,16 +457,16 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
 
     const auditUpdateF = (i) => (statusUpdate) => {
         if (i === auditCounter) {
-            console.log(statusUpdate)
+            console.debug(statusUpdate)
             app.ports.gotAuditMsgImpl.send(statusUpdate);
         } else {
-            console.log("Got out of date message for audit session:", i, ". Message:", statusUpdate);
+            console.debug("Got out of date message for audit session:", i, ". Message:", statusUpdate);
         }
     }
 
     app.ports.getBallotResults.subscribe(wrapIncoming((args) => {
         auditCounter++;
-        console.log("Calling AuditWeb session", auditCounter, "with:", args);
+        console.debug("Calling AuditWeb session", auditCounter, "with:", args);
         try {
             const resp = AuditWeb.main(args)(auditUpdateF(auditCounter))();
         } catch (err) {
@@ -484,7 +487,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
     app.ports.getMMAddress.subscribe(getMMAddress);
 
     const sendMMTx = (tx) => {
-        console.log("Sending tx to MetaMask:", tx);
+        console.debug("Sending tx to MetaMask:", tx);
         if (!mmDetected) {
             return implNotifyErr("Cannot send transaction: MetaMask was not detected.");
         }
@@ -494,7 +497,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                     throw Error("MetaMask is locked!");
                 }
 
-                console.log("MetaMask returned accounts: ", acc);
+                console.debug("MetaMask returned accounts: ", acc);
 
                 delete tx.gas;
             }).then(() => {
@@ -515,7 +518,7 @@ const web3Ports = (web3js, {mmDetected, mmWeb3}, app, {AuditWeb}) => {
                             implNotifyErr("Unknown Metamask Error: " + err.message);
                         }
                     } else {
-                        console.log("MetaMask returned: ", err, ret);
+                        console.debug("MetaMask (send) returned: ", err, ret);
                         app.ports.metamaskTxidImpl.send(ret);
                     }
                 });
