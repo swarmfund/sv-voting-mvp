@@ -54,6 +54,7 @@ type Msg
       -- ** Auditor msgs
     | FromAuditor AuditDoc
     | DoAudit
+--    | SaveVoteAuditLog
       -- ** Errors
     | LogErr String
     | Snackbar (Snackbar.Msg String)

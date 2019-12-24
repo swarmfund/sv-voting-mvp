@@ -19,6 +19,7 @@ type AuditDoc
     | AuditFail String
     | AuditWarn String
     | AuditSuccess BallotResult
+    | AuditVoteDump String
 
 
 type alias BallotResult =

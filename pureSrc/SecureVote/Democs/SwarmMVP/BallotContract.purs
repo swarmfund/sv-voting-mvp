@@ -115,6 +115,10 @@ mkSUSuccess :: AllDetails -> StatusUpdate
 mkSUSuccess b = {t: "success", p: SuRes b}
 
 
+mkSUVoteDump :: String -> StatusUpdate
+mkSUVoteDump csvStr = {t: "voteDump", p: SuStr csvStr}
+
+
 type AllDetails =
     { ballotSeckey :: BoxSecretKey
     , nVotes :: Int

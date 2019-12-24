@@ -16,7 +16,7 @@ import SecureVote.Ballots.SpecSource exposing (CidType(Sha256), getBallotSpec)
 import SecureVote.Ballots.Types exposing (BallotSpec)
 import SecureVote.Crypto.Curve25519 exposing (encryptBytes)
 import SecureVote.Eth.Msg exposing (EthMsg(SetEthProvider))
-import SecureVote.Eth.Types exposing (zeroAddr)
+import SecureVote.Eth.Types exposing (AuditDoc(..), zeroAddr)
 import SecureVote.Eth.Update exposing (ethUpdate)
 import SecureVote.Eth.Utils exposing (isValidEthAddress, keccak256OverString, toHex)
 import SecureVote.Eth.Web3 exposing (..)
@@ -114,7 +114,7 @@ update msg model =
                     (dictWDE model.currDemoc => dict bHash =|> bpiVotingAddr).getOption model.democIssues ? "Unknown Contract Addr"
 
                 ( m_, cmds_ ) =
-                    update NoOp <| resetAllBallotFields { model | currentBallot = Just bHash } { contractAddr = contractAddr }
+                    update NoOp <| resetAllBallotFields { model | currentBallot = Just bHash, auditVoteDump = Nothing } { contractAddr = contractAddr }
 
                 doAuditIfBallotEnded =
                     case bSpecM of
@@ -303,7 +303,9 @@ update msg model =
             updateFromCurve25519 msg model
 
         FromAuditor msg ->
-            { model | auditMsgs = msg :: model.auditMsgs } ! []
+            case msg of
+                AuditVoteDump csvStr -> { model | auditVoteDump = Just csvStr } ! []
+                _ -> { model | auditMsgs = msg :: model.auditMsgs } ! []
 
         DoAudit ->
             model ! [ auditCmd model ]

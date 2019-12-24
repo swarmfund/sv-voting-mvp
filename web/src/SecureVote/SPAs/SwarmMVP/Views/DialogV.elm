@@ -407,6 +407,6 @@ customDialogV content =
     div [] [ dialogHtmlRender [] content ]
 
 
-fullAuditDialogV : Model -> ( String, BallotSpec ) -> Html msg
+fullAuditDialogV : Model -> ( String, BallotSpec ) -> Html Msg
 fullAuditDialogV model ( bHash, bSpec ) =
     div [] <| renderAuditLog False model ( bHash, bSpec )

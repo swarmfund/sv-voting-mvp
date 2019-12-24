@@ -20,7 +20,7 @@ import Control.Monad.Except (ExceptT, lift)
 import Control.Monad.Rec.Class (Step(..), tailRec, tailRecM)
 import Control.Parallel (parTraverse)
 import Crypt.NaCl (BoxSecretKey)
-import Data.Array (concat, foldr, last, range)
+import Data.Array ((:), concat, foldr, last, range)
 import Data.Array as Arr
 import Data.Array as Array
 import Data.Decimal as Dec
@@ -32,6 +32,7 @@ import Data.Map as Map
 import Data.Newtype (unwrap, wrap)
 import Data.Record as R
 import Data.Set as Set
+import Data.String as String
 import Data.Symbol (SProxy(..))
 import Data.Traversable (oneOf, sequence)
 import Global.Unsafe (unsafeStringify)
@@ -51,7 +52,7 @@ import Partial.Unsafe (unsafePartial)
 import SV.Light.Counts (countBinary, countRange, RangeOffset(..))
 import SV.Light.Delegation (getDelegates)
 import SV.Light.IPFS (getBlock)
-import SV.Types.OutboundLogs (mkSUFail, mkSULog, mkSUWarn)
+import SV.Types.OutboundLogs (mkSUFail, mkSULog, mkSUWarn, mkSUVoteDump)
 import SecureVote.Contracts.Erc20 (balanceOf, decimals)
 import SecureVote.Contracts.SVLightBallotBox (associatedPubkeys, ballotEncryptionSeckey, ballotMap, creationBlock, endTime, getEncSeckey, nVotesCast, specHash, startTime, startingBlockAround)
 import SecureVote.Utils.Array (chunk, fromList, onlyJust)
@@ -184,6 +185,8 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
     adjustBal <- lift mkAdjustBalF
     let weightedBallots = R.modify (SProxy :: SProxy "bal") adjustBal <$> weightedBallotsPre
 
+    lift $ reportVoteDumpAff $ mkVoteAuditDump weightedBallots
+
     log $ "Calculating final results..."
     let (results :: Array BallotOptResult) = getResults ballotOptions weightedBallots
 
@@ -233,6 +236,15 @@ runBallotCount {bInfo, bSpec, bbTos, ercTos, dlgtTos, silent} updateF = do
     failAff str = do
         let _ = updateF $ mkSUFail str
         if silent then pure unit else AffC.error str
+
+    reportVoteDumpAff str = do
+        let _ = updateF $ mkSUVoteDump str
+        pure unit
+
+    mkVoteAuditDump wbs = String.joinWith "\n" $ ["voteNumber,voter,ballot,originAddr,weight"] <> mkVoteAuditDump' wbs
+
+    mkVoteAuditDump' wbs =
+        wbs <#> \wb@{origVoter, ballot, bal} -> String.joinWith "," [show ballot.i, show ballot.voterAddr, show ballot.ballot, show origVoter, show bal]
 
 
     warn :: String -> ExceptT String (Aff _) Unit

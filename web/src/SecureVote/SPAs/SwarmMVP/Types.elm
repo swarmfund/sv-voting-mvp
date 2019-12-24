@@ -27,4 +27,5 @@ type alias Flags =
     , delegationAddr : String
     , mmDetected : Bool
     , enableEarlyResults : Bool
+    , enableDumpMasternodeDetails : Bool
     }

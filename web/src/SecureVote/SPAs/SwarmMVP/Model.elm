@@ -80,6 +80,8 @@ type alias Model =
     , lsBucket : Dict String String
     , eth : EthMdl
     , enableEarlyResults : Bool
+    , auditVoteDump : Maybe String
+    , enableDumpMasternodeDetails : Bool
     }
 
 
@@ -136,7 +138,7 @@ bpiVotingAddr =
 
 
 initModel : Flags -> Model
-initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, delegationAddr, mmDetected, enableEarlyResults } =
+initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, delegationAddr, mmDetected, enableEarlyResults, enableDumpMasternodeDetails } =
     let
         ethNode_ =
             if dev then
@@ -199,6 +201,8 @@ initModel { dev, mainTitle, democHash, ballotBoxABI, indexABI, delegationABI, de
     , lsBucket = Dict.empty
     , eth = initEthMdl { mmDetected = mmDetected, ethNode = ethNode_ }
     , enableEarlyResults = enableEarlyResults
+    , auditVoteDump = Nothing
+    , enableDumpMasternodeDetails = enableDumpMasternodeDetails
     }
 
 

@@ -26,3 +26,6 @@ mkSUSuccess b = {t: "success", p: SuRes b}
 
 mkSUWarn :: String -> StatusUpdate
 mkSUWarn m = {t: "warn", p: SuStr m}
+
+mkSUVoteDump :: String -> StatusUpdate
+mkSUVoteDump csvStr = {t: "voteDump", p: SuStr csvStr}

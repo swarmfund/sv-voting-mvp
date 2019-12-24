@@ -279,6 +279,9 @@ decodeAuditMsg auditVal =
                 "warn" ->
                     Decode.map AuditWarn <| Decode.field "p" Decode.string
 
+                "voteDump" ->
+                    Decode.map AuditVoteDump <| Decode.field "p" Decode.string
+
                 _ ->
                     Decode.succeed <| AuditLogErr <| "Unable to decode msg from auditor with type: " ++ tVal
 
