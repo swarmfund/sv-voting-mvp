@@ -89,6 +89,7 @@ openingSlide model ( bHash, bSpec ) =
                 ++ discussionLink
                 ++ [ [ subhead "Voting" ]
                    , [ strong [] [ text <| "This is a stake-weighted vote using SWM balances as they were at " ++ formatTsAsDate (bStartTime.getOption bSpec ? 0) ] ]
+                   , [ text <| "(SWM Smart Contract Address: " ++ bErc20Addr.getOption bSpec ? "<Err: No Erc20 Addr>" ++ ")" ]
                    , [ div [] <|
                         [ smallP [ text <| "You will be presented with " ++ voteDesc ]
                         , smallP [ text <| "When you vote, " ++ voteInst ]

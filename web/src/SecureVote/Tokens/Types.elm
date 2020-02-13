@@ -9,7 +9,7 @@ tcChoiceToStr : TokenContract -> String
 tcChoiceToStr c =
     case c of
         Swarm ->
-            "SWM (0x9e88613418cF03dCa54D6a2cf6Ad934A78C7A17A)"
+            "SWM (0x3505f494c3f0fed0b594e01fa41dd3967645ca39)"
 
 
 tcChoiceToAddr : Maybe TokenContract -> String
@@ -26,7 +26,7 @@ tcChoiceToAddrM : Maybe TokenContract -> Maybe String
 tcChoiceToAddrM c =
     case c of
         Just Swarm ->
-            Just "0x9e88613418cF03dCa54D6a2cf6Ad934A78C7A17A"
+            Just "0x3505f494c3f0fed0b594e01fa41dd3967645ca39"
 
         _ ->
             Nothing

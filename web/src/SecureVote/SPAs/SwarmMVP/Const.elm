@@ -9,7 +9,7 @@ module SecureVote.SPAs.SwarmMVP.Const exposing (..)
 
 swmErc20Addr : String
 swmErc20Addr =
-    "0x9e88613418cF03dCa54D6a2cf6Ad934A78C7A17A"
+    "0x3505f494c3f0fed0b594e01fa41dd3967645ca39"
 
 
 swmErc20Abrv : String
