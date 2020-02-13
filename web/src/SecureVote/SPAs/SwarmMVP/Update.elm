@@ -211,11 +211,12 @@ update msg model =
 
         GotFailSpecFromIpfs res ->
             case res of
-                Ok { bHash, err } ->
-                    { model | failedSpec = Dict.insert bHash err model.failedSpec } ! []
+                -- id is a bHash
+                Ok { id, err } ->
+                    { model | failedSpec = Dict.insert id err model.failedSpec } ! []
 
                 Err e ->
-                    fatalFailedSpecUpdate e model
+                    fatalFailedSpecUpdate e ({model | failedSpec = Dict.insert "unknown" e model.failedSpec})
 
         MarkBallotVoted b { voterM, bHash } ->
             Maybe.Extra.or voterM (getUserErc20Addr model)

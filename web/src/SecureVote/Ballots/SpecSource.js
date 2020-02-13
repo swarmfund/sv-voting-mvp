@@ -45,10 +45,11 @@ const specSourcePorts = (app, opts) => {
         const cid = bs58.encode(_cidBuffer);
         console.log("IPFS requesting cid:", cid, "with id", id, "and hex", cidHex);
 
-        // give us ~~7.5s~~ 75ms to get the ballot from IPFS
+        // give us ~~7.5s~~ 0ms to get the ballot from IPFS
         new Promise((resolve, reject) => {
             // ipfs.block.get(cid).then(resolve);
-            setTimeout(reject, 75);
+            // setTimeout(reject, 7500);
+            reject("");
         }).then(block => {
                 console.log("IPFS found cid", cid, "with block", block);
                 const genHash = doHashWPrefix(block._data);

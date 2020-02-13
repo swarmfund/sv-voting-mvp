@@ -39,7 +39,7 @@ type alias SpecFromIpfs =
 
 
 type alias FailSpecFromIpfs =
-    { bHash : String, err : String }
+    { id : String, cid: String, err : String }
 
 
 gotSpecFromIpfsHandler : (Result String SpecFromIpfs -> msg) -> Sub msg
@@ -81,6 +81,7 @@ gotFailedSpecFromIpfsHandler fMsg =
                 decoder =
                     decode FailSpecFromIpfs
                         |> required "id" string
+                        |> required "cid" string
                         |> required "err" string
             in
             fMsg <| decodeValue decoder val

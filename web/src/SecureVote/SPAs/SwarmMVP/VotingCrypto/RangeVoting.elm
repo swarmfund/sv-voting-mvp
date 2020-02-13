@@ -11,7 +11,7 @@ import SecureVote.SPAs.SwarmMVP.Helpers exposing (genVoteOptId)
 import SecureVote.SPAs.SwarmMVP.Model exposing (Model)
 import SecureVote.SPAs.SwarmMVP.Msg exposing (Msg)
 import SecureVote.Types.VBit exposing (vBitsToBytes, vblToList)
-import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits)
+import SecureVote.Voting.Types.RangeVoting exposing (RangeBallot3Bits, uninitializedWeightingForRangeVotingPlusMinusThree)
 
 
 byteCheck : Int -> Bool
@@ -23,6 +23,7 @@ type alias RangeBallotPlaintext =
     -- List of 16 bytes
     List Int
 
+uninitializedWeighting = uninitializedWeightingForRangeVotingPlusMinusThree
 
 rangeBallotTxtCheck : RangeBallotPlaintext -> Bool
 rangeBallotTxtCheck ballotBytes =
@@ -67,6 +68,6 @@ orderedBallotBits ( bHash, bSpec ) ballotBitsDict =
                 ++ toString ballotBitsDict
 
         ballotBits =
-            Result.Extra.combine <| List.map (\id -> Dict.get id ballotBitsDict ? Err errMsg) ballotIds
+            Result.Extra.combine <| List.map (\id -> Dict.get id ballotBitsDict ? Ok uninitializedWeighting) ballotIds
     in
     ballotBits

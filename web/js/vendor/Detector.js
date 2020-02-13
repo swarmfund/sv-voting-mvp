@@ -32,7 +32,9 @@ var Detector = {
 
 		try {
 
-			var canvas = document.createElement( 'canvas' ); return !! ( window.WebGLRenderingContext && ( canvas.getContext( 'webgl' ) || canvas.getContext( 'experimental-webgl' ) ) );
+			var canvasOpts = {'failIfMajorPerformanceCaveat': true};
+			var canvas = document.createElement( 'canvas' );
+			return !! ( window.WebGLRenderingContext && ( canvas.getContext( 'webgl', canvasOpts ) || canvas.getContext( 'experimental-webgl', canvasOpts ) ) );
 
 		} catch ( e ) {
 

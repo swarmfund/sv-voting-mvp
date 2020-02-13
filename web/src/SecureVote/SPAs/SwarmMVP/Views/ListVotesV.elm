@@ -205,9 +205,8 @@ listVotesView model =
                 |> Set.size
                 |> (-) (List.length foundBallotHashes)
 
-        ballotsMissing =
-            filter (not << flip List.member gotBallotHashes) foundBallotHashes
-                |> filter (not << flip List.member model.fatalSpecFail)
+        ballotsWFailedSpec =
+            Dict.size model.failedSpec
 
         gotNAbrvs =
             Dict.size model.erc20Abrvs + gotNBadBallots + nDuplicateBallotSpecs
@@ -235,7 +234,7 @@ listVotesView model =
                 -- use <= not == here because we want to be okay with accidentally counting extra stuff (e.g. from errors with gotNBadBallots)
                 && BE.all
                     (List.map ((<=) totBallots_)
-                        [ gotNAbrvs
+                        [ gotNAbrvs + ballotsWFailedSpec
                         , gotNBallotScDetails
                         , foundNBallots
                         , gotNPrevVoteDeets
@@ -260,7 +259,7 @@ listVotesView model =
         { id = 3409830456
         , title = model.mainTitle
         , inner =
-            case ( totalBallots, ( foundNBallots, gotNBallots, gotNAbrvs, gotNBallotScDetails, gotNPrevVoteDeets, ballotsMissing, gotNBadBallots, model ), doneLoadingBallots ) of
+            case ( totalBallots, ( foundNBallots, gotNBallots, gotNAbrvs, gotNBallotScDetails, gotNPrevVoteDeets, ballotsWFailedSpec, gotNBadBallots, model ), doneLoadingBallots ) of
                 ( Nothing, _, _ ) ->
                     [ loadingBallots ]
 
@@ -278,7 +277,7 @@ loadingBallots =
         ]
 
 
-ballotsProgress n ( f, g, ga, gd, prevVs, ballotsMissing, badBs, model ) =
+ballotsProgress n ( f, g, ga, gd, prevVs, ballotsWFailedSpec, badBs, model ) =
     let
         attrs =
             [ class "f4 mv2" ]
@@ -290,8 +289,7 @@ ballotsProgress n ( f, g, ga, gd, prevVs, ballotsMissing, badBs, model ) =
         , div attrs [ text <| "ERC20 Details " ++ toString ga ++ " of " ++ toString n ++ " ballots." ]
         , div attrs [ text <| "Voting Details " ++ toString gd ++ " of " ++ toString n ++ " ballots." ]
         , div attrs [ text <| "Checking Past Votes " ++ toString prevVs ++ " of " ++ toString n ++ " ballots." ]
+        , div attrs [ text <| "Failed Ballots: " ++ toString ballotsWFailedSpec ]
+        , div attrs [ text <| "Bad Ballots: " ++ toString badBs ]
         , loadingSpinner ""
-        -- , div attrs [ text <| "Missing Ballots: " ++ toString ballotsMissing ]
-        -- , div attrs [ text <| "Bad Ballots: " ++ toString badBs ]
-        -- , div attrs [ text <| "Bad Ballots: " ++ toString model.fatalSpecFail ]
         ]
